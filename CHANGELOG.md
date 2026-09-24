@@ -47,5 +47,17 @@ Choices made where the specification left room. Each note says what was chosen a
 - **Bug IDs are reserved when Support starts,** so the reproduction file can use the final name; usage questions leave a gap, which is allowed for bugs.
 - **State shapes.** `pending_approvals`, `escalations` and `last_checkpoint` have documented shapes in `state-and-resume.md`; `last_report` is a one-line `<STAGE> <VERDICT>: <summary>` that marks a stage as finished for resumption.
 - **QA evidence folder.** Screenshots for visual criteria go to `factory/output/evidence/<ID>/`, added to `output/README.md`.
+- **Technique added: re-review only the new commits.** On a rework round, the Tech Lead checks that each previous finding is fixed and then reviews only `git diff <previous reviewed commit>..<branch>`, unless the fixes changed the design. Every changed line is still reviewed.
 - **Technique added: stale summary refresh.** `Status` regenerates a summary block from the `Status` lines only when it is older than the last log entry, instead of reading task blocks.
+- **DEV role by item type.** `developer` runs DEV for most items, `devops` for `infra` items, and `tech-writer` for `docs` items, so foundation tooling and documentation go to the role that owns them.
 - **Technique added: parallel reviewers.** REVIEW runs the Tech Lead, DBA and UX/UI reviews of one round concurrently when the tool allows, which saves time without changing any reviewer's input.
+
+### Roles and agents
+
+- **Agent files are generated.** Each agent body is the §13.1 preamble, with the report block copied from `core/templates/role-report.md`, followed by the role file verbatim. When a role file changes, both agent files are regenerated so the role file stays the source of truth.
+- **Severity scales.** Reviews, QA and validation use `blocker`, `major`, `minor`, `info`; security reviews and audits use `critical`, `high`, `medium`, `low`, which map to P0-P3. `blocker`/`major` and `critical`/`high`/`medium` require a fix; QA also uses `UNRELATED_DEFECT`. The scales are defined in `role-report.md` and applied in the role files and guidelines.
+- **Project root in task messages.** The task message template adds a `PROJECT ROOT` line under the working directory, because role agents in worktrees must open factory files by absolute path.
+- **Paths in role files.** Role files write factory paths relative to the project root and say once, in "Read first", that the task message gives its absolute path. This keeps the embedded role text identical across projects, which keeps it cacheable.
+- **Worked examples.** Most role files end with a short example of their report fields or findings, because exact examples make agents follow the formats more reliably than descriptions alone.
+- **Support reproductions** are scripts or tests run by explicit path, since product tooling excludes `factory/`.
+- **Technique added: quiet checks in review.** The Tech Lead runs only the quiet lint and type-check forms, and QA runs tests at the testing level, so the same full logs are never produced twice.

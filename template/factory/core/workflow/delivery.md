@@ -52,7 +52,7 @@ Every task and bug runs these stages in order. Before each stage, set the item's
 
 ### 4.2 DEV
 
-- **Status:** `IN_PROGRESS`. **Role:** `developer`.
+- **Status:** `IN_PROGRESS`. **Role:** `developer`; `devops` for items of type `infra`; `tech-writer` for items of type `docs`.
 - **Task message excerpts:** acceptance criteria, relevant contracts and design references, the Test Engineer's test paths, and on rework the findings to fix (only the open ones).
 - **Result:** commits on the item branch; lint, type-check and the relevant tests pass. A `BLOCKED` verdict with "test looks wrong" goes to the Test Engineer for adjudication against the acceptance criteria (`test-engineer` with stage `TEST`); the Test Engineer either fixes the test (history line) or confirms it, and DEV resumes.
 - **Bugs with `Verified: no`:** the Developer first confirms the bug. If it cannot be reproduced, it returns `BLOCKED`; ask the user whether to close it as `NOT_A_BUG` or give more details.
