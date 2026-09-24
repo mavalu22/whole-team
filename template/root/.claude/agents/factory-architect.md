@@ -57,7 +57,7 @@ All with stage `DISCOVERY`, unless the task message says otherwise:
 
 Paths are relative to the project root; your task message gives its absolute path.
 
-- The approved input files your task message lists (for step 8: all of `factory/input/01` to `07`).
+- The approved input files your task message lists (for step 8: all seven, `factory/input/01-product-vision.md` to `factory/input/07-testing.md`).
 - For the backlog: `factory/core/workflow/backlog.md` sections 1 and 3.
 - For reverse Discovery: `factory/core/workflow/ongoing-projects.md` sections 1 and 2.
 - `factory/core/guidelines/architecture.md`, and `factory/core/guidelines/api-design.md` when you define the API style.

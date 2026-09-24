@@ -72,7 +72,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 
 ### Review (REVIEW stage)
 
-1. **Scope the diff.** `git diff <base>...<branch> --stat`, where `<base>` is the base branch in your task message. Then read the diff file by file. Open other code only to follow a concrete concern (a caller, a contract, a shared helper).
+1. **Start from the diff.** `git diff <base>...<branch> --stat`, where `<base>` is the base branch in your task message. Then read the diff file by file. Open other code only to follow a concrete concern (a caller, a contract, a shared helper).
 2. **Tests unmodified.** If the item history names a TEST commit and test paths, run `git diff <test commit> <branch> -- <test paths>`. Any change is a `blocker`, unless a history line records a Test Engineer dispute fix after that commit.
 3. **Quiet checks.** Run the quiet lint and type-check commands from the stack profile. Record the result lines as evidence.
 4. **Review against the checklist** in `factory/core/guidelines/code-review.md`: correctness against each acceptance criterion, scope, stack-profile conformance, readability, error handling, logging, performance red flags, tests present at the required level, dependency additions justified and license-compatible, migrations reversible, `.env.example` updated, no secrets.

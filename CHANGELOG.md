@@ -6,12 +6,19 @@ All notable changes to WholeTeam are documented in this file. The format is base
 
 ### Added
 
-- Project layout: `VERSION`, `.gitattributes`, and the `template/` tree that the installer copies into a target project.
-- Root guide blocks for `CLAUDE.md` and `AGENTS.md`, delimited by `whole-team` markers.
-- `factory/config.yaml` with commented settings, and the identical `factory/core/config.defaults.yaml` used by migrations.
-- `factory/state.yaml`, the Orchestrator's runtime state.
-- `factory/core/MIGRATIONS.md`, the procedure the Orchestrator follows to migrate config and state after an update.
-- Starting files `tasks.md`, `tasks-graph.md` and `bugs.md`, and `output/README.md`.
+First release.
+
+- **Installers:** `install.sh` (bash 3.2+: Linux, macOS, Git Bash) and `install.ps1` (Windows PowerShell 5.1 and PowerShell 7) install WholeTeam into an existing git project or update an installed one, idempotently, without modifying files tracked by git other than `.gitignore`.
+- **Layout:** `VERSION`, `.gitattributes`, and the `template/` tree the installer copies into a target project.
+- **Root guide blocks** for `CLAUDE.md` and `AGENTS.md` (and their local-only fallbacks `CLAUDE.local.md` and `AGENTS.override.md`), delimited by `whole-team` markers.
+- **Configuration and state:** `factory/config.yaml` with a comment on every setting, the identical `factory/core/config.defaults.yaml`, `factory/state.yaml`, and `factory/core/MIGRATIONS.md` for migrating both after updates.
+- **Orchestrator manual:** `factory/core/FACTORY.md` (golden rules, directory map, commands, startup routine, roles and tiers, language rules, phase pointers) and `factory/core/modes.md` (every selectable mode with trade-offs and a recommended default).
+- **Workflow:** 14 documents for kickoff, Discovery (8 approved steps), ongoing projects, backlog generation and validation, delivery (sequential and parallel), checkpoints, quality gates, delegation and model sync, bugs and support, change requests, audits, status, state and resumption, and the hosting guide.
+- **Roles and agents:** 14 role files, 13 Claude Code agents and 13 Codex agents that embed them, with tier-based models (`high`, `medium`, `low`).
+- **Guidelines:** 14 stack-agnostic engineering guidelines, each with a review checklist.
+- **Templates:** 13 document templates (task, bug, task message, role report, ADR, architecture, threat model, audit report, checkpoint report, hosting guide, status report, checkpoint PR body, baseline) and 7 Discovery input templates plus the prototypes README.
+- **Commands:** `Let's code`, `Support: <description>`, `Status`, `Change: <request>`, `Audit`.
+- **README** with installation, usage, configuration, models and cost, git behavior, parallel mode, troubleshooting and limitations.
 
 ## Design notes
 
@@ -68,6 +75,13 @@ Choices made where the specification left room. Each note says what was chosen a
 - **Default budgets and license allowlist.** `performance.md` and `dependencies.md` give default budgets and a default permissive license allowlist that apply only when the constraints document defines none, so reviews always have a concrete threshold.
 - **Every guideline ends with a review checklist,** so reviewers can apply a guideline section by section without reading the whole file.
 
+### Templates
+
+- **Status report is a chat layout.** `status-report.md` defines the layout of the `Status` answer; it is shown in the chat in `config.language` and never written to a file.
+- **Personal data inventory in the architecture document.** The architecture template carries the personal data inventory, so privacy reviews and access, export and deletion features have one place to check.
+- **Threat and finding IDs.** Threat models number trust boundaries (`TB-n`) and threats (`TH-nn`); audits number findings `F-nn` across all roles, so items and reports can reference them stably.
+- **Input templates.** Every input document has YAML front matter (`step`, `status`, `approved_at`, `language`) and numbered sections with a one-line guidance comment. The stack profile adds a "Quiet command forms" section and names the slot section "Parallel slot isolation", which delivery and QA reference.
+
 ### Installer
 
 - **`--mode install` on an installed project runs an update.** A second install would overwrite the user's config, state and backlog, so the installer says so and updates instead. This keeps repeated installs idempotent.
@@ -78,10 +92,3 @@ Choices made where the specification left room. Each note says what was chosen a
 - **Top-level detection in PowerShell uses `git rev-parse --show-prefix`,** which is independent of path format and symlinks; `install.sh` compares physical paths (`pwd -P`).
 - **CRLF-safe markers.** Both scripts compare marker lines with a trailing carriage return removed, so a file edited on Windows never gets a second block. A block is replaced only when its end marker follows its begin marker; a lone marker stops the installer with a message instead of guessing.
 - **Byte-identical output.** Both scripts write LF line endings without a BOM, and an install by one script is left unchanged by an update from the other.
-
-### Templates
-
-- **Status report is a chat layout.** `status-report.md` defines the layout of the `Status` answer; it is shown in the chat in `config.language` and never written to a file.
-- **Personal data inventory in the architecture document.** The architecture template carries the personal data inventory, so privacy reviews and access, export and deletion features have one place to check.
-- **Threat and finding IDs.** Threat models number trust boundaries (`TB-n`) and threats (`TH-nn`); audits number findings `F-nn` across all roles, so items and reports can reference them stably.
-- **Input templates.** Every input document has YAML front matter (`step`, `status`, `approved_at`, `language`) and numbered sections with a one-line guidance comment. The stack profile adds a "Quiet command forms" section and names the slot section "Parallel slot isolation", which delivery and QA reference.
