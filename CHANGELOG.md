@@ -31,3 +31,21 @@ Choices made where the specification left room. Each note says what was chosen a
 - **Handling role reports.** `FACTORY.md` maps each report verdict to an action, verifies cheap facts (cited commits and test files exist) before recording them, and treats a malformed report as a failed delegation. This keeps the Orchestrator from recording claims it has not checked.
 - **Extra golden rules.** Bounded loops, local-only operation, ISO 8601 timestamps and respect for the user's uncommitted work are golden rules, because each one prevents an irreversible or token-burning failure.
 - **Model sync notice.** After rewriting agent model lines, the Orchestrator tells the user that restarting the tool makes the new models take effect, since both tools load agent definitions at startup.
+
+### Workflow
+
+- **Kickoff commit on an empty repository.** The initial commit contains only `.gitignore` (with the factory block), so it also satisfies the `.gitignore` commit step. Kickoff asks before committing a `.gitignore` that has user changes outside the factory block.
+- **Delegated Discovery drafts write the input file directly.** The Architect, Tech Lead and UX/UI Designer write their drafts into the step's input file; the Orchestrator then applies the user's small corrections itself and re-delegates only when the correction needs the role's expertise. In step 5 the Orchestrator leads the conversation and writes the spec, and delegates prototype generation and inventory to the UX/UI Designer agent, because those produce many files.
+- **Reverse Discovery hints persist.** The Architect writes pre-fill hints for steps 1, 5, 6 and 7 to `factory/output/drafts/prefill-hints.md`, so an interrupted session does not lose them. Reverse Discovery counts as complete when the baseline exists and the drafts have a `language` in their front matter.
+- **Audit offer timing.** In ongoing projects the audit is offered after step 7 and before step 8, so accepted improvements feed the backlog generation.
+- **Test paths live in the item history.** The TEST stage records its commit and test paths in a history line of the item block, which every task message includes. The Tech Lead verifies the tests are unmodified with `git diff <test commit> HEAD -- <paths>`. This keeps the `in_flight` entry in the exact shape the spec defines.
+- **Full-suite runs before merging.** With `testing.level: full`, the whole suite runs on the rebased branch before the merge, so the integration branch is never broken by a merge.
+- **Accept as-is.** An escalated item accepted as-is keeps the finding in its `Notes`, which feeds "Known issues" in the next checkpoint report; a bug is created only if the user wants it fixed later. Guidance from the user resets the rejection counter.
+- **Checkpoint docs branch.** The Tech Writer commits checkpoint docs on `docs/cp-<n>`, reviewed by the Tech Lead and merged like an item, so docs changes also go through review.
+- **Checkpoint verification failures** use the bug source `checkpoint-audit`, since they are findings of the checkpoint's quality checks, and are at least P1.
+- **Bug-fix checkpoints** are not written to `tasks.md`; they take the next `next_checkpoint_id` and exist in the report, the log and `last_checkpoint`.
+- **Bug IDs are reserved when Support starts,** so the reproduction file can use the final name; usage questions leave a gap, which is allowed for bugs.
+- **State shapes.** `pending_approvals`, `escalations` and `last_checkpoint` have documented shapes in `state-and-resume.md`; `last_report` is a one-line `<STAGE> <VERDICT>: <summary>` that marks a stage as finished for resumption.
+- **QA evidence folder.** Screenshots for visual criteria go to `factory/output/evidence/<ID>/`, added to `output/README.md`.
+- **Technique added: stale summary refresh.** `Status` regenerates a summary block from the `Status` lines only when it is older than the last log entry, instead of reading task blocks.
+- **Technique added: parallel reviewers.** REVIEW runs the Tech Lead, DBA and UX/UI reviews of one round concurrently when the tool allows, which saves time without changing any reviewer's input.

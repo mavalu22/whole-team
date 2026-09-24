@@ -11,6 +11,7 @@ Files are written by the role named below, through the Orchestrator. Subfolders 
 | `adr/` | Architecture Decision Records, `ADR-NNN-<slug>.md` | Architect | Discovery steps 2 and 3, and whenever a significant decision changes |
 | `audits/` | Audit reports, `AUDIT-<YYYY-MM-DD>.md` | Security, with the Tech Lead and QA | `Audit` command, ongoing-project onboarding |
 | `checkpoints/` | Checkpoint reports, `CP-<n>.md` | Orchestrator | At every checkpoint |
+| `evidence/` | QA screenshots for visual acceptance criteria, `<ID>/<criterion>.png` | QA | QA stage of items with appearance or layout criteria |
 | `drafts/` | Working drafts, such as `backlog-draft.md` | Architect | Discovery step 8 and change requests |
 | `support/` | Reproduction scripts and tests, `B-<id>-repro.*` | Support | `Support:` reports |
 
