@@ -1,0 +1,208 @@
+# =============================================================================
+# WholeTeam - project configuration
+# =============================================================================
+# - Every setting has a comment above it explaining what it does and its options.
+# - "Set during Discovery" means the Orchestrator asks you and writes the value.
+#   You can still edit any value by hand.
+# - After editing, type "Let's code": the Orchestrator re-reads this file.
+# =============================================================================
+
+# Schema version of this file. Do not edit. Updates use it to add new
+# settings with their defaults while keeping your values.
+config_version: 1
+
+# Language the factory uses to talk to you: chat messages, questions, status
+# and checkpoint reports, and the descriptions of every selectable mode.
+# Use a BCP 47 tag such as en, pt-BR, es, fr, de.
+# Documents in factory/input/ are written in the language that is active when
+# Discovery starts, and they keep that language if you change this later.
+# Code, code comments, commit messages and branch names are always English.
+language: en
+
+# Language of the product's own documentation (README, API docs, CHANGELOG).
+product_docs_language: en
+
+# --- Project: what kind of project the factory is working on ----------------
+project:
+  # new     = a new product; Discovery starts from the idea.
+  # ongoing = an existing codebase; Discovery starts by analysing the code,
+  #           and the factory offers a bug and security audit.
+  # Set by the installer.
+  type: new
+
+# --- Execution: how tasks run and when the factory stops for you ------------
+execution:
+  # sequential = one item at a time, in your working copy. Cheapest and
+  #              easiest to follow.
+  # parallel   = several independent items at once, each in its own git
+  #              worktree. Faster, but uses more tokens.
+  # Set during Discovery (step 8).
+  mode: sequential
+
+  # Maximum number of items in progress at once in parallel mode.
+  # Ignored in sequential mode.
+  max_parallel_tasks: 3
+
+  # When the factory stops for your approval:
+  # per_task       = before each task or bug is merged into develop, and at
+  #                  every checkpoint.
+  # per_checkpoint = only at checkpoints. Recommended.
+  # none           = never. Checkpoints still merge develop into main.
+  # Set during Discovery (step 8).
+  approval_mode: per_checkpoint
+
+  # How many times one item may be sent back by Code Review, QA or Security
+  # before the factory stops working on it and asks you what to do.
+  max_rejections: 3
+
+  # Folder for parallel-mode git worktrees, relative to the project root.
+  # Keep it inside factory/ so git ignores it and sandboxed agents can write to it.
+  worktrees_dir: factory/.worktrees
+
+# --- Models: which AI model each role uses (quality vs speed vs cost) -------
+models:
+  # Each role has a tier (see role_tiers); each tier maps to a model per tool.
+  # model  = the model name or alias the tool accepts.
+  # effort = reasoning effort for the tier; null = the model's default.
+  # When this block changes, the Orchestrator rewrites the model lines in
+  # .claude/agents/factory-*.md and .codex/agents/factory-*.toml.
+  # Model names change over time; if your plan lacks one, map the tier to a
+  # model you have.
+  # Tiers used when the Orchestrator runs inside Claude Code.
+  claude_code:
+    # high: architecture, backlog generation, required security reviews, audits.
+    # "fable" is also available for maximum capability, at a higher cost.
+    high:
+      model: opus
+      effort: high
+    # medium: everyday work - development, reviews, tests, QA.
+    medium:
+      model: sonnet
+      effort: medium
+    # low: mechanical work - backlog validation, documentation updates.
+    low:
+      model: haiku
+      effort: null
+  # Tiers used when the Orchestrator runs inside Codex.
+  codex:
+    # high: architecture, backlog generation, required security reviews, audits.
+    # OpenAI recommends starting GPT-6 Astra at low effort. If your plan does
+    # not include Astra, use gpt-6-sol with effort high.
+    high:
+      model: gpt-6-astra
+      effort: low
+    # medium: everyday work - development, reviews, tests, QA.
+    medium:
+      model: gpt-6-sol
+      effort: medium
+    # low: mechanical work - backlog validation, documentation updates.
+    # OpenAI recommends starting GPT-6 Luna at high effort.
+    low:
+      model: gpt-6-luna
+      effort: high
+  # Tier used by each role. Move a role up or down to trade quality for cost.
+  role_tiers:
+    product-owner: medium
+    ux-ui-designer: medium
+    architect: high
+    tech-lead: medium
+    developer: medium
+    test-engineer: medium
+    qa: medium
+    security: medium
+    dba: medium
+    devops: medium
+    tech-writer: low
+    support: medium
+    backlog-validator: low
+
+# --- Testing: how much automated testing the factory writes and runs --------
+testing:
+  # none     = no automated tests; QA validates by running the product.
+  # critical = automated tests only for items marked "Critical: yes".
+  # full     = automated tests for every item; the whole suite runs on every
+  #            merge and at every checkpoint.
+  # Set during Discovery (step 7).
+  level: critical
+
+  # Minimum line coverage (%) required when level is full. 0 disables the check.
+  coverage_target: 70
+
+# --- Design: how the product's look and feel is defined ---------------------
+design:
+  # spec            = text specification only (factory/input/05-design-spec.md).
+  # html_prototypes = the factory also generates static HTML prototypes for
+  #                   you to approve; developers consult them.
+  # user_prototypes = you put prototypes made in other tools into
+  #                   factory/input/prototypes/.
+  # Set during Discovery (step 5).
+  mode: spec
+
+  # true = the UX/UI Designer reviews every item that touches the UI, before QA.
+  review_ui_items: true
+
+# --- Security: how deep security reviews and audits go ----------------------
+security:
+  # Review depth for items not marked "Security review: required".
+  # light | required
+  review_default: light
+
+  # Tier for "required" reviews. Overrides the security role tier for them.
+  required_review_tier: high
+
+  # Run a full security audit of everything merged since the previous
+  # checkpoint, before the checkpoint merge.
+  audit_on_checkpoint: true
+
+  # Tier used for audits (checkpoint audits and the Audit command).
+  audit_tier: high
+
+# --- Bugs: how bugs are prioritized against feature work --------------------
+bugs:
+  # Bugs at this priority or more severe are fixed before feature work continues.
+  # P0 = only blockers. P1 = blockers and major bugs (default).
+  # P2 = also minor bugs with a workaround. P3 = every bug.
+  block_features_on: P1
+
+# --- Git: branches, commits and merges ---------------------------------------
+git:
+  # Stable branch. Receives develop at each checkpoint. Confirmed at kickoff.
+  base_branch: main
+
+  # Integration branch. Every finished task and bug is merged here.
+  integration_branch: develop
+
+  # Branch names. {id} = T-012 or B-003; {slug} = short kebab-case title.
+  task_branch_pattern: "task/{id}-{slug}"
+  bug_branch_pattern: "bug/{id}-{slug}"
+
+  # Commit message convention. conventional = Conventional Commits 1.0.
+  commit_convention: conventional
+
+  # true = add a "Co-authored-by" trailer naming the AI agent to commits and PRs.
+  ai_coauthor: false
+
+  # How items enter develop:
+  # squash = one commit per item; merge = keep the branch history.
+  merge_strategy: squash
+
+  # How develop reaches main at a checkpoint:
+  # pr    = open a pull request with gh (GitHub) or glab (GitLab) when a remote
+  #         and an authenticated CLI exist; otherwise fall back to local.
+  # local = merge locally with --no-ff.
+  checkpoint_merge: pr
+
+  # Tag main after each checkpoint merge (cp-1, cp-2, ...).
+  tag_checkpoints: true
+
+  # Delete task and bug branches after they are merged.
+  delete_merged_branches: true
+
+# --- Deploy: running and hosting the product ---------------------------------
+deploy:
+  # The factory runs the product only on your machine. It never deploys.
+  target: local
+
+  # When to write the hosting guide for the platform chosen in Discovery:
+  # first_checkpoint | final_checkpoint | never
+  hosting_guide: first_checkpoint

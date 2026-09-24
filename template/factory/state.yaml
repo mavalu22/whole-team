@@ -1,0 +1,53 @@
+# WholeTeam - runtime state. Written only by the Orchestrator.
+# Do not edit by hand unless the Orchestrator asks you to.
+
+# Installed factory version. Written by the installer; updated after migrations.
+factory_version: null
+
+# config_version whose migrations have been applied (see core/MIGRATIONS.md).
+config_version_applied: 1
+
+# Language of documents in factory/input/. Locked when Discovery starts.
+input_language: null
+
+# Snapshot of the "models" block last written into the agent files.
+# The Orchestrator compares it with config.yaml to detect changes.
+agent_models_applied: null
+
+# kickoff | discovery | delivery | maintenance
+phase: kickoff
+
+kickoff:
+  completed_at: null
+
+discovery:
+  # Current step key (e.g. s3_architecture), or null.
+  current_step: null
+  # true = the user chose to run Design right after Vision (step 5 moved to 2nd).
+  design_early: false
+  # status: pending | in_progress | approved | reopened
+  steps:
+    s1_vision: { status: pending, approved_at: null }
+    s2_stack: { status: pending, approved_at: null }
+    s3_architecture: { status: pending, approved_at: null }
+    s4_stack_profile: { status: pending, approved_at: null }
+    s5_design: { status: pending, approved_at: null }
+    s6_constraints: { status: pending, approved_at: null }
+    s7_testing: { status: pending, approved_at: null }
+    s8_backlog: { status: pending, approved_at: null }
+
+delivery:
+  next_task_id: 1
+  next_bug_id: 1
+  next_checkpoint_id: 1
+  # Items in progress. Shape documented in core/workflow/state-and-resume.md.
+  in_flight: []
+  # Items or checkpoints waiting for the user's approval.
+  pending_approvals: []
+  # Items that hit max_rejections or need a user decision.
+  escalations: []
+  last_checkpoint: null
+  hosting_guide_written: false
+
+# Short append-only log of phase transitions and important decisions.
+log: []
