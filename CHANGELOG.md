@@ -61,3 +61,9 @@ Choices made where the specification left room. Each note says what was chosen a
 - **Worked examples.** Most role files end with a short example of their report fields or findings, because exact examples make agents follow the formats more reliably than descriptions alone.
 - **Support reproductions** are scripts or tests run by explicit path, since product tooling excludes `factory/`.
 - **Technique added: quiet checks in review.** The Tech Lead runs only the quiet lint and type-check forms, and QA runs tests at the testing level, so the same full logs are never produced twice.
+
+### Guidelines
+
+- **OWASP categories by name.** The security mapping lists OWASP Top 10 categories by name and adds supply-chain and exceptional-condition rows, so it stays valid across Top 10 editions instead of pinning one edition's numbering.
+- **Default budgets and license allowlist.** `performance.md` and `dependencies.md` give default budgets and a default permissive license allowlist that apply only when the constraints document defines none, so reviews always have a concrete threshold.
+- **Every guideline ends with a review checklist,** so reviewers can apply a guideline section by section without reading the whole file.
