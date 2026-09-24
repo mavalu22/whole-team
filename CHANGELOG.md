@@ -68,6 +68,17 @@ Choices made where the specification left room. Each note says what was chosen a
 - **Default budgets and license allowlist.** `performance.md` and `dependencies.md` give default budgets and a default permissive license allowlist that apply only when the constraints document defines none, so reviews always have a concrete threshold.
 - **Every guideline ends with a review checklist,** so reviewers can apply a guideline section by section without reading the whole file.
 
+### Installer
+
+- **`--mode install` on an installed project runs an update.** A second install would overwrite the user's config, state and backlog, so the installer says so and updates instead. This keeps repeated installs idempotent.
+- **Stale agent files are removed on update.** Every `factory-*` agent file is deleted before the template versions are copied, so a role removed in a later version does not linger. Agent files without the `factory-` prefix are never touched.
+- **Missing starting files are restored anywhere outside `core/`,** including `input/` and `output/`, but an existing file is never overwritten. This lets new versions add starting files without touching user data.
+- **The manifest keeps "created".** On update, a file the installer originally created stays `created` in the manifest even though it now exists, so its ignore rule is kept.
+- **The ignore block follows the manifest.** Update refreshes the block wherever the manifest says it lives (`.gitignore`, or the exclude file after kickoff moved it, relative or absolute path), and prints a commit command when it changes a committed `.gitignore`. The Orchestrator offers the same commit at startup.
+- **Top-level detection in PowerShell uses `git rev-parse --show-prefix`,** which is independent of path format and symlinks; `install.sh` compares physical paths (`pwd -P`).
+- **CRLF-safe markers.** Both scripts compare marker lines with a trailing carriage return removed, so a file edited on Windows never gets a second block. A block is replaced only when its end marker follows its begin marker; a lone marker stops the installer with a message instead of guessing.
+- **Byte-identical output.** Both scripts write LF line endings without a BOM, and an install by one script is left unchanged by an update from the other.
+
 ### Templates
 
 - **Status report is a chat layout.** `status-report.md` defines the layout of the `Status` answer; it is shown in the chat in `config.language` and never written to a file.

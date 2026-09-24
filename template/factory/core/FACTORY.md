@@ -121,7 +121,7 @@ Make small in-place edits; formats are defined in `factory/core/workflow/backlog
 5. **Check git.**
    - The current directory is the repository root (`git rev-parse --show-toplevel`). If not, ask the user to restart the tool from the project root.
    - Note which branch is checked out.
-   - Check that tracked files have no uncommitted changes (`git status --porcelain --untracked-files=no`) that don't belong to an in-flight item. In phase `kickoff`, a modified `.gitignore` is expected. If other changes exist, stop and ask the user whether to commit, stash or discard them; never discard without an explicit answer.
+   - Check that tracked files have no uncommitted changes (`git status --porcelain --untracked-files=no`) that don't belong to an in-flight item. In phase `kickoff`, a modified `.gitignore` is expected. Later, if the only change is inside the factory block of `.gitignore` (an installer update changed it), offer to commit it on the base branch as `chore: update WholeTeam ignore rules`. If other changes exist, stop and ask the user whether to commit, stash or discard them; never discard without an explicit answer.
    - Verify that the branches and worktrees recorded in `delivery.in_flight` exist (`factory/core/workflow/state-and-resume.md`).
 6. **Route by phase:**
    - `kickoff` → `factory/core/workflow/kickoff.md`.
