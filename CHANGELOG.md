@@ -67,3 +67,10 @@ Choices made where the specification left room. Each note says what was chosen a
 - **OWASP categories by name.** The security mapping lists OWASP Top 10 categories by name and adds supply-chain and exceptional-condition rows, so it stays valid across Top 10 editions instead of pinning one edition's numbering.
 - **Default budgets and license allowlist.** `performance.md` and `dependencies.md` give default budgets and a default permissive license allowlist that apply only when the constraints document defines none, so reviews always have a concrete threshold.
 - **Every guideline ends with a review checklist,** so reviewers can apply a guideline section by section without reading the whole file.
+
+### Templates
+
+- **Status report is a chat layout.** `status-report.md` defines the layout of the `Status` answer; it is shown in the chat in `config.language` and never written to a file.
+- **Personal data inventory in the architecture document.** The architecture template carries the personal data inventory, so privacy reviews and access, export and deletion features have one place to check.
+- **Threat and finding IDs.** Threat models number trust boundaries (`TB-n`) and threats (`TH-nn`); audits number findings `F-nn` across all roles, so items and reports can reference them stably.
+- **Input templates.** Every input document has YAML front matter (`step`, `status`, `approved_at`, `language`) and numbered sections with a one-line guidance comment. The stack profile adds a "Quiet command forms" section and names the slot section "Parallel slot isolation", which delivery and QA reference.
