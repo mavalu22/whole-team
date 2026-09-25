@@ -10,6 +10,7 @@ All notable changes to WholeTeam are documented in this file. The format is base
 - Model changes the user asks for mid-session take effect right away: the Orchestrator runs the model sync as soon as it changes a value under `models`.
 - An interrupted merge is safe to resume: MERGE starts with a resume check that aborts an unfinished rebase or merge, detects an item already merged, and commits a squash that was staged but not committed. The steps after the merge are idempotent, and an item whose branch is gone is checked for a merge before being reset to `TODO`.
 - The steps after a checkpoint approval are safe to resume: the approval and each step are logged, the merge, tag and state steps skip what is already done, and a pending approval that was already given, or whose checkpoint is already merged, is finished instead of asked again.
+- A refused install or update leaves the project exactly as it was: both installers check the root files (guide files and fallbacks both tracked, incomplete marker blocks) before writing anything.
 
 ## [1.0.0] - 2026-09-24
 

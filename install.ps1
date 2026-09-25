@@ -25,6 +25,7 @@ $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 
 $script:Project = ""
 $script:OldManifest = @()
+$script:RootMode = 'install'
 $script:NewManifest = New-Object System.Collections.ArrayList
 
 function Show-Usage {
@@ -121,14 +122,10 @@ function Test-Tracked([string]$Relative) {
 
 function Get-LineText([string]$Line) { return $Line.TrimEnd("`r") }
 
-# Replace the text between the markers, or append the block after a blank line.
-function Update-Block([string]$File, [string]$BlockText, [string]$Begin, [string]$End) {
-    if (-not (Test-Path -LiteralPath $File -PathType Leaf)) {
-        Write-Text $File $BlockText
-        return
-    }
-    $content = Read-Text $File
-    $lines = $content -split "`n"
+# Find the block markers. Indexes are -1 when absent; End is the first end marker after Begin.
+# Marker lines are compared with a trailing carriage return removed.
+function Get-BlockLines([string]$File, [string]$Begin, [string]$End) {
+    $lines = (Read-Text $File) -split "`n"
     $beginIndex = -1
     $endIndex = -1
     $anyEnd = $false
@@ -141,15 +138,35 @@ function Update-Block([string]$File, [string]$BlockText, [string]$Begin, [string
             $endIndex = $i
         }
     }
-    if ($beginIndex -ge 0 -and $endIndex -ge 0) {
+    return New-Object PSObject -Property @{ Begin = $beginIndex; End = $endIndex; AnyEnd = $anyEnd }
+}
+
+# Stop when the file has an incomplete block.
+function Assert-Block([string]$File, [string]$Begin, [string]$End) {
+    if (-not (Test-Path -LiteralPath $File -PathType Leaf)) { return }
+    $found = Get-BlockLines $File $Begin $End
+    if ($found.Begin -ge 0 -and $found.End -ge 0) { return }
+    if ($found.Begin -lt 0 -and -not $found.AnyEnd) { return }
+    Fail "$File has an incomplete WholeTeam block (one marker is missing). Fix or remove the markers, then run the installer again."
+}
+
+# Replace the text between the markers, or append the block after a blank line.
+function Update-Block([string]$File, [string]$BlockText, [string]$Begin, [string]$End) {
+    if (-not (Test-Path -LiteralPath $File -PathType Leaf)) {
+        Write-Text $File $BlockText
+        return
+    }
+    Assert-Block $File $Begin $End
+    $content = Read-Text $File
+    $lines = $content -split "`n"
+    $found = Get-BlockLines $File $Begin $End
+    if ($found.Begin -ge 0) {
         $blockLines = $BlockText -split "`n"
         $output = New-Object System.Collections.ArrayList
-        for ($i = 0; $i -lt $beginIndex; $i++) { [void]$output.Add($lines[$i]) }
+        for ($i = 0; $i -lt $found.Begin; $i++) { [void]$output.Add($lines[$i]) }
         for ($i = 0; $i -lt ($blockLines.Count - 1); $i++) { [void]$output.Add($blockLines[$i]) }
-        for ($i = $endIndex + 1; $i -lt $lines.Count; $i++) { [void]$output.Add($lines[$i]) }
+        for ($i = $found.End + 1; $i -lt $lines.Count; $i++) { [void]$output.Add($lines[$i]) }
         Write-Text $File ([string]::Join("`n", $output.ToArray()))
-    } elseif ($beginIndex -ge 0 -or $anyEnd) {
-        Fail "$File has an incomplete WholeTeam block (one marker is missing). Fix or remove the markers, then run the installer again."
     } else {
         $output = $content
         if ($output.Length -gt 0) {
@@ -192,6 +209,10 @@ function Read-Manifest([string]$File) {
 }
 
 # Section 4.3 rules for one tool's guide file and its local-only fallback.
+function Stop-BothTracked([string]$Main, [string]$Fallback, [string]$BlockFile) {
+    Fail "$Main and $Fallback are both tracked by git. Untrack $Fallback (git rm --cached $Fallback), or paste the block from $BlockFile into it by hand, then run the installer again."
+}
+
 function Set-GuideFile([string]$Main, [string]$Fallback, [string]$BlockFile) {
     $block = Read-Text $BlockFile
     $mainPath = Join-ProjectPath $Main
@@ -204,7 +225,7 @@ function Set-GuideFile([string]$Main, [string]$Fallback, [string]$BlockFile) {
         Add-Record 'block' $Main
     } else {
         if (Test-Tracked $Fallback) {
-            Fail "$Main and $Fallback are both tracked by git. Untrack $Fallback (git rm --cached $Fallback), or paste the block from $BlockFile into it by hand, then run the installer again."
+            Stop-BothTracked $Main $Fallback $BlockFile
         }
         if (Test-Path -LiteralPath $fallbackPath) {
             Update-Block $fallbackPath $block $BlockBeginMd $BlockEndMd
@@ -229,16 +250,22 @@ function Get-IgnoreBlock {
     return ([string]::Join("`n", $lines) + "`n")
 }
 
-function Set-IgnoreBlock {
-    $target = '.gitignore'
+# Where the ignore block lives: .gitignore, or the file the old manifest names.
+function Get-IgnoreTarget {
     foreach ($entry in $script:OldManifest) {
-        if ($GuideFiles -notcontains $entry.File) { $target = $entry.File; break }
+        if ($GuideFiles -notcontains $entry.File) { return $entry.File }
     }
-    if ([System.IO.Path]::IsPathRooted($target)) {
-        $absolute = $target
-    } else {
-        $absolute = Join-ProjectPath $target
-    }
+    return '.gitignore'
+}
+
+function Get-IgnorePath([string]$Target) {
+    if ([System.IO.Path]::IsPathRooted($Target)) { return $Target }
+    return Join-ProjectPath $Target
+}
+
+function Set-IgnoreBlock {
+    $target = Get-IgnoreTarget
+    $absolute = Get-IgnorePath $target
     $block = Get-IgnoreBlock
     if (-not (Test-Path -LiteralPath $absolute)) {
         $parent = Split-Path -Parent $absolute
@@ -264,6 +291,41 @@ function Set-RootFiles([string]$RunMode) {
     $text = ''
     foreach ($entry in $script:NewManifest) { $text += "$($entry.Action) $($entry.File)`n" }
     Write-Text (Join-ProjectPath 'factory/.install-manifest') $text
+}
+
+# Set OldManifest and RootMode for the root files.
+# RootMode is 'update' only when an update finds a non-empty manifest.
+function Initialize-OldManifest([string]$RunMode) {
+    $script:OldManifest = @()
+    $script:RootMode = 'install'
+    if ($RunMode -eq 'update') {
+        $manifestPath = Join-ProjectPath 'factory/.install-manifest'
+        if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
+            Write-Warn 'factory/.install-manifest is missing; the root files are handled as in a new install.'
+        }
+        $script:OldManifest = Read-Manifest $manifestPath
+        if ($script:OldManifest.Count -gt 0) { $script:RootMode = 'update' }
+    }
+}
+
+# Take the decisions Set-RootFiles will take, without writing,
+# and stop before the first write when one of them would fail.
+function Test-RootFiles {
+    $pairs = @(@('CLAUDE.md', 'CLAUDE.local.md'), @('AGENTS.md', 'AGENTS.override.md'))
+    foreach ($pair in $pairs) {
+        $main = $pair[0]
+        $fallback = $pair[1]
+        if ($script:RootMode -eq 'update' -and -not (Test-ManifestHas $main) -and -not (Test-ManifestHas $fallback)) { continue }
+        $target = $main
+        if ((Test-Path -LiteralPath (Join-ProjectPath $main)) -and (Test-Tracked $main)) {
+            if (Test-Tracked $fallback) {
+                Stop-BothTracked $main $fallback ([System.IO.Path]::Combine($script:Template, 'root', $main))
+            }
+            $target = $fallback
+        }
+        Assert-Block (Join-ProjectPath $target) $BlockBeginMd $BlockEndMd
+    }
+    Assert-Block (Get-IgnorePath (Get-IgnoreTarget)) $BlockBeginIgnore $BlockEndIgnore
 }
 
 function Show-RootSummary {
@@ -360,7 +422,6 @@ function Invoke-Install {
     Set-ConfigType $projectType
     Set-StateVersion
     Copy-Agents
-    $script:OldManifest = @()
     Set-RootFiles 'install'
 
     Write-Info ''
@@ -386,17 +447,8 @@ function Invoke-Update {
     Write-CoreVersion
     Copy-Agents
 
-    $manifestPath = Join-ProjectPath 'factory/.install-manifest'
-    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
-        Write-Warn 'factory/.install-manifest is missing; the root files are handled as in a new install.'
-    }
-    $script:OldManifest = Read-Manifest $manifestPath
     $before = Get-GitignoreState
-    if ($script:OldManifest.Count -gt 0) {
-        Set-RootFiles 'update'
-    } else {
-        Set-RootFiles 'install'
-    }
+    Set-RootFiles $script:RootMode
     if ($before -eq 'clean' -and (Get-GitignoreState) -eq 'dirty') {
         Write-Info '  The WholeTeam block in .gitignore changed. Commit it:'
         Write-Info '    git add .gitignore && git commit -m "chore: update WholeTeam ignore rules"'
@@ -511,6 +563,9 @@ if ($runMode -eq '') {
 } elseif ($runMode -eq 'update' -and $proposed -eq 'install') {
     Fail "WholeTeam is not installed in $($script:Project). Run the installer with -Mode install."
 }
+
+Initialize-OldManifest $runMode
+Test-RootFiles
 
 if ($runMode -eq 'install') {
     Invoke-Install
