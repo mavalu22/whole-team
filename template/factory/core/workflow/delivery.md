@@ -93,20 +93,27 @@ See section 5.
 
 The Orchestrator merges; never delegate it. Merge one item at a time.
 
-1. **Check the Definition of Done** (`factory/core/workflow/quality-gates.md` section 2).
-2. **Update the branch** onto the latest integration branch: `git -C <dir> rebase <integration>`, where `<dir>` is the worktree (parallel) or the project root (sequential).
+1. **Resume check.** Run it every time MERGE starts, so an interrupted merge is safe to re-run. In order:
+   1. **Unfinished rebase or merge.** If a rebase is in progress in `<dir>` (`git -C <dir> rev-parse --git-path rebase-merge` or `rebase-apply` points to an existing directory; resolve a relative path against `<dir>`), run `git -C <dir> rebase --abort`. If a merge is in progress at the project root (`git rev-parse -q --verify MERGE_HEAD` succeeds), run `git merge --abort`.
+   2. **Already merged.** Run `git log <integration> --first-parent --fixed-strings --grep "(<ID>)" --format="%h %s"`. If a commit's subject ends with `(<ID>)`, the item is merged: continue at step 6 with that commit's hash.
+   3. **Squash staged, not committed.** The project root is on the integration branch with staged changes:
+      - if the index matches the item branch exactly (`git diff --cached --quiet <branch>`) and tracked files have no unstaged changes (`git diff --quiet`), commit it with the subject and body of step 5, then continue at step 6;
+      - otherwise stop and ask the user. Never discard anything without an explicit answer.
+   4. **Otherwise,** continue with step 2.
+2. **Check the Definition of Done** (`factory/core/workflow/quality-gates.md` section 2).
+3. **Update the branch** onto the latest integration branch: `git -C <dir> rebase <integration>`, where `<dir>` is the worktree (parallel) or the project root (sequential).
    - If conflicts appear: `git -C <dir> rebase --abort`, then send the item back to DEV with a conflict note ("rebase onto `<integration>` and resolve conflicts in: <files>"). This is not a rejection. The item then runs REVIEW, QA and SEC again.
-3. **Re-run tests** after a rebase that changed anything: the quiet test command from the stack profile, for the tests related to the item; with `testing.level: full`, the whole suite. A failure sends the item back to DEV with the failing lines as findings (not a rejection).
-4. **Merge** from the integration branch checkout (the project root):
+4. **Re-run tests** after a rebase that changed anything: the quiet test command from the stack profile, for the tests related to the item; with `testing.level: full`, the whole suite. A failure sends the item back to DEV with the failing lines as findings (not a rejection).
+5. **Merge** from the integration branch checkout (the project root):
    - `squash`: `git switch <integration> && git merge --squash <branch> && git commit -m "<subject>" -m "<body>"`.
    - `merge`: `git switch <integration> && git merge --no-ff <branch> -m "<subject>"`.
    - **Subject:** a Conventional Commit whose description ends with the item ID, for example `feat(auth): login with email and password (T-012)`. Type: `feat` for features, `fix` for bugs, `test`, `docs` and `refactor` for those types, `build`, `ci` or `chore` for infra, `feat` or `fix` for security tasks. Scope: the main `Touches` area. English.
    - **Body:** one line per acceptance criterion delivered, and the item's gate verdicts.
    - Add a `Co-authored-by:` trailer naming the AI agent only when `git.ai_coauthor` is true. The same rule applies to every commit and PR body the factory writes.
-5. **Record:** set status `DONE`, append `<date> · merged · <short hash>` to the history, update the summary block and the graph `class` line, and remove the `in_flight` entry.
-6. **Clean up:** in parallel mode `git worktree remove <worktrees_dir>/<ID>`. If `git.delete_merged_branches` is true, delete the branch with `git branch -D <branch>` (a squash merge is not detected by `-d`; the recorded merge commit is the proof).
-7. **Open checkpoint PR:** if a checkpoint pull request is open, push the integration branch so the PR updates.
-8. **Next:** in parallel mode, in-flight branches rebase onto the new integration branch at their next stage boundary (section 10). Then check checkpoint conditions (section 1, step 2).
+6. **Record:** set status `DONE`, append `<date> · merged · <short hash>` to the history (unless the history already has a `merged` line: never append a second one), update the summary block and the graph `class` line, and remove the `in_flight` entry.
+7. **Clean up:** in parallel mode `git worktree remove <worktrees_dir>/<ID>`. If `git.delete_merged_branches` is true, delete the branch with `git branch -D <branch>` (a squash merge is not detected by `-d`; the recorded merge commit is the proof). Skip removing a worktree or deleting a branch that is already gone.
+8. **Open checkpoint PR:** if a checkpoint pull request is open, push the integration branch so the PR updates.
+9. **Next:** in parallel mode, in-flight branches rebase onto the new integration branch at their next stage boundary (section 10). Then check checkpoint conditions (section 1, step 2).
 
 ## 6. Rejections
 

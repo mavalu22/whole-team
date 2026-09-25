@@ -8,6 +8,7 @@ All notable changes to WholeTeam are documented in this file. The format is base
 
 - Custom models are re-applied after an installer update: the installer writes `factory/.models-sync-needed` whenever it rewrites the agent files, and the Orchestrator's model sync runs when that file exists, then deletes it.
 - Model changes the user asks for mid-session take effect right away: the Orchestrator runs the model sync as soon as it changes a value under `models`.
+- An interrupted merge is safe to resume: MERGE starts with a resume check that aborts an unfinished rebase or merge, detects an item already merged, and commits a squash that was staged but not committed. The steps after the merge are idempotent, and an item whose branch is gone is checked for a merge before being reset to `TODO`.
 
 ## [1.0.0] - 2026-09-24
 

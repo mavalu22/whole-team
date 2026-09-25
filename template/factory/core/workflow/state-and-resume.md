@@ -59,9 +59,9 @@ On `Let's code` (startup step 5):
    - the branch exists (`git rev-parse --verify <branch>`);
    - in parallel mode, the worktree exists (`git worktree list`);
    - there are no stray uncommitted changes in its working directory (`git -C <dir> status --porcelain`).
-2. **Stage started, report not recorded** (`last_report` is from an earlier stage or `null`): re-run that stage from the beginning. Developers commit work in progress often, so little is lost. Uncommitted changes left by an interrupted DEV stage belong to the item: tell the Developer about them in the task message so it can keep or discard them.
+2. **Stage started, report not recorded** (`last_report` is from an earlier stage or `null`): re-run that stage from the beginning. Developers commit work in progress often, so little is lost. Uncommitted changes left by an interrupted DEV stage belong to the item: tell the Developer about them in the task message so it can keep or discard them. Re-running MERGE is safe because it starts with the resume check (`factory/core/workflow/delivery.md` section 5, step 1).
 3. **Never re-run a finished stage** whose verdict is recorded; continue with the next one.
-4. **Missing branch or worktree:** if the branch exists but the worktree is gone, recreate the worktree from the branch (`git worktree add <path> <branch>`) and reinstall dependencies. If the branch is gone, reset the item to `TODO`, remove the entry, and add a history line.
+4. **Missing branch or worktree:** if the branch exists but the worktree is gone, recreate the worktree from the branch (`git worktree add <path> <branch>`) and reinstall dependencies. If the branch is gone, first run the already-merged check (`factory/core/workflow/delivery.md` section 5, step 1.2): if it finds the commit, finish the record step (step 6 there) with that hash instead. Otherwise reset the item to `TODO`, remove the entry, and add a history line.
 5. **Pending approvals and escalations** are re-presented before any new work.
 6. **A checkpoint in progress** resumes at its first step without a log line (`factory/core/workflow/checkpoints.md` section 1).
 7. After an interruption, tell the user briefly where things stand and what resumes now.
