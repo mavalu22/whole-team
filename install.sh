@@ -16,6 +16,8 @@ ARG_TYPE=""
 ARG_MODE=""
 ASSUME_YES=0
 TMP_FILES=""
+OLD_MANIFEST=""
+ROOT_MODE="install"
 
 usage() {
   cat <<'EOF'
@@ -121,6 +123,33 @@ write_content() {
   cat "$1" > "$2"
 }
 
+# block_lines <file> <begin marker> <end marker> -> "<begin line> <end line> <any end>"
+# Lines are 0 when absent; the end line is the first end marker after the begin marker.
+# Marker lines are compared with a trailing carriage return removed.
+block_lines() {
+  awk -v b="$2" -v e="$3" '
+    { l = $0; sub(/\r$/, "", l) }
+    l == e { any = 1; if (bl && !el) el = NR }
+    l == b && !bl { bl = NR }
+    END { printf "%d %d %d\n", bl, el, any }' "$1"
+}
+
+# check_block <file> <begin marker> <end marker>: stops when the file has an incomplete block
+check_block() {
+  local file="$1" begin_line end_line any_end
+  [ -f "$file" ] || return 0
+  read -r begin_line end_line any_end <<EOF
+$(block_lines "$file" "$2" "$3")
+EOF
+  if [ "$begin_line" -gt 0 ] && [ "$end_line" -gt 0 ]; then
+    return 0
+  fi
+  if [ "$begin_line" -eq 0 ] && [ "$any_end" -eq 0 ]; then
+    return 0
+  fi
+  die "$file has an incomplete WholeTeam block (one marker is missing). Fix or remove the markers, then run the installer again."
+}
+
 # update_block <file> <block file> <begin marker> <end marker>
 # Replaces the text between the markers, or appends the block after a blank line.
 update_block() {
@@ -129,18 +158,17 @@ update_block() {
     cat "$block" > "$file"
     return 0
   fi
-  begin_line=$(awk -v m="$begin" '{ l = $0; sub(/\r$/, "", l); if (l == m) { print NR; exit } }' "$file")
-  end_line=$(awk -v m="$end" -v s="${begin_line:-0}" 'NR > s { l = $0; sub(/\r$/, "", l); if (l == m) { print NR; exit } }' "$file")
-  any_end=$(awk -v m="$end" '{ l = $0; sub(/\r$/, "", l); if (l == m) { print "yes"; exit } }' "$file")
+  check_block "$file" "$begin" "$end"
+  read -r begin_line end_line any_end <<EOF
+$(block_lines "$file" "$begin" "$end")
+EOF
   tmp=$(make_temp)
-  if [ -n "$begin_line" ] && [ -n "$end_line" ]; then
+  if [ "$begin_line" -gt 0 ]; then
     awk -v b="$begin_line" -v e="$end_line" -v bf="$block" '
       BEGIN { while ((getline line < bf) > 0) blk = blk line "\n" }
       NR == b { printf "%s", blk }
       NR >= b && NR <= e { next }
       { print }' "$file" > "$tmp"
-  elif [ -n "$begin_line" ] || [ -n "$any_end" ]; then
-    die "$file has an incomplete WholeTeam block (one marker is missing). Fix or remove the markers, then run the installer again."
   else
     cat "$file" > "$tmp"
     if [ -s "$file" ]; then
@@ -175,6 +203,10 @@ record() {
   printf '%s %s\n' "$action" "$file" >> "$NEW_MANIFEST"
 }
 
+die_both_tracked() {
+  die "$1 and $2 are both tracked by git. Untrack $2 (git rm --cached $2), or paste the block from $3 into it by hand, then run the installer again."
+}
+
 # apply_guide <main file> <fallback file> <block template>: section 4.3 rules
 apply_guide() {
   local main="$1" fallback="$2" block="$3"
@@ -186,7 +218,7 @@ apply_guide() {
     record block "$main"
   else
     if is_tracked "$fallback"; then
-      die "$main and $fallback are both tracked by git. Untrack $fallback (git rm --cached $fallback), or paste the block from $block into it by hand, then run the installer again."
+      die_both_tracked "$main" "$fallback" "$block"
     fi
     if [ -e "$PROJECT/$fallback" ]; then
       update_block "$PROJECT/$fallback" "$block" "$BLOCK_BEGIN_MD" "$BLOCK_END_MD"
@@ -218,20 +250,29 @@ write_ignore_block() {
   update_block "$target" "$block" "$BLOCK_BEGIN_IGNORE" "$BLOCK_END_IGNORE"
 }
 
-# apply_ignore: refresh the ignore block where the old manifest says it lives
-apply_ignore() {
-  local target=".gitignore" line abs
+# ignore_target -> where the ignore block lives: .gitignore, or the file the old manifest names
+ignore_target() {
+  local line=""
   if [ -n "$OLD_MANIFEST" ] && [ -f "$OLD_MANIFEST" ]; then
     line=$(awk '$2 != "CLAUDE.md" && $2 != "AGENTS.md" && $2 != "CLAUDE.local.md" && $2 != "AGENTS.override.md" { print $2; exit }' "$OLD_MANIFEST")
-    if [ -n "$line" ]; then
-      target="$line"
-    fi
   fi
-  case "$target" in
-    /*) abs="$target" ;;
-    [A-Za-z]:*) abs=$(normalize_path "$target") ;;
-    *) abs="$PROJECT/$target" ;;
+  printf '%s' "${line:-.gitignore}"
+}
+
+# ignore_path <target> -> absolute path of the ignore target
+ignore_path() {
+  case "$1" in
+    /*) printf '%s' "$1" ;;
+    [A-Za-z]:*) normalize_path "$1" ;;
+    *) printf '%s' "$PROJECT/$1" ;;
   esac
+}
+
+# apply_ignore: refresh the ignore block where the old manifest says it lives
+apply_ignore() {
+  local target abs
+  target=$(ignore_target)
+  abs=$(ignore_path "$target")
   if [ ! -e "$abs" ]; then
     mkdir -p "$(dirname "$abs")"
     write_ignore_block "$abs"
@@ -296,6 +337,47 @@ apply_root_files() {
   cat "$NEW_MANIFEST" > "$PROJECT/factory/.install-manifest"
 }
 
+# load_old_manifest <mode>: sets OLD_MANIFEST and ROOT_MODE for the root files.
+# ROOT_MODE is "update" only when an update finds a non-empty manifest.
+load_old_manifest() {
+  OLD_MANIFEST=""
+  ROOT_MODE="install"
+  if [ "$1" = "update" ]; then
+    OLD_MANIFEST=$(make_temp)
+    if [ -f "$PROJECT/factory/.install-manifest" ]; then
+      cat "$PROJECT/factory/.install-manifest" > "$OLD_MANIFEST"
+    else
+      warn "factory/.install-manifest is missing; the root files are handled as in a new install."
+      : > "$OLD_MANIFEST"
+    fi
+    if [ -s "$OLD_MANIFEST" ]; then
+      ROOT_MODE="update"
+    fi
+  fi
+}
+
+# preflight_root_files: takes the decisions apply_root_files will take, without writing,
+# and stops before the first write when one of them would fail.
+preflight_root_files() {
+  local pair main fallback target
+  for pair in "CLAUDE.md CLAUDE.local.md" "AGENTS.md AGENTS.override.md"; do
+    main="${pair% *}"
+    fallback="${pair#* }"
+    if [ "$ROOT_MODE" = "update" ] && ! manifest_has "$main" && ! manifest_has "$fallback"; then
+      continue
+    fi
+    target="$main"
+    if [ -e "$PROJECT/$main" ] && is_tracked "$main"; then
+      if is_tracked "$fallback"; then
+        die_both_tracked "$main" "$fallback" "$TEMPLATE/root/$main"
+      fi
+      target="$fallback"
+    fi
+    check_block "$PROJECT/$target" "$BLOCK_BEGIN_MD" "$BLOCK_END_MD"
+  done
+  check_block "$(ignore_path "$(ignore_target)")" "$BLOCK_BEGIN_IGNORE" "$BLOCK_END_IGNORE"
+}
+
 print_root_summary() {
   local action file
   info "Root files:"
@@ -337,7 +419,6 @@ do_install() {
   set_config_type "$type"
   set_state_version
   copy_agents
-  OLD_MANIFEST=""
   apply_root_files install
 
   info ""
@@ -364,22 +445,11 @@ do_update() {
   write_core_version
   copy_agents
 
-  OLD_MANIFEST=$(make_temp)
-  if [ -f "$PROJECT/factory/.install-manifest" ]; then
-    cat "$PROJECT/factory/.install-manifest" > "$OLD_MANIFEST"
-  else
-    warn "factory/.install-manifest is missing; the root files are handled as in a new install."
-    : > "$OLD_MANIFEST"
-  fi
   before=""
   if is_tracked ".gitignore"; then
     before=$(git -C "$PROJECT" diff --quiet -- .gitignore && printf 'clean' || printf 'dirty')
   fi
-  if [ -s "$OLD_MANIFEST" ]; then
-    apply_root_files update
-  else
-    apply_root_files install
-  fi
+  apply_root_files "$ROOT_MODE"
   if [ "$before" = "clean" ]; then
     after=$(git -C "$PROJECT" diff --quiet -- .gitignore && printf 'clean' || printf 'dirty')
     if [ "$after" = "dirty" ]; then
@@ -492,6 +562,9 @@ main() {
   elif [ "$mode" = "update" ] && [ "$proposed" = "install" ]; then
     die "WholeTeam is not installed in $PROJECT. Run the installer with --mode install."
   fi
+
+  load_old_manifest "$mode"
+  preflight_root_files
 
   if [ "$mode" = "install" ]; then
     do_install
