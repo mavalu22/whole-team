@@ -69,3 +69,7 @@ Entries, in ascending version order:
 ### 1.0.0
 
 No steps. This is the first release; the config and state templates are the reference.
+
+### 1.0.1
+
+No steps. The config and state formats are unchanged.
