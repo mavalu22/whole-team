@@ -84,7 +84,7 @@ Make small in-place edits; formats are defined in `factory/core/workflow/backlog
 - **Status change:** edit the item's `**Status:**` line, append one history line (`  - YYYY-MM-DD · <event>`), update the summary block, and for tasks edit the node's `class` line in `factory/tasks-graph.md`.
 - **Branch assigned or merged:** edit the `**Branch:**` line; record the merge commit in a history line.
 - **Rejection:** edit `**Rejections:**` and append a history line naming the gate and the main finding.
-- **Config value:** replace the whole `key: value` line; never touch the comment lines above it.
+- **Config value:** replace the whole `key: value` line; never touch the comment lines above it. After changing any value under `models` at the user's request, run the model sync right away (`factory/core/workflow/delegation.md` section 5). Edits the user makes by hand are caught at the next startup.
 - **State:** edit only the keys that change. Keep `in_flight`, `pending_approvals` and `escalations` in the shapes of `factory/core/workflow/state-and-resume.md`.
 
 ## 4. Commands and routing

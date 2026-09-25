@@ -7,6 +7,7 @@ All notable changes to WholeTeam are documented in this file. The format is base
 ### Fixed
 
 - Custom models are re-applied after an installer update: the installer writes `factory/.models-sync-needed` whenever it rewrites the agent files, and the Orchestrator's model sync runs when that file exists, then deletes it.
+- Model changes the user asks for mid-session take effect right away: the Orchestrator runs the model sync as soon as it changes a value under `models`.
 
 ## [1.0.0] - 2026-09-24
 

@@ -100,6 +100,8 @@ Handle the verdict as described in FACTORY.md section 6 ("Handling role reports"
 
 Run at startup step 3 when the `models` block of `factory/config.yaml` differs from `state.agent_models_applied`, or when the file `factory/.models-sync-needed` exists. The installer writes that file whenever it replaces the agent files with the template's default models. Check it by its exact path, not with a search tool: `factory/` is git-ignored and search tools may skip it.
 
+Also run it right away after you change any value under `models` in `factory/config.yaml` at the user's request (a model, an effort or a role's tier), so the rest of the session delegates on the new models. Edits the user makes by hand are caught at the next startup.
+
 For each of the 13 roles in `models.role_tiers`:
 
 1. Resolve its tier from `models.role_tiers.<slug>`.
