@@ -273,6 +273,10 @@ copy_agents() {
   done
   cp "$TEMPLATE"/root/.claude/agents/factory-*.md "$PROJECT/.claude/agents/"
   cp "$TEMPLATE"/root/.codex/agents/factory-*.toml "$PROJECT/.codex/agents/"
+  printf '%s\n%s\n' \
+    'The WholeTeam installer rewrote the agent files with default models.' \
+    'On the next `Let'"'"'s code`, the Orchestrator re-applies the models block of factory/config.yaml and deletes this file.' \
+    > "$PROJECT/factory/.models-sync-needed"
 }
 
 write_core_version() {
@@ -406,6 +410,7 @@ EOF
   fi
   info ""
   info "On your next \`Let's code\`, the Orchestrator will migrate your config and state to the new version if needed."
+  info "The update reset the agent files to the default models; the next \`Let's code\` re-applies the models from factory/config.yaml."
 }
 
 main() {

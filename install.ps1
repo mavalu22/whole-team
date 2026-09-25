@@ -318,6 +318,9 @@ function Copy-Agents {
             Copy-Item -LiteralPath $_.FullName -Destination ([System.IO.Path]::Combine($targetDir, $_.Name)) -Force
         }
     }
+    $marker = 'The WholeTeam installer rewrote the agent files with default models.' + "`n" +
+        'On the next `Let''s code`, the Orchestrator re-applies the models block of factory/config.yaml and deletes this file.' + "`n"
+    Write-Text (Join-ProjectPath 'factory/.models-sync-needed') $marker
 }
 
 function Write-CoreVersion {
@@ -427,6 +430,7 @@ function Invoke-Update {
     }
     Write-Info ''
     Write-Info "On your next ``Let's code``, the Orchestrator will migrate your config and state to the new version if needed."
+    Write-Info "The update reset the agent files to the default models; the next ``Let's code`` re-applies the models from factory/config.yaml."
 }
 
 # --- Main ---------------------------------------------------------------------
