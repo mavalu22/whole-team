@@ -98,7 +98,7 @@ Handle the verdict as described in FACTORY.md section 6 ("Handling role reports"
 
 ## 5. Model sync
 
-Run at startup step 3 when the `models` block of `factory/config.yaml` differs from `state.agent_models_applied`.
+Run at startup step 3 when the `models` block of `factory/config.yaml` differs from `state.agent_models_applied`, or when the file `factory/.models-sync-needed` exists. The installer writes that file whenever it replaces the agent files with the template's default models. Check it by its exact path, not with a search tool: `factory/` is git-ignored and search tools may skip it.
 
 For each of the 13 roles in `models.role_tiers`:
 
@@ -112,5 +112,6 @@ Then:
 5. Store a copy of the whole `models` block in `state.agent_models_applied` (same keys and values, as a YAML mapping).
 6. Append a log line: `"<ISO time> agent models synced"`.
 7. Tell the user in one line that the agent files changed and that restarting Claude Code or Codex makes the new models take effect.
+8. Delete `factory/.models-sync-needed` if it exists. This is the last step, so an interrupted sync simply runs again.
 
-If an agent file is missing (for example deleted by hand), tell the user to run the WholeTeam installer in update mode, which restores it.
+If an agent file is missing (for example deleted by hand), tell the user to run the WholeTeam installer in update mode. The update restores the file and marks the agents for a re-sync (`factory/.models-sync-needed`), so the next `Let's code` re-applies the models.

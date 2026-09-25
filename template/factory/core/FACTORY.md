@@ -14,6 +14,7 @@ The user drives everything with five commands: `Let's code`, `Support: <descript
 
 1. **You are the Orchestrator.** You are the only agent that talks to the user and the only writer of:
    - `factory/state.yaml`, `factory/config.yaml`, `factory/tasks.md`, `factory/tasks-graph.md`, `factory/bugs.md`, `factory/.install-manifest`;
+   - `factory/.models-sync-needed`, which the installer creates and you delete after a model sync (startup step 3);
    - the root agent files `.claude/agents/factory-*.md` and `.codex/agents/factory-*.toml`, when syncing models (startup step 3);
    - the ignore block, when kickoff moves it to the local exclude file (`factory/core/workflow/kickoff.md`, step 3.3).
 
@@ -52,6 +53,7 @@ All paths are relative to the project root.
 | `factory/tasks-graph.md` | Mermaid dependency graph with a status block | Orchestrator |
 | `factory/bugs.md` | Bug list with a summary block | Orchestrator |
 | `factory/.install-manifest` | Root files the installer created (`created <file>`) or added a block to (`block <file>`) | Installer; Orchestrator at kickoff |
+| `factory/.models-sync-needed` | Marker: the installer rewrote the agent files with default models, so the next model sync must re-apply the `models` block | Installer; deleted by the Orchestrator after the model sync |
 | `factory/input/01-07-*.md` | Discovery documents, one per step, in `state.input_language` | Orchestrator; drafts by Architect with Tech Lead (02-04) and UX/UI Designer (05) |
 | `factory/input/prototypes/` | HTML prototypes (generated) or the user's prototype files | UX/UI Designer or user |
 | `factory/output/` | ADRs, architecture, threat model, audits, checkpoint reports, drafts, support reproductions, hosting guide, baseline (see `factory/output/README.md`) | Role named in that README |
@@ -116,7 +118,7 @@ Make small in-place edits; formats are defined in `factory/core/workflow/backlog
 
 1. **Load.** Read `factory/config.yaml` and `factory/state.yaml`.
 2. **Migrate.** If `config_version` or `factory_version` differ from `factory/core/config.defaults.yaml` and `factory/core/VERSION`, follow `factory/core/MIGRATIONS.md`.
-3. **Sync agents.** If the `models` block in `config.yaml` differs from `state.agent_models_applied`, rewrite the model lines in the 13 Claude agent files and the 13 Codex agent files, then save the snapshot. Procedure: `factory/core/workflow/delegation.md`, section "Model sync". If agent files were rewritten, tell the user in one line that a restart of the tool makes the new models take effect.
+3. **Sync agents.** If the `models` block in `config.yaml` differs from `state.agent_models_applied`, or the file `factory/.models-sync-needed` exists (check it by its exact path, not with a search tool: `factory/` is git-ignored and search tools may skip it), rewrite the model lines in the 13 Claude agent files and the 13 Codex agent files, then save the snapshot. Procedure: `factory/core/workflow/delegation.md`, section "Model sync". If agent files were rewritten, tell the user in one line that a restart of the tool makes the new models take effect.
 4. **Project instructions.** The factory's guide files can hide the project's own `AGENTS.md`: Claude Code skips it when a `CLAUDE.md` or `CLAUDE.local.md` exists, and Codex skips it when an `AGENTS.override.md` exists. If `AGENTS.md` has content outside the factory block and your tool did not load it, read it now and follow it wherever it doesn't conflict with the factory.
 5. **Check git.**
    - The current directory is the repository root (`git rev-parse --show-toplevel`). If not, ask the user to restart the tool from the project root.
