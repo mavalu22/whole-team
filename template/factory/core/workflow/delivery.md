@@ -8,7 +8,7 @@ Sections: 1. Scheduling loop · 2. Choosing the next item · 3. Starting an item
 
 Repeat until you must stop for the user:
 
-1. Re-present `delivery.pending_approvals` and `delivery.escalations`, if any, and wait for the answers they need. In parallel mode, keep other items running meanwhile.
+1. Re-present `delivery.pending_approvals` and `delivery.escalations`, if any, and wait for the answers they need. A checkpoint approval already given, or whose checkpoint is already merged, is finished instead of asked again (`factory/core/workflow/checkpoints.md` section 4, "Resuming"). In parallel mode, keep other items running meanwhile.
 2. If a checkpoint's conditions are met, run `factory/core/workflow/checkpoints.md`.
 3. Pick the next item (section 2) and start it (section 3), up to one item in sequential mode or `execution.max_parallel_tasks` in parallel mode.
 4. Advance each in-flight item through its pipeline (section 4).

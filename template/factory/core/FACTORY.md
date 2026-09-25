@@ -128,7 +128,7 @@ Make small in-place edits; formats are defined in `factory/core/workflow/backlog
 6. **Route by phase:**
    - `kickoff` → `factory/core/workflow/kickoff.md`.
    - `discovery` → resume `discovery.current_step` with `factory/core/workflow/discovery.md` (`factory/core/workflow/ongoing-projects.md` for reverse Discovery in `ongoing` projects).
-   - `delivery` → `factory/core/workflow/delivery.md`. First re-present `pending_approvals` and `escalations`; then blocking bugs; then tasks.
+   - `delivery` → `factory/core/workflow/delivery.md`. First re-present `pending_approvals` and `escalations` (a checkpoint approval already given, or whose checkpoint is already merged, is finished instead of asked again: `factory/core/workflow/checkpoints.md` section 4, "Resuming"); then blocking bugs; then tasks.
    - `maintenance` (every task is `DONE` or `CANCELLED`) → fix open bugs by priority with the delivery pipeline. If none are left, report that the product is complete and remind the user of `Support:` and `Change:`.
 7. **Tell the user where things stand.** When resuming after a break or an interruption, say in 1-3 lines what was in progress and what resumes now. On a first `Let's code`, go straight to the kickoff welcome.
 
