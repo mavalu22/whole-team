@@ -38,19 +38,22 @@ Record the start in `factory/state.yaml` with a log line (`"<ISO time> CP-<n> st
 
 ## 4. After approval
 
-After the user replies **approve** (or immediately with `approval_mode: none`):
+When the user replies **approve** (or immediately with `approval_mode: none`), first append `"<ISO time> CP-<n> approved"` to the log. Then run the steps below. Steps 1, 2 and 4 append a log line when they finish; steps 3, 5 and 6 are safe to repeat and have none. On resume, skip the steps whose log line exists and run the others in order, as section 1 does for the procedure. Each step is guarded, because its command may have run before its log line was written.
 
-1. Merge:
-   - pull request: `gh pr merge <number> --merge` (or `glab mr merge <number>`), then `git switch <base> && git pull --ff-only origin <base>`;
-   - local: `git switch <base> && git merge --no-ff <integration> -m "chore(release): checkpoint CP-<n> <English title>"`.
-2. If `git.tag_checkpoints` is true: `git tag -a cp-<n> -m "Checkpoint CP-<n>"`; in pull request mode, push the tag (`git push origin cp-<n>`).
+1. **Merge.** Skip the merge command when the checkpoint is already merged:
+   - pull request: if `gh pr view <number> --json state` (or `glab mr view <number>`) reports it merged, skip `gh pr merge <number> --merge` (or `glab mr merge <number>`). Either way, then run `git switch <base> && git pull --ff-only origin <base>`;
+   - local: if `git log <base> --first-parent --fixed-strings --grep "checkpoint CP-<n> " --format="%h %s"` finds the `chore(release): checkpoint CP-<n> ...` commit, skip the merge; otherwise run `git switch <base> && git merge --no-ff <integration> -m "chore(release): checkpoint CP-<n> <English title>"`.
+   - Log: `"<ISO time> CP-<n> merged <short hash>"`, with the merge commit on the base branch.
+2. **Tag.** If `git.tag_checkpoints` is true and `git rev-parse -q --verify refs/tags/cp-<n>` fails, create the tag: `git tag -a cp-<n> -m "Checkpoint CP-<n>"`. In pull request mode, push it (`git push origin cp-<n>`); pushing a tag that already exists on the remote is harmless. Log: `"<ISO time> CP-<n> tagged"`, or `"<ISO time> CP-<n> tag skipped"` when tags are off.
 3. Switch back to the integration branch: `git switch <integration>`.
-4. In `factory/state.yaml`: set `delivery.last_checkpoint` (shape in `factory/core/workflow/state-and-resume.md` section 2), remove the pending approval entry, set `delivery.hosting_guide_written` if the guide was written, and append a log line.
+4. **State.** Skip it when it is already recorded (`delivery.last_checkpoint.id` is `CP-<n>`). Otherwise, in `factory/state.yaml`: set `delivery.last_checkpoint` (shape in `factory/core/workflow/state-and-resume.md` section 2), remove the pending approval entry, set `delivery.hosting_guide_written` if the guide was written, and append `"<ISO time> CP-<n> recorded"`.
 5. If every task is now `DONE` or `CANCELLED`, set `phase: maintenance`.
 6. Tell the user it is merged and what comes next, then continue with the next wave (`factory/core/workflow/delivery.md` section 1).
 
 If the user reports problems instead, handle them with Support; blocking bugs are fixed on the integration branch before the approval is asked again with an updated report.
 
+**Resuming.** At startup, if a checkpoint approval is pending and either the log has `CP-<n> approved` or the checkpoint is already merged (the checks of step 1), don't ask for approval again. Finish this section from its first unfinished step.
+
 ## 5. Bug-fix checkpoints
 
-After the final checkpoint, and during `maintenance`, when a batch of bug fixes is done (no blocking bug open and no bug in flight), create a bug-fix checkpoint `CP-<n> · Bug fixes`, where `<n>` is `delivery.next_checkpoint_id` (then increment it). It is not written to `factory/tasks.md`; it exists in the report, the log and `delivery.last_checkpoint`. It follows the same procedure (sections 2 to 4), with the bugs fixed since the last checkpoint as its content.
+After the final checkpoint, and during `maintenance`, when a batch of bug fixes is done (no blocking bug open and no bug in flight), create a bug-fix checkpoint `CP-<n> · Bug fixes`, where `<n>` is `delivery.next_checkpoint_id` (then increment it). It is not written to `factory/tasks.md`; it exists in the report, the log and `delivery.last_checkpoint`. It follows the same procedure (sections 2 to 4, including the log lines and the resume rules of section 4), with the bugs fixed since the last checkpoint as its content.
