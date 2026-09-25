@@ -13,6 +13,10 @@ All notable changes to WholeTeam are documented in this file. The format is base
 - A refused install or update leaves the project exactly as it was: both installers check the root files (guide files and fallbacks both tracked, incomplete marker blocks) before writing anything.
 - The bug summary states exactly which priorities block: `bugs.block_features_on` or more severe, with P0 the most severe.
 
+### Changed
+
+- The factory asks for a restart only when the tool needs one: after a model sync, only in Codex (Claude Code reloads edited agent files by itself), and when the factory agents are unknown because WholeTeam was installed while the session was open.
+
 ## [1.0.0] - 2026-09-24
 
 ### Added
