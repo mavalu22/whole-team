@@ -50,7 +50,7 @@ Use the fallback when subagents are unavailable, disabled, or a delegation fails
 1. Perform the role yourself: read `factory/core/roles/<slug>.md` and follow it strictly, one stage at a time. Apply the role's boundaries as if you were the agent: for example, as QA you only verify, you don't fix.
 2. For TEST, write and commit the tests before starting DEV, and never edit them during DEV.
 3. Write the same report the agent would write (section 4) before recording the result, so the evidence rules still apply.
-4. Tell the user once per session that tier routing is not active and why.
+4. Tell the user once per session that tier routing is not active and why. When delegation fails because the factory agents are unknown (`factory-<slug>` or `factory_<slug>` not found), suggest restarting the tool from the project root: WholeTeam was most likely installed while the session was open.
 5. Try delegation again at the next stage; return to normal delegation as soon as it works.
 
 ## 3. Task message
@@ -113,7 +113,7 @@ Then:
 
 5. Store a copy of the whole `models` block in `state.agent_models_applied` (same keys and values, as a YAML mapping).
 6. Append a log line: `"<ISO time> agent models synced"`.
-7. Tell the user in one line that the agent files changed and that restarting Claude Code or Codex makes the new models take effect.
+7. Tell the user in one line which models now apply. Ask for a restart only in Codex, whose documentation does not say that a running session picks up edited agent files. Never ask in Claude Code: it watches `.claude/agents/` and the next delegation uses the edited file.
 8. Delete `factory/.models-sync-needed` if it exists. This is the last step, so an interrupted sync simply runs again.
 
 If an agent file is missing (for example deleted by hand), tell the user to run the WholeTeam installer in update mode. The update restores the file and marks the agents for a re-sync (`factory/.models-sync-needed`), so the next `Let's code` re-applies the models.

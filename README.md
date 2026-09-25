@@ -88,7 +88,7 @@ git pull
 ./install.sh --path ~/code/my-app --mode update
 ```
 
-(or `.\install.ps1 -Path C:\code\my-app -Mode update`). The update replaces `factory/core/` and the `factory-*` agent files, refreshes the WholeTeam blocks, and adds any new starting files. It never touches your `config.yaml`, `state.yaml`, `tasks.md`, `tasks-graph.md`, `bugs.md`, `input/` or `output/`. On your next `Let's code`, the Orchestrator migrates your config and state to the new version if needed. The update resets the agent files to the default models; the next `Let's code` re-applies the models from your `factory/config.yaml`. Restart Claude Code or Codex after updating so the new agent files load.
+(or `.\install.ps1 -Path C:\code\my-app -Mode update`). The update replaces `factory/core/` and the `factory-*` agent files, refreshes the WholeTeam blocks, and adds any new starting files. It never touches your `config.yaml`, `state.yaml`, `tasks.md`, `tasks-graph.md`, `bugs.md`, `input/` or `output/`. On your next `Let's code`, the Orchestrator migrates your config and state to the new version if needed. The update resets the agent files to the default models; the next `Let's code` re-applies the models from your `factory/config.yaml`. Claude Code picks up the new agent files by itself; restart Codex after updating so it loads them.
 
 ## 6. Using it
 
@@ -141,7 +141,7 @@ Each role runs on a tier, and each tier maps to a model per tool:
 - Files are edited in place, never rewritten; task status changes touch one line.
 - At each checkpoint, all state is in files and the Orchestrator tells you when you can start a fresh session (`/clear` in Claude Code, a new chat in Codex) so later turns no longer carry the whole history.
 
-Model names and plan availability change over time. If your plan lacks a model, edit the `models` block in `factory/config.yaml` and map the tier to a model you have. The Orchestrator rewrites the model lines in the agent files on the next `Let's code`; restart the tool afterwards. An installer update resets the agent files to the default models, and the next `Let's code` re-applies the models from your config.
+Model names and plan availability change over time. If your plan lacks a model, edit the `models` block in `factory/config.yaml` and map the tier to a model you have. The Orchestrator rewrites the model lines in the agent files on the next `Let's code`. Claude Code picks up the change by itself; in Codex, restart the tool afterwards. An installer update resets the agent files to the default models, and the next `Let's code` re-applies the models from your config.
 
 ## 9. Language
 
@@ -188,7 +188,7 @@ Because `factory/` is ignored by git:
 
 ## 12. Troubleshooting
 
-- **Subagents not found** (`factory-qa` or `factory_qa` unknown): restart Claude Code or Codex from the project root after installing or updating, so the agent files are loaded. If they still don't appear, the Orchestrator falls back to running roles itself and tells you so.
+- **Subagents not found** (`factory-qa` or `factory_qa` unknown): if WholeTeam was installed while Claude Code or Codex was open, restart the tool from the project root so it loads the new agent files. If they still don't appear, the Orchestrator falls back to running roles itself and tells you so.
 - **Windows execution policy:** if PowerShell refuses to run the script, use `powershell -ExecutionPolicy Bypass -File .\install.ps1`. This changes the policy only for that command.
 - **Line endings:** the repository's `.gitattributes` keeps `.sh` files with LF and `.ps1` files with CRLF. If `install.sh` fails with `$'\r': command not found`, re-clone the repository (or run `git checkout -- install.sh`) with `core.autocrlf` set to `false` or `input`.
 - **Ignored files not found by search:** tools that respect `.gitignore` skip `factory/`. Open factory files by exact path, for example `factory/tasks.md`.
