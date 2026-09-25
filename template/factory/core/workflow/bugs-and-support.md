@@ -19,7 +19,7 @@ Sections: 1. Format of bugs.md · 2. Support flow · 3. Scheduling · 4. Bugs fr
 <!-- factory:summary:end -->
 ```
 
-"Open" means any status other than `DONE`, `CANCELLED`, `NOT_A_BUG` and `DUPLICATE`. "Blocking" lists open bugs at or above `bugs.block_features_on`.
+"Open" means any status other than `DONE`, `CANCELLED`, `NOT_A_BUG` and `DUPLICATE`. "Blocking" lists open bugs whose priority is `bugs.block_features_on` or more severe (P0 is the most severe).
 
 Bug block. Field labels are exact and always English; free text is in `state.input_language`.
 
