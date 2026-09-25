@@ -17,6 +17,10 @@ All notable changes to WholeTeam are documented in this file. The format is base
 
 - The factory asks for a restart only when the tool needs one: after a model sync, only in Codex (Claude Code reloads edited agent files by itself), and when the factory agents are unknown because WholeTeam was installed while the session was open.
 
+### Removed
+
+- The unused task and bug templates from `core/templates/`. The task and bug formats live only in `workflow/backlog.md` section 1.3 and `workflow/bugs-and-support.md` section 1; installed projects lose the two files on update.
+
 ## [1.0.0] - 2026-09-24
 
 ### Added
