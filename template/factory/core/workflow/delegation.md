@@ -40,7 +40,7 @@ Every role except the Orchestrator has an agent file whose body embeds the role'
 | Audits | `security`, `tech-lead`, `qa` | `AUDIT` |
 | Support reports | `support` | `SUPPORT` |
 | Product README, API docs, CHANGELOG, `docs` tasks | `tech-writer` | `DOCS` |
-| Hosting guide, foundation tooling tasks | `devops` | `DOCS` or `DEV` |
+| Hosting and publishing guide, foundation tooling tasks | `devops` | `DOCS` or `DEV` |
 | Product questions from other roles | `product-owner` | `DISCOVERY` |
 
 ## 2. Fallback

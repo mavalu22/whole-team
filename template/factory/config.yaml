@@ -214,6 +214,8 @@ deploy:
   # The factory runs the product only on your machine. It never deploys.
   target: local
 
-  # When to write the hosting guide for the platform chosen in Discovery:
+  # When to write the hosting and publishing guide: how to host the product on
+  # the platform chosen in Discovery, and how to publish a library or plugin
+  # to its registry or marketplace.
   # first_checkpoint | final_checkpoint | never
   hosting_guide: first_checkpoint

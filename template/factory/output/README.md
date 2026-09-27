@@ -21,7 +21,7 @@ Files are written by the role named below, through the Orchestrator. Subfolders 
 |---|---|---|---|
 | `architecture.md` | The architecture document: components, data model, integrations, NFRs, ADR index | Architect | Discovery step 3; updated by change requests |
 | `threat-model.md` | STRIDE-lite threat model: assets, actors, trust boundaries, mitigations, open risks | Security | Discovery step 6; updated by required reviews and audits |
-| `hosting-guide.md` | How to host the product on the platform chosen in Discovery | DevOps | At the checkpoint set by `deploy.hosting_guide` |
+| `hosting-guide.md` | How to host the product on the platform chosen in Discovery, and how to publish a library or plugin | DevOps | At the checkpoint set by `deploy.hosting_guide` |
 | `baseline.md` | Test, lint and build results before the factory changed anything | Architect | Ongoing projects, during reverse Discovery |
 
 The templates for these documents are in `factory/core/templates/`.

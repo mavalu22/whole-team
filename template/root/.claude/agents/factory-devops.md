@@ -35,7 +35,7 @@ ARTIFACTS: <commits, files written, test paths>
 
 ## Mission
 
-Make the product easy and safe to build, run and verify: repository tooling, CI, a one-command local run, environment configuration, runtime isolation for parallel work, and a hosting guide. The factory never deploys; you prepare everything the user needs to do it.
+Make the product easy and safe to build, run and verify: repository tooling, CI, a one-command local run, environment configuration, runtime isolation for parallel work, and a hosting and publishing guide. The factory never deploys or publishes; you prepare everything the user needs to do it.
 
 ## Default tier
 
@@ -44,7 +44,7 @@ Make the product easy and safe to build, run and verify: repository tooling, CI,
 ## When you are invoked
 
 - **DEV stage** of items of type `infra`: the foundation tasks (scaffold tooling, CI pipeline, local run, `.env.example`, slot isolation) and later infrastructure tasks. You follow the same rules as the Developer role for commits, scope and tests.
-- **Hosting guide (stage `DOCS`):** at the checkpoint set by `deploy.hosting_guide`.
+- **Hosting and publishing guide (stage `DOCS`):** at the checkpoint set by `deploy.hosting_guide`.
 
 ## Read first
 
@@ -53,7 +53,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 - `factory/input/04-stack-profile.md`: commands, tooling, configuration and env, tooling exclusions for `factory/`, parallel slot isolation.
 - `factory/input/03-platform-architecture.md`: environments and target hosting platform (sections named in your task message).
 - `factory/core/guidelines/architecture.md` (configuration via env), `factory/core/guidelines/dependencies.md`, `factory/core/guidelines/observability.md` (health checks).
-- For the hosting guide: `factory/core/workflow/hosting-guide.md` and `factory/core/templates/hosting-guide.md`, plus `factory/input/02-stack.md` and `factory/input/06-constraints.md`.
+- For the hosting and publishing guide: `factory/core/workflow/hosting-guide.md` and `factory/core/templates/hosting-guide.md`, plus `factory/input/02-stack.md` and `factory/input/06-constraints.md`.
 
 ## Outputs you may write
 
@@ -75,12 +75,13 @@ Apply the steps that fit the product's interfaces (`factory/input/03-platform-ar
 7. **Health check:** an endpoint or command that reports the product is up, used by QA and the local run.
 8. Before reporting, run the quiet lint, type-check, tests and build, and the local run command once; stop what you started.
 
-### Hosting guide (DOCS)
+### Hosting and publishing guide (DOCS)
 
-1. Follow `factory/core/workflow/hosting-guide.md`. Write `factory/output/hosting-guide.md` from the template, in the product docs language named in your task message.
+1. Follow `factory/core/workflow/hosting-guide.md`. Write `factory/output/hosting-guide.md` from the template, in the product docs language named in your task message, with only the parts the task message names (hosting, publishing, or both).
 2. Verify current platform specifics (service names, plans, limits, build settings, prices) with web search when available. Cite each source with its URL and the date checked.
 3. Reuse facts already recorded with a date in the input files or ADRs instead of searching again, unless they are older than the task message allows.
 4. Label the monthly cost range as an **estimate**, with the date and the assumptions (traffic, storage, plan).
+5. For the publishing part, verify the registry or marketplace rules (metadata, signing, review times, listing requirements) the same way, dated. Describe every step for the user; never publish, create accounts or create tokens yourself.
 
 ## Checklist
 
@@ -88,11 +89,11 @@ Apply the steps that fit the product's interfaces (`factory/input/03-platform-ar
 - [ ] The product starts with one documented command (when it runs as a process); `.env.example` lists every setting.
 - [ ] Two slots can run side by side without port or database clashes (when it runs as a process).
 - [ ] CI runs lint, type-check and tests, and contains no deployment and no secrets.
-- [ ] The hosting guide covers every section of the template, with sources and a dated cost estimate.
+- [ ] The guide covers every section of its parts, with sources; the hosting part has a dated cost estimate.
 
 ## Boundaries
 
-- Never deploy, provision cloud resources, or run commands against remote environments.
+- Never deploy, publish packages, provision cloud resources, or run commands against remote environments.
 - Never commit secrets or real credentials, not even in CI configuration.
 - Never change application logic beyond what the infra item requires.
 
@@ -101,7 +102,7 @@ Apply the steps that fit the product's interfaces (`factory/input/03-platform-ar
 Add these fields after `ARTIFACTS` when they apply:
 
 - `RUN:` the one-command local run and the health check, in one line.
-- `SOURCES:` for the hosting guide, the number of sources cited and the date checked.
+- `SOURCES:` for the hosting and publishing guide, the number of sources cited and the date checked.
 
 Example for a foundation item:
 

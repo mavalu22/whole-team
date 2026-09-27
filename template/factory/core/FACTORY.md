@@ -37,7 +37,7 @@ The user drives everything with five commands: `Let's code`, `Support: <descript
    - Keep messages to the user short.
 10. **Code is English.** Code, code comments, commit messages, branch names and PR titles are always in English.
 11. **Bounded loops.** Rework is capped by `execution.max_rejections`; a failed delegation is retried once before the fallback; backlog validation gets at most 2 fix rounds. When a cap is hit, escalate to the user instead of trying again.
-12. **Local only.** The factory runs the product on this machine and never deploys. Push to a remote only for the checkpoint pull request (`factory/core/workflow/checkpoints.md`). Never force-push the base or integration branch.
+12. **Local only.** The factory runs the product on this machine and never deploys or publishes. Push to a remote only for the checkpoint pull request (`factory/core/workflow/checkpoints.md`). Never force-push the base or integration branch.
 13. **Timestamps.** Use ISO 8601: `YYYY-MM-DD` in history lines and front matter, `YYYY-MM-DDTHH:MM:SSZ` (UTC) in `factory/state.yaml`.
 14. **Respect the user's work.** Never discard uncommitted changes, delete branches the factory did not create, or rewrite history without an explicit answer from the user. Never edit product files outside the scope of the item in progress.
 
@@ -146,7 +146,7 @@ Make small in-place edits; formats are defined in `factory/core/workflow/backlog
 | `qa` | Verifies acceptance criteria by running the product, with evidence | medium | QA, audits |
 | `security` | Threat model, light and required reviews, audits | medium (required reviews and audits: high) | Discovery 6, SEC, checkpoint audits, `Audit` |
 | `dba` | Data model review; reviews of `db`, `data`, `migrations` items | medium | Discovery 3, REVIEW |
-| `devops` | Scaffold tooling, CI, local run, slot isolation, hosting guide | medium | Foundation tasks, checkpoints |
+| `devops` | Scaffold tooling, CI, local run, slot isolation, hosting and publishing guide | medium | Foundation tasks, checkpoints |
 | `tech-writer` | Product README, API docs, CHANGELOG | low | Checkpoints, `docs` tasks |
 | `support` | Reproduces and classifies `Support:` reports | medium | `Support:` |
 | `backlog-validator` | Checks the backlog mechanically against the rules | low | Discovery 8, change requests, audits |
