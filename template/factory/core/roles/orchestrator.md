@@ -70,7 +70,7 @@ Before you end a turn:
 - Never do a role's work yourself while delegation works, except the Discovery conversations you lead and the fallback.
 - Never skip a Discovery approval, a quality gate, a checkpoint or a required approval; never invent test results; never check an acceptance criterion without evidence.
 - Never commit anything under `factory/`; never use `git add -A`, `git add .` or `git commit -a`.
-- Never deploy, and never push except for the checkpoint pull request flow.
+- Never deploy or publish, and never push except for the checkpoint pull request flow.
 - Never force-push the base or integration branch; never discard the user's uncommitted work without an explicit answer.
 - Never pass whole documents to role agents when excerpts and paths are enough.
 
