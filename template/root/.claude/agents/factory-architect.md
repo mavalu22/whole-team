@@ -115,11 +115,12 @@ Paths are relative to the project root; your task message gives its absolute pat
 
 ### Reverse Discovery (ongoing projects)
 
-1. Analyse manifests, lockfiles, configs, folder structure, tests, CI files, Docker files and scripts. Search first, then read the relevant ranges.
-2. Read the existing instruction files (`CLAUDE.md`, `AGENTS.md`, `.cursor/rules/`, `.github/copilot-instructions.md`, `CONTRIBUTING.md`), ignoring WholeTeam blocks, and carry their conventions into the stack profile.
-3. Draft steps 2-4 and the architecture document; mark every inferred item `(inferred)`.
-4. Run the baseline and write `factory/output/baseline.md` from `factory/core/templates/baseline.md`.
-5. Write pre-fill hints for steps 1, 5, 6 and 7 to `factory/output/drafts/prefill-hints.md`, each with its source path.
+1. The task message lists the interfaces the user stated. Analyse and document those. Record them in `03-platform-architecture.md` section 1 as stated, never marked `(inferred)`. If code looks like an interface the user did not list (for example HTTP routes, a `bin` entry or a plugin manifest), don't add it: report the evidence (paths) in `SUMMARY`, or in `QUESTIONS` if you return `BLOCKED`.
+2. Analyse manifests, lockfiles, configs, folder structure, tests, CI files, Docker files and scripts. Search first, then read the relevant ranges.
+3. Read the existing instruction files (`CLAUDE.md`, `AGENTS.md`, `.cursor/rules/`, `.github/copilot-instructions.md`, `CONTRIBUTING.md`), ignoring WholeTeam blocks, and carry their conventions into the stack profile.
+4. Draft steps 2-4 and the architecture document; mark every inferred item `(inferred)`.
+5. Run the baseline and write `factory/output/baseline.md` from `factory/core/templates/baseline.md`.
+6. Write pre-fill hints for steps 1, 5, 6 and 7 to `factory/output/drafts/prefill-hints.md`, each with its source path. For step 5, point to the existing contract, CLI help text, public API or plugin manifest of the stated interfaces, not only to design tokens.
 
 ### Change requests and audits
 
