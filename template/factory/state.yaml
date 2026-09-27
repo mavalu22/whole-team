@@ -5,7 +5,7 @@
 factory_version: null
 
 # config_version whose migrations have been applied (see core/MIGRATIONS.md).
-config_version_applied: 1
+config_version_applied: 2
 
 # Language of documents in factory/input/. Locked when Discovery starts.
 input_language: null

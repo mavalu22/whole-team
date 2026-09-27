@@ -7,7 +7,7 @@ Sections: 1. Start · 2. Scope · 3. Report · 4. Mapping findings · 5. Output 
 ## 1. Start
 
 1. In a `new` project with no merged code yet, explain that there is nothing to audit and stop.
-2. Show the output modes from `factory/core/modes.md` (section 9), `report_first` and `tasks_directly`, with their descriptions, recommend `report_first`, and ask which one.
+2. Show the output modes from `factory/core/modes.md` (section 10), `report_first` and `tasks_directly`, with their descriptions, recommend `report_first`, and ask which one.
 3. Ask whether the user wants to limit the scope (for example one module); default: the whole repository.
 4. Log the audit start.
 

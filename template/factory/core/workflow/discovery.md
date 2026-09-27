@@ -143,7 +143,7 @@ For every step:
 - **Key:** `s5_design` · **Output:** `factory/input/05-design-spec.md` (always), plus prototypes in `factory/input/prototypes/`
 - **Goal:** a design system and screen list precise enough for developers and for UI reviews.
 - **Owners:** UX/UI Designer. You lead the conversation: read `factory/core/roles/ux-ui-designer.md` and follow its procedure.
-- **First:** show the three design modes from `factory/core/modes.md` (section 5) and ask the user to choose. Write `design.mode`.
+- **First:** show the three design modes from `factory/core/modes.md` (section 6) and ask the user to choose. Write `design.mode`.
 - **Question bank:**
   - Brand personality in 3 adjectives?
   - Existing brand assets (logo, colors, fonts)?
@@ -170,7 +170,7 @@ For every step:
   - [ ] Accessibility target and rules.
   - [ ] Tone of voice.
   - [ ] Prototype index (when prototypes exist), approved by the user.
-- **Config keys set:** `design.mode`; `design.review_ui_items` if the user wants to change it (show its description from `factory/core/modes.md` section 5).
+- **Config keys set:** `design.mode`; `design.review_ui_items` if the user wants to change it (show its description from `factory/core/modes.md` section 6).
 
 ## 8. Step 6: Constraints
 
@@ -202,7 +202,7 @@ For every step:
 - **Key:** `s7_testing` · **Output:** `factory/input/07-testing.md`
 - **Goal:** how much the factory tests, where, and with which tools.
 - **Owners:** Test Engineer. You lead the conversation: read `factory/core/roles/test-engineer.md` and follow its Discovery procedure.
-- **First:** show the testing levels from `factory/core/modes.md` (section 4) and ask. Write `testing.level`. If the level is `full`, ask for the coverage target (default 70) and write `testing.coverage_target`.
+- **First:** show the testing levels from `factory/core/modes.md` (section 5) and ask. Write `testing.level`. If the level is `full`, ask for the coverage target (default 70) and write `testing.coverage_target`.
 - **Then:**
   1. Propose the critical areas (auth, payments, personal data, core business rules, data integrity) that apply to this product, and confirm them.
   2. List the E2E flows from the journeys in `01-product-vision.md`.
@@ -230,8 +230,8 @@ Procedure:
 3. Write `factory/tasks.md` (summary block plus the draft body) and generate `factory/tasks-graph.md` (`factory/core/workflow/backlog.md` section 2). Set `delivery.next_task_id` to the highest task number + 1 and `delivery.next_checkpoint_id` to the highest checkpoint number + 1.
 4. Present the backlog: task count per wave, the foundation tasks, each proposed checkpoint with what it delivers, and the path `factory/tasks-graph.md` (it renders in VS Code's Markdown preview with a Mermaid extension, and on GitHub).
 5. Ask the user to approve or adjust the backlog and the checkpoints. Apply adjustments through the `architect` and re-validate; small edits (a title, a checkpoint name) you make yourself.
-6. Show the execution modes from `factory/core/modes.md` (section 2), then ask for the mode, and for `max_parallel_tasks` if `parallel`.
-7. Show the approval modes (section 3), recommend `per_checkpoint`, and ask.
+6. Show the execution modes from `factory/core/modes.md` (section 3), then ask for the mode, and for `max_parallel_tasks` if `parallel`.
+7. Show the approval modes (section 4), recommend `per_checkpoint`, and ask.
 8. Write `execution.mode`, `execution.max_parallel_tasks` and `execution.approval_mode`.
 9. List the other defaults that shape delivery, one line each, with their current values: bug threshold (`bugs.block_features_on`), `execution.max_rejections`, security review default (`security.review_default`), checkpoint audits (`security.audit_on_checkpoint`), AI co-author (`git.ai_coauthor`), checkpoint merge (`git.checkpoint_merge`). Say they can be changed now or at any time in `factory/config.yaml`. If the user changes one, show its mode description first.
 10. On approval: mark the step approved, set `phase: delivery`, append a log line, and ask whether to start now. If yes, continue with `factory/core/workflow/delivery.md`.
