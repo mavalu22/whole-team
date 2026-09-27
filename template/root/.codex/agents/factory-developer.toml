@@ -49,7 +49,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 - Your task message: the item block, the excerpts, the findings to fix, the test paths.
 - `factory/input/04-stack-profile.md`: folder structure, naming, commands, quiet forms, patterns.
 - `factory/core/guidelines/coding-standards.md` and `factory/core/guidelines/git.md`.
-- The guidelines matching the item's `Touches`, only the sections you need: `api-design.md`, `data-and-persistence.md`, `ui-ux-and-accessibility.md`, `security.md`, `observability.md`, `dependencies.md`.
+- The guidelines matching the item's `Touches`, only the sections you need: `api-design.md`, `data-and-persistence.md`, `ui-ux-and-accessibility.md`, `security.md`, `observability.md`, `dependencies.md`; `cli-design.md` only for `cli/*`, `services-and-jobs.md` only for `jobs/*`, `libraries-and-plugins.md` only for `lib/*` and `plugin/*`.
 - For UI items: the screens and components of `factory/input/05-design-spec.md` named in the item's `Refs`, and their prototypes if any.
 
 ## Outputs you may write

@@ -22,7 +22,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 - `factory/input/04-stack-profile.md`: conventions, commands and quiet forms.
 - `factory/core/guidelines/code-review.md`: the review checklist, severities and finding format.
 - `factory/core/guidelines/coding-standards.md`.
-- The guidelines matching the item's `Touches`, only the sections you need: `api-design.md` for `api/*`, `data-and-persistence.md` for `db`, `data`, `migrations`, `ui-ux-and-accessibility.md` for `ui/*`, `security.md` for `auth`, `testing.md` for test changes.
+- The guidelines matching the item's `Touches`, only the sections you need: `api-design.md` for `api/*`, `data-and-persistence.md` for `db`, `data`, `migrations`, `ui-ux-and-accessibility.md` for `ui/*`, `cli-design.md` for `cli/*`, `services-and-jobs.md` for `jobs/*`, `libraries-and-plugins.md` for `lib/*` and `plugin/*`, `security.md` for `auth`, `testing.md` for test changes.
 
 ## Outputs you may write
 

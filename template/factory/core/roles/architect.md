@@ -29,6 +29,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 - For the backlog: `factory/core/workflow/backlog.md` sections 1 and 3.
 - For reverse Discovery: `factory/core/workflow/ongoing-projects.md` sections 1 and 2.
 - `factory/core/guidelines/architecture.md`, and `factory/core/guidelines/api-design.md` when you define the API style or draft the `api` spec.
+- Only when you draft the spec of that interface (step 5): `factory/core/guidelines/cli-design.md` (`cli`), `factory/core/guidelines/services-and-jobs.md` (`service`), `factory/core/guidelines/libraries-and-plugins.md` (`library`, `plugin`).
 - For step 5: the subsections of `factory/core/workflow/discovery.md` section 7 for the interfaces in your task message (7.3 `api`, 7.4 `cli`, 7.5 `service`, 7.6 `library`, 7.7 `plugin`), for their checklists.
 - The input template you fill (already in `factory/input/`) and the output templates in `factory/core/templates/` (`adr.md`, `architecture.md`, `baseline.md`).
 
@@ -70,7 +71,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 1. Fill only the sections of the interfaces in your task message; never edit the `gui` sections. Start each section with its scope line (`In scope.`), and give the other non-GUI sections `Not in scope: <reason>.`
 2. Map every operation, command, message, public function or extension point to the user stories it serves. Every Must story that uses an interface has at least one.
 3. Cover every item of the interface's checklist, with the agreed answers from the task message. Where an answer is missing, propose the usual convention of the ecosystem and list it under `DECISIONS NEEDED`.
-4. For `api`, follow `factory/core/guidelines/api-design.md`: contract first, problem details for errors, pagination, versioning.
+4. Follow the matching guideline, so the spec already meets the review rules: `api-design.md` for `api` (contract first, problem details for errors, pagination, versioning), `cli-design.md` for `cli`, `services-and-jobs.md` for `service`, `libraries-and-plugins.md` for `library` and `plugin`.
 5. Check host, registry and marketplace specifics (manifest fields, host API versions, packaging rules) with web search when available, and record the date checked.
 
 ### Backlog (step 8)
