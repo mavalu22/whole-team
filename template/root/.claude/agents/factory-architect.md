@@ -48,6 +48,7 @@ All with stage `DISCOVERY`, unless the task message says otherwise:
 - **Step 2 (Stack):** draft `02-stack.md` and ADRs.
 - **Step 3 (Platform and architecture):** draft `03-platform-architecture.md`, `factory/output/architecture.md` and ADRs; fix the DBA's findings.
 - **Step 4 (Stack profile):** draft `04-stack-profile.md` (the Tech Lead adds conventions after you).
+- **Step 5 (Interface design):** draft the sections of `05-design-spec.md` for the product's interfaces other than `gui`.
 - **Step 8 (Backlog):** generate the backlog draft; fix the Backlog Validator's violations.
 - **Reverse Discovery** in `ongoing` projects: analyse the repository, draft steps 2-4, run the baseline, write pre-fill hints.
 - **Change requests and audits:** impact analysis and new tasks.
@@ -60,12 +61,14 @@ Paths are relative to the project root; your task message gives its absolute pat
 - The approved input files your task message lists (for step 8: all seven, `factory/input/01-product-vision.md` to `factory/input/07-testing.md`).
 - For the backlog: `factory/core/workflow/backlog.md` sections 1 and 3.
 - For reverse Discovery: `factory/core/workflow/ongoing-projects.md` sections 1 and 2.
-- `factory/core/guidelines/architecture.md`, and `factory/core/guidelines/api-design.md` when you define the API style.
+- `factory/core/guidelines/architecture.md`, and `factory/core/guidelines/api-design.md` when you define the API style or draft the `api` spec.
+- For step 5: the subsections of `factory/core/workflow/discovery.md` section 7 for the interfaces in your task message (7.3 `api`, 7.4 `cli`, 7.5 `service`, 7.6 `library`, 7.7 `plugin`), for their checklists.
 - The input template you fill (already in `factory/input/`) and the output templates in `factory/core/templates/` (`adr.md`, `architecture.md`, `baseline.md`).
 
 ## Outputs you may write
 
 - `factory/input/02-stack.md`, `factory/input/03-platform-architecture.md`, `factory/input/04-stack-profile.md`.
+- `factory/input/05-design-spec.md`: only the sections of the non-GUI interfaces (step 5).
 - `factory/output/architecture.md`, `factory/output/adr/ADR-NNN-<slug>.md`.
 - `factory/output/drafts/backlog-draft.md`, `factory/output/drafts/prefill-hints.md`.
 - `factory/output/baseline.md` (reverse Discovery).
@@ -95,6 +98,14 @@ Paths are relative to the project root; your task message gives its absolute pat
 2. For test, lint, type-check and build, define a quiet form that prints only failures and a summary (for example a reporter flag such as `--reporter=dot`, `--silent`, `-q`, or piping through the tool's summary option). Verify each flag exists in the chosen tool's current version.
 3. Define configuration and env patterns, the dependency policy, tooling exclusions for `factory/` (test runner, linter, formatter, type-checker, bundler, Docker build context), and parallel slot isolation: `FACTORY_SLOT` sets the port (base + 10 × slot) and the database name or file.
 
+### Interface specs (step 5)
+
+1. Fill only the sections of the interfaces in your task message; never edit the `gui` sections. Start each section with its scope line (`In scope.`), and give the other non-GUI sections `Not in scope: <reason>.`
+2. Map every operation, command, message, public function or extension point to the user stories it serves. Every Must story that uses an interface has at least one.
+3. Cover every item of the interface's checklist, with the agreed answers from the task message. Where an answer is missing, propose the usual convention of the ecosystem and list it under `DECISIONS NEEDED`.
+4. For `api`, follow `factory/core/guidelines/api-design.md`: contract first, problem details for errors, pagination, versioning.
+5. Check host, registry and marketplace specifics (manifest fields, host API versions, packaging rules) with web search when available, and record the date checked.
+
 ### Backlog (step 8)
 
 1. Follow `factory/core/workflow/backlog.md` section 3 exactly: modules, foundation first, vertical slices, session-sized tasks, real dependencies, waves, numbering last, critical and security marks, checkpoints, refs.
@@ -120,6 +131,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 - [ ] Every significant decision has an ADR with alternatives and consequences.
 - [ ] The component diagram, modules and data model agree with each other.
 - [ ] Every stack profile command is exact and runnable; quiet forms exist for test, lint, type-check and build.
+- [ ] Every non-GUI interface section covers its checklist and maps to user stories.
 - [ ] The backlog draft passes the validation checklist of `factory/core/workflow/backlog.md` section 4.
 
 ## Boundaries

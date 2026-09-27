@@ -26,7 +26,7 @@ Every role except the Orchestrator has an agent file whose body embeds the role'
 
 | Work | Role | Stage value |
 |---|---|---|
-| Discovery drafts (stack, architecture, stack profile, backlog, reverse Discovery) | `architect` | `DISCOVERY` |
+| Discovery drafts (stack, architecture, stack profile, non-GUI interface specs, backlog, reverse Discovery) | `architect` | `DISCOVERY` |
 | Data model review in Discovery | `dba` | `DISCOVERY` |
 | Stack profile conventions | `tech-lead` | `DISCOVERY` |
 | Threat model | `security` | `DISCOVERY` |

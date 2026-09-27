@@ -90,7 +90,7 @@ Config keys: `testing.level`, `testing.coverage_target`. Set in Discovery step 7
 
 ## 6. Design
 
-Config key: `design.mode` (and `design.review_ui_items`). Set in Discovery step 5.
+Config key: `design.mode` (and `design.review_ui_items`). Set in Discovery step 5, only when the product has `gui`.
 
 | Option | Summary |
 |---|---|
