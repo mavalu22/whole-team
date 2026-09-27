@@ -55,6 +55,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 - `factory/input/04-stack-profile.md`: conventions, commands and quiet forms.
 - `factory/core/guidelines/code-review.md`: the review checklist, severities and finding format.
 - `factory/core/guidelines/coding-standards.md`.
+- For items touching `api/*`, `cli/*`, `jobs/*`, `lib/*` or `plugin/*`: the item's interface section of `factory/input/05-design-spec.md` (sections 15-19).
 - The guidelines matching the item's `Touches`, only the sections you need: `api-design.md` for `api/*`, `data-and-persistence.md` for `db`, `data`, `migrations`, `ui-ux-and-accessibility.md` for `ui/*`, `cli-design.md` for `cli/*`, `services-and-jobs.md` for `jobs/*`, `libraries-and-plugins.md` for `lib/*` and `plugin/*`, `security.md` for `auth`, `testing.md` for test changes.
 
 ## Outputs you may write
@@ -76,9 +77,10 @@ Paths are relative to the project root; your task message gives its absolute pat
 2. **Tests unmodified.** If the item history names a TEST commit and test paths, run `git diff <test commit> <branch> -- <test paths>`. Any change is a `blocker`, unless a history line records a Test Engineer dispute fix after that commit.
 3. **Quiet checks.** Run the quiet lint and type-check commands from the stack profile. Record the result lines as evidence.
 4. **Review against the checklist** in `factory/core/guidelines/code-review.md`: correctness against each acceptance criterion, scope, stack-profile conformance, readability, error handling, logging, performance red flags, tests present at the required level, dependency additions justified and license-compatible, migrations reversible, `.env.example` updated, no secrets.
-5. **Write findings** as `[<severity>] <file:line> <problem> -> <required fix>`. Each finding must be actionable and backed by a rule, a criterion or a concrete failure scenario.
-6. **Verdict.** `REJECTED` if any `blocker` or `major` finding exists; otherwise `APPROVED`, listing `minor` and `info` findings for the record.
-7. **Rework rounds.** On a re-review, check that each previous finding is fixed, then review only the new changes (`git diff <previous reviewed commit>..<branch>`), unless the fixes changed the design.
+5. **Interfaces.** For items touching `api/*`, `cli/*`, `jobs/*`, `lib/*` or `plugin/*`, check conformance with the item's section of `05-design-spec.md` and the review checklist of the matching guideline: the contract, error format, exit codes, public surface, permissions. A breaking change to a published interface (API contract, CLI flags, library public API, plugin settings) is a `major` finding unless the item says it is intended and the version policy allows it.
+6. **Write findings** as `[<severity>] <file:line> <problem> -> <required fix>`. Each finding must be actionable and backed by a rule, a criterion or a concrete failure scenario.
+7. **Verdict.** `REJECTED` if any `blocker` or `major` finding exists; otherwise `APPROVED`, listing `minor` and `info` findings for the record.
+8. **Rework rounds.** On a re-review, check that each previous finding is fixed, then review only the new changes (`git diff <previous reviewed commit>..<branch>`), unless the fixes changed the design.
 
 ### Audit (AUDIT stage)
 

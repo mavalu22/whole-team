@@ -27,6 +27,10 @@ Sections: 1. Method · 2. Review checklist · 3. Severity levels · 4. Finding f
 - [ ] Folder structure, naming, patterns and anti-patterns follow `factory/input/04-stack-profile.md`.
 - [ ] Module boundaries and dependency direction follow `factory/core/guidelines/architecture.md`.
 
+**Interfaces** (items touching `api/*`, `cli/*`, `jobs/*`, `lib/*` or `plugin/*`)
+- [ ] The change conforms to the item's interface section of `factory/input/05-design-spec.md` and the review checklist of the matching guideline (`api-design.md`, `cli-design.md`, `services-and-jobs.md`, `libraries-and-plugins.md`): for example the contract, error format, exit codes, public surface, permissions.
+- [ ] No breaking change to a published interface (API contract, CLI flags, library public API, plugin settings), unless the item says it is intended and the version policy allows it. Otherwise it is a `major` finding.
+
 **Readability**
 - [ ] Code follows `factory/core/guidelines/coding-standards.md`: clear names, small functions, no magic values, no dead code, comments explain why.
 

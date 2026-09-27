@@ -47,7 +47,7 @@ Every task and bug runs these stages in order. Before each stage, set the item's
 - **Status:** `TESTING`. **Role:** `test-engineer`.
 - **Runs when:** `testing.level` is `full`; or `critical` and the item has `Critical: yes`; or the item is a bug and `testing.level` is not `none` (regression test).
 - **Skipped:** otherwise, and always for items of type `docs`.
-- **Task message excerpts:** acceptance criteria, published contracts (API spec, shared types, UI spec paths), and for bugs the reproduction steps and evidence file.
+- **Task message excerpts:** acceptance criteria, published contracts (API spec, shared types, UI spec paths, and the interface sections of `05-design-spec.md` for the areas the item touches), and for bugs the reproduction steps and evidence file.
 - **Result:** tests committed on the item branch with `test(<scope>): ...`, expected to fail until DEV finishes. Record a history line with the commit and the test paths: `<date> · TEST done · <commit> · tests: <path>, <path>`. Later stages read these paths from the item block.
 
 ### 4.2 DEV
@@ -60,7 +60,7 @@ Every task and bug runs these stages in order. Before each stage, set the item's
 ### 4.3 REVIEW
 
 - **Status:** `IN_REVIEW`. **Roles:**
-  - `tech-lead`, always;
+  - `tech-lead`, always. For items whose `Touches` include `api/*`, `cli/*`, `jobs/*`, `lib/*` or `plugin/*`, READ FIRST adds the item's interface section of `factory/input/05-design-spec.md` (sections 15-19) and the matching guideline, and the Tech Lead checks conformance with both;
   - `dba`, when `Touches` includes `db`, `data` or `migrations`;
   - `ux-ui-designer`, when `design.review_ui_items` is true and `Touches` includes a `ui/*` area.
 - Run the reviewers of one round in parallel when the tool allows it; they are independent.
@@ -69,8 +69,8 @@ Every task and bug runs these stages in order. Before each stage, set the item's
 ### 4.4 QA
 
 - **Status:** `QA`. **Role:** `qa`.
-- **Task message excerpts:** acceptance criteria, the testing level, the run commands (from the stack profile), the slot and its environment in parallel mode, design references for UI items, and the baseline's known failures in `ongoing` projects.
-- **Result:** each acceptance criterion verified with evidence. Check the item's boxes (`[x]`) only for criteria the report proves. `UNRELATED_DEFECT` findings go to Support (`factory/core/workflow/bugs-and-support.md`, source `qa-unrelated`) and are not a rejection.
+- **Task message excerpts:** acceptance criteria, the testing level, the run commands (from the stack profile), the slot and its environment in parallel mode, the interfaces the item touches (QA reads only their procedures), design references for UI items, and the baseline's known failures in `ongoing` projects.
+- **Result:** each acceptance criterion verified with evidence. Check the item's boxes (`[x]`) only for criteria the report proves. Criteria QA marks `MANUAL` (it cannot run them on this machine) stay unchecked: add them to the item's `**Notes:**` as `MANUAL AC<n>: <exact steps>`, so the next checkpoint's validation checklist includes them. `UNRELATED_DEFECT` findings go to Support (`factory/core/workflow/bugs-and-support.md`, source `qa-unrelated`) and are not a rejection.
 
 ### 4.5 SEC
 

@@ -19,22 +19,28 @@
 | T-{{xxx}} | {{title}} | {{type}} | {{short hash}} |
 | B-{{xxx}} | {{title}} | bug {{priority}} | {{short hash}} |
 
-## 3. How to run locally
+## 3. How to try it
 
-<!-- Exact commands from the stack profile, in order, starting from a fresh clone of the integration branch. -->
+<!-- Exact commands from the stack profile, starting from a fresh clone of the integration branch: the common setup, then one short block per interface in project.interfaces. Leave out the blocks of other interfaces; a gui that lives inside a plugin is covered by the Plugin block. -->
 
 1. `git switch {{integration branch}} && git pull`
 2. `{{install command}}`
 3. `cp .env.example .env` and set: {{settings that need a value}}
-4. `{{one-command local run}}`
-5. Open {{local URL}}
+
+- **App (`gui`):** `{{one-command local run}}`, then open {{local URL}}.
+- **API (`api`):** `{{one-command local run}}`, then `{{example request}}`.
+- **CLI (`cli`):** `{{run command}} --help`, then `{{example command}}`.
+- **Worker (`service`):** `{{start command}}`, then `{{how to send a test input}}`, and watch {{logs or output}}.
+- **Library (`library`):** `{{pack command}}`, then in a sample project `{{install the local package}}` and `{{example usage}}`.
+- **Plugin (`plugin`):** `{{launch the host in development mode}}`, then {{where to find the plugin in the host}}.
 
 ## 4. Validation checklist
 
-<!-- Derived from the acceptance criteria of the items included: one line per thing the user should try, with the expected result. -->
+<!-- Derived from the acceptance criteria of the items included: one line per thing the user should try, with the expected result. Include every MANUAL criterion from task Notes: QA could not run it, so only the user verifies it. -->
 
 - [ ] {{action}} → {{expected result}} ({{T-xxx AC1}})
 - [ ] {{action}} → {{expected result}} ({{T-xxx AC2}})
+- [ ] MANUAL: {{exact steps}} → {{expected result}} ({{T-xxx AC3}}, not verified by QA)
 
 Report any problem with `Support: <description>`.
 
