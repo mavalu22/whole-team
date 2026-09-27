@@ -7,6 +7,7 @@ All notable changes to WholeTeam are documented in this file. The format is base
 ### Added
 
 - `project.interfaces` in the config: the ways people or other software use the product (`gui`, `api`, `cli`, `service`, `library`, `plugin`), described in `modes.md` section 2. The `1.1.0` migration asks projects that already passed Discovery step 3 for their interfaces.
+- Guidelines `cli-design.md`, `services-and-jobs.md` and `libraries-and-plugins.md`, and a section in `security.md` for CLIs, services, libraries, plugins and published packages. The Architect, Tech Lead and Developer read them only for the interface the work touches.
 
 ### Changed
 

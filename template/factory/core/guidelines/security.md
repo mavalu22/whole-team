@@ -2,7 +2,7 @@
 
 Security rules for every change, the OWASP mapping used in audits, and the two review checklists. Stack-specific libraries and settings are in `factory/input/04-stack-profile.md`; product-specific threats are in `factory/output/threat-model.md`. Search this file for the heading you need; reviewers read only the checklist for their depth.
 
-Sections: 1. OWASP Top 10 mapping · 2. Input validation and output encoding · 3. Authentication and authorization · 4. Sessions and tokens · 5. Passwords · 6. Secrets · 7. Dependencies · 8. Security headers and CORS · 9. File uploads · 10. Logging · 11. Light review checklist · 12. Required review checklist
+Sections: 1. OWASP Top 10 mapping · 2. Input validation and output encoding · 3. Authentication and authorization · 4. Sessions and tokens · 5. Passwords · 6. Secrets · 7. Dependencies · 8. Security headers and CORS · 9. File uploads · 10. Logging · 11. Light review checklist · 12. Required review checklist · 13. CLIs, services, libraries and plugins
 
 ## 1. OWASP Top 10 mapping
 
@@ -104,6 +104,7 @@ Start from the diff (`git diff <base>...<branch>`). For documentation-only diffs
 - [ ] **Error leakage:** no stack traces or internals in responses.
 - [ ] **Sensitive logging:** no secrets, tokens or unnecessary personal data in logs.
 - [ ] **Secrets and sensitive data:** no keys, passwords, tokens, internal hostnames or real personal data in code, config, docs or examples.
+- [ ] **Other interfaces:** for items touching `cli/*`, `jobs/*`, `lib/*` or `plugin/*`, the matching subsection of section 13.
 
 ## 12. Required review checklist
 
@@ -117,3 +118,35 @@ Everything in section 11, plus:
 - [ ] **Rate limits** on authentication, reset, sign-up and expensive endpoints.
 - [ ] **Security headers and CORS** as in section 8 for new surfaces.
 - [ ] **Dependency audit tool** run, with results recorded.
+
+## 13. CLIs, services, libraries and plugins
+
+Points specific to these interfaces, beyond sections 2-10. Read only the subsection for the interface the item touches.
+
+### 13.1 CLIs
+
+- Arguments, file contents and environment values are untrusted input: pass them to subprocesses as argument arrays (section 2), and validate paths against traversal (`..`, symlinks) before reading or writing.
+- Files the CLI creates that hold credentials or tokens are readable by the owner only (`0600`); temporary files use the platform's safe temp-file API.
+- Never take a secret only as a flag value (it lands in shell history and process lists); read it from the environment, a protected file, the OS keychain or a prompt without echo.
+- Self-update or download features verify checksums or signatures before running anything.
+
+### 13.2 Services and jobs
+
+- Message payloads are untrusted input, even from internal queues: validate them against their schema before use.
+- Each worker uses its own credentials with the least privilege it needs (only its queues, tables and buckets).
+- Bound message size, batch size and processing time, so a poison message cannot exhaust memory or block the queue.
+- Management endpoints (health, metrics, replay of dead letters) are not exposed publicly; replay requires authorization.
+
+### 13.3 Libraries and plugins
+
+- No `eval`, dynamic code loading or deserialization of the caller's untrusted data; safe defaults for every option (verification on, permissive modes off).
+- Plugins request only the host permissions the spec lists, store secrets only in the host's secret storage, and never read or send workspace files, credentials or history beyond what the feature needs.
+- Webviews and extension pages: a restrictive content security policy, no remote scripts, and validation of every message passed between the webview and the plugin.
+- Respect the host's trust model (for example workspace trust): never run code or tasks from an untrusted workspace.
+
+### 13.4 Published packages (supply chain)
+
+- The registry or marketplace account uses two-factor authentication; publishing uses a scoped, short-lived token or trusted publishing (OIDC) from CI, stored as a CI secret, never in the repository.
+- The package contents come from an allowlist; check the packed file list for `.env` files, keys, tests and `factory/` before release.
+- Sign the package or publish provenance where the registry supports it.
+- No install scripts unless required; dependencies from the official registry only (section 7).
