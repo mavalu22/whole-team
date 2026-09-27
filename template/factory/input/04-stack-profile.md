@@ -14,13 +14,13 @@ language: null       # set to input_language when first written
 <!-- Case and naming rules for files, folders, types, functions, variables, constants, database objects, test files, and branches' {slug}. -->
 
 ## 3. `Touches` vocabulary
-<!-- The allowed Touches areas (e.g. auth, db, data, migrations, api/<resource>, ui/<screen>, infra, ci, docs), each with the folders it covers. -->
+<!-- The allowed Touches areas (e.g. auth, db, data, migrations, api/<resource>, ui/<screen>, cli/<command>, jobs/<name>, lib/<module>, plugin/<extension point>, infra, ci, docs), each with the folders it covers. -->
 
 ## 4. Commands
-<!-- Exact commands, run from the project root: install, dev, test, lint, type-check, format, build (plus migrate and seed when relevant). -->
+<!-- Exact commands, run from the project root: install, dev, test, lint, type-check, format, build (plus migrate and seed when relevant). Per interface, when the product has it: run the CLI (cli), start the worker (service), build and pack the library locally (library), launch the plugin host in development mode (plugin). -->
 
 ## 5. Quiet command forms
-<!-- For test, lint, type-check and build: the command variant that prints only failures and a summary, plus how to run a single test verbosely. -->
+<!-- For test, lint, type-check and build, and for each interface command above that prints output: the command variant that prints only failures and a summary, plus how to run a single test verbosely. -->
 
 ## 6. Lint, format and type-check configuration
 <!-- Tools, config files, strictness choices (e.g. TypeScript strict), pre-commit hooks yes or no. -->

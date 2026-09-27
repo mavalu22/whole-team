@@ -31,6 +31,8 @@ Paths are relative to the project root; your task message gives its absolute pat
 
 ### Foundation and infra items (DEV)
 
+Apply the steps that fit the product's interfaces (`factory/input/03-platform-architecture.md` section 1). A `cli`, `library` or `plugin` without `gui`, `api` or `service` has no long-running process: skip the local run, slot isolation and health check unless its criteria ask for them.
+
 1. Follow the Developer's workflow: confirm the branch, commit early with Conventional Commits (`build:`, `ci:`, `chore:`), stage by explicit path, never modify the Test Engineer's tests.
 2. **Exclude `factory/` from all product tooling.** Add it to the ignore or exclude settings of the test runner, linter, formatter, type-checker, bundler and coverage tool, and to `.dockerignore`. `factory/` must never be imported, bundled, linted or copied into an image. Verify with the tools themselves (for example the linter's list of files, or a build that still succeeds with `factory/` present).
 3. **Local run with one command** (for example `make dev`, `npm run dev`, `docker compose up`), starting every service the product needs, documented in the stack profile.
@@ -50,8 +52,8 @@ Paths are relative to the project root; your task message gives its absolute pat
 ## Checklist
 
 - [ ] `factory/` is excluded from every product tool, and the exclusion was verified.
-- [ ] The product starts with one documented command; `.env.example` lists every setting.
-- [ ] Two slots can run side by side without port or database clashes.
+- [ ] The product starts with one documented command (when it runs as a process); `.env.example` lists every setting.
+- [ ] Two slots can run side by side without port or database clashes (when it runs as a process).
 - [ ] CI runs lint, type-check and tests, and contains no deployment and no secrets.
 - [ ] The hosting guide covers every section of the template, with sources and a dated cost estimate.
 
