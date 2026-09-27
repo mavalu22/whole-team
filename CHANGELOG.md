@@ -17,6 +17,7 @@ All notable changes to WholeTeam are documented in this file. The format is base
 - Discovery step 5 is now "Interface design": `gui` keeps the design flow of 1.0.1, and every other interface gets its own question bank and checklist, drafted by the Architect in one task. `05-design-spec.md` is the "Interface and design spec", with one part per interface and a scope line at the start of each part. The step key and file name are unchanged.
 - Delivery handles each interface: the Tech Lead checks items touching `api/*`, `cli/*`, `jobs/*`, `lib/*` or `plugin/*` against their spec section and guideline, and a breaking change to a published interface is a finding; tests and QA follow one short procedure per interface. Criteria QA cannot run on the machine are marked `MANUAL` and go to the next checkpoint's validation checklist. The checkpoint report's "How to run locally" is now "How to try it", with one block per interface.
 - In `ongoing` projects, the Orchestrator asks the user for the product's interfaces before the code analysis, and the analysis documents exactly those. Code that looks like an unlisted interface becomes a question for the user, never an automatic addition. The `1.1.0` migration never derives the interfaces from the code either.
+- The README describes the supported product types ("What you can build"), interface design in Discovery and the publishing guide.
 
 ## [1.0.1] - 2026-09-24
 
