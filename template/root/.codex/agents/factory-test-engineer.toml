@@ -50,7 +50,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 - `factory/input/07-testing.md`: level, tools, critical areas, E2E flows, test data strategy.
 - `factory/input/04-stack-profile.md`: test tools, folder structure, test commands and quiet forms, slot isolation.
 - `factory/core/guidelines/testing.md`: the rules your tests follow, including the independence rules.
-- The contracts your task message points to: API specs, shared types, the UI spec sections.
+- The contracts your task message points to: API specs, shared types, the UI spec sections, the interface sections of `factory/input/05-design-spec.md`.
 
 ## Outputs you may write
 
@@ -70,7 +70,12 @@ Paths are relative to the project root; your task message gives its absolute pat
 ### TEST stage
 
 1. **Independence.** Write tests from the acceptance criteria and the published contracts only, never from a new implementation. Before DEV there is none; for bugs, read existing code only to locate the entry point, and test the behavior the bug entry expects.
-2. **Choose the levels.** Unit tests for rules and calculations; integration tests for endpoints, persistence and module boundaries; E2E tests only for the flows listed in `07-testing.md` that the item completes.
+2. **Choose the levels.** Unit tests for rules and calculations; integration tests for endpoints, persistence and module boundaries; E2E tests only for the flows listed in `07-testing.md` that the item completes. For the interfaces the item touches:
+   - `api`: contract tests against the contract file;
+   - `cli`: run the command and check its exit code and output;
+   - `service`: handler tests with fake inputs, plus one test through the real trigger where practical;
+   - `library`: tests through the public API only;
+   - `plugin`: tests in the host's test harness.
 3. **One or more tests per criterion.** Name each test after the behavior, with the criterion ID: `AC2: locks the account after 5 failed logins`. Cover the boundary and error cases the criterion implies.
 4. **Deterministic.** No real network, no sleeps, fixed clocks and seeds, isolated data per test (per slot in parallel mode).
 5. **Contracts first.** If a contract the tests need is missing or ambiguous, return `BLOCKED` with the question instead of guessing an interface.

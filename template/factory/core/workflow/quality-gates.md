@@ -21,7 +21,7 @@ If a check fails, fix the item before starting it: criteria with the Product Own
 
 An item may merge only when all of these hold:
 
-- [ ] Every acceptance criterion is checked, with evidence in a QA report.
+- [ ] Every acceptance criterion is checked, with evidence in a QA report, or marked `MANUAL` by QA with exact steps and recorded in the item's `Notes` for the next checkpoint's validation checklist.
 - [ ] Tests at the required level (`testing.level`) exist and pass, and the Test Engineer's tests are unmodified since their TEST commit (verified by the Tech Lead).
 - [ ] Lint, type-check and build pass.
 - [ ] REVIEW, QA and SEC are approved (every required reviewer).

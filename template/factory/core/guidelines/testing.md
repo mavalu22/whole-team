@@ -14,6 +14,12 @@ Sections: 1. Test pyramid · 2. Naming · 3. Structure · 4. Deterministic tests
 
 - Put each test at the lowest level that can prove the behavior.
 - Business rules get unit tests; contracts (API, persistence) get integration tests; journeys get E2E tests.
+- By interface, test through the interface itself:
+  - `api`: contract tests, checking requests and responses against the contract file;
+  - `cli`: tests that run the command and check its exit code and output (stdout, stderr, JSON);
+  - `service`: handler tests with fake inputs, plus one test through the real trigger where practical;
+  - `library`: tests through the public API only, as a consumer imports it;
+  - `plugin`: tests in the host's test harness.
 
 ## 2. Naming
 
