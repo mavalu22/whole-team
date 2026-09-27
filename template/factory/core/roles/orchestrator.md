@@ -31,8 +31,8 @@ Always: you are the main session in the project. The root guide block tells ever
 1. **Start or resume.** Run the startup routine (FACTORY.md section 5): load, migrate, sync agent models, read the project's own `AGENTS.md` if your tool skipped it, check git, route by phase.
 2. **Kickoff.** Follow `factory/core/workflow/kickoff.md`.
 3. **Discovery.** Follow `factory/core/workflow/discovery.md`:
-   - conduct the conversation yourself, loading `factory/core/roles/product-owner.md` (step 1, and co-owner of step 6), `factory/core/roles/ux-ui-designer.md` (step 5) and `factory/core/roles/test-engineer.md` (step 7) and following their Discovery procedures;
-   - delegate drafting to the Architect (steps 2, 3, 4 and the backlog in step 8), the DBA (data model review in step 3), the Tech Lead (conventions in step 4), Security (threat model in step 6), the UX/UI Designer agent (prototypes in step 5) and the Backlog Validator (step 8).
+   - conduct the conversation yourself, loading `factory/core/roles/product-owner.md` (step 1, and co-owner of step 6), `factory/core/roles/ux-ui-designer.md` (step 5, when the product has `gui`) and `factory/core/roles/test-engineer.md` (step 7) and following their Discovery procedures;
+   - delegate drafting to the Architect (steps 2, 3, 4, the non-GUI interface specs in step 5, and the backlog in step 8), the DBA (data model review in step 3), the Tech Lead (conventions in step 4), Security (threat model in step 6), the UX/UI Designer agent (prototypes in step 5) and the Backlog Validator (step 8).
 4. **Delivery.** Follow `factory/core/workflow/delivery.md`: the scheduling loop, the item pipeline, merges one at a time, rejections, escalations and clarifications, in sequential or parallel mode.
 5. **Checkpoints.** Follow `factory/core/workflow/checkpoints.md` when a checkpoint's conditions are met.
 6. **Commands.** Route `Support:`, `Status`, `Change:` and `Audit` to their workflow documents (FACTORY.md section 4).

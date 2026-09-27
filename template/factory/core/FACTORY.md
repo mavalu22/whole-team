@@ -54,7 +54,7 @@ All paths are relative to the project root.
 | `factory/bugs.md` | Bug list with a summary block | Orchestrator |
 | `factory/.install-manifest` | Root files the installer created (`created <file>`) or added a block to (`block <file>`) | Installer; Orchestrator at kickoff |
 | `factory/.models-sync-needed` | Marker: the installer rewrote the agent files with default models, so the next model sync must re-apply the `models` block | Installer; deleted by the Orchestrator after the model sync |
-| `factory/input/01-07-*.md` | Discovery documents, one per step, in `state.input_language` | Orchestrator; drafts by Architect with Tech Lead (02-04) and UX/UI Designer (05) |
+| `factory/input/01-07-*.md` | Discovery documents, one per step, in `state.input_language` | Orchestrator; drafts by Architect with Tech Lead (02-04), UX/UI Designer (05, `gui`) and Architect (05, other interfaces) |
 | `factory/input/prototypes/` | HTML prototypes (generated) or the user's prototype files | UX/UI Designer or user |
 | `factory/output/` | ADRs, architecture, threat model, audits, checkpoint reports, drafts, support reproductions, hosting guide, baseline (see `factory/output/README.md`) | Role named in that README |
 | `factory/.worktrees/<ID>/` | Parallel-mode git worktrees (`execution.worktrees_dir`) | Orchestrator |
@@ -138,8 +138,8 @@ Make small in-place edits; formats are defined in `factory/core/workflow/backlog
 |---|---|---|---|
 | `orchestrator` | Runs the session, the conversation, the state, merges, checkpoints | Main session (medium recommended) | Always |
 | `product-owner` | Vision, scope, user stories, acceptance criteria; answers product questions | medium | Discovery 1 and 6 (loaded by you), clarifications |
-| `ux-ui-designer` | Design spec, flows, prototypes; UI reviews | medium | Discovery 5, REVIEW of `ui/*` items |
-| `architect` | Stack, architecture, ADRs, stack profile, backlog generation, reverse Discovery | high | Discovery 2, 3, 4, 8; ongoing onboarding; change requests |
+| `ux-ui-designer` | Design spec, flows, prototypes; UI reviews | medium | Discovery 5 (`gui`), REVIEW of `ui/*` items |
+| `architect` | Stack, architecture, ADRs, stack profile, backlog generation, reverse Discovery | high | Discovery 2, 3, 4, 5 (other interfaces), 8; ongoing onboarding; change requests |
 | `tech-lead` | Stack profile conventions; code review | medium | Discovery 4, REVIEW, audits |
 | `developer` | Implements one item; handles rework and rebase conflicts | medium | DEV |
 | `test-engineer` | Test strategy; tests written before implementation; regression tests | medium | Discovery 7 (loaded by you), TEST, test disputes |
@@ -194,7 +194,7 @@ At kickoff, show the current `config.language` and ask whether the user wants an
 At a glance:
 
 - **Kickoff:** welcome, language, git checks, cost tip.
-- **Discovery:** 1 Vision → 2 Stack → 3 Architecture → 4 Stack profile → 5 Design (optionally right after 1) → 6 Constraints → 7 Testing → 8 Backlog. Each step ends with the user's approval.
+- **Discovery:** 1 Vision → 2 Stack → 3 Architecture → 4 Stack profile → 5 Interface design (optionally right after 1) → 6 Constraints → 7 Testing → 8 Backlog. Each step ends with the user's approval.
 - **Delivery:** each item runs TEST → DEV → REVIEW → QA → SEC → APPROVAL (only with `per_task`) → MERGE into the integration branch. Checkpoints audit, verify, document, report and merge the integration branch into the base branch.
 - **Maintenance:** open bugs by priority, grouped into bug-fix checkpoints.
 

@@ -23,7 +23,7 @@ kickoff:
 discovery:
   # Current step key (e.g. s3_architecture), or null.
   current_step: null
-  # true = the user chose to run Design right after Vision (step 5 moved to 2nd).
+  # true = the user chose to run Interface design right after Vision (step 5 moved to 2nd).
   design_early: false
   # status: pending | in_progress | approved | reopened
   steps:

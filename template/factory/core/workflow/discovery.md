@@ -2,11 +2,11 @@
 
 Read when `phase: discovery`, or when a `Change:` reopens a step. Each section stands alone: search this file by its exact path for the heading you need (for example `## 5. Step 3`) and read only that section plus sections 1 and 2.
 
-Sections: 1. Rules · 2. Step procedure · 3. Step 1: Vision and scope · 4. Step 2: Stack · 5. Step 3: Platform and architecture · 6. Step 4: Stack profile · 7. Step 5: Design · 8. Step 6: Constraints · 9. Step 7: Testing · 10. Step 8: Backlog
+Sections: 1. Rules · 2. Step procedure · 3. Step 1: Vision and scope · 4. Step 2: Stack · 5. Step 3: Platform and architecture · 6. Step 4: Stack profile · 7. Step 5: Interface design · 8. Step 6: Constraints · 9. Step 7: Testing · 10. Step 8: Backlog
 
 ## 1. Rules
 
-- **Order.** Steps run in order 1 → 8. After step 1 is approved, ask whether the user wants to do Design (step 5) now, right after Vision, or later. If now, set `discovery.design_early: true` and run step 5 second; the order becomes 1, 5, 2, 3, 4, 6, 7, 8. Step numbers and keys never change.
+- **Order.** Steps run in order 1 → 8. After step 1 is approved, ask whether the user wants to do Interface design (step 5) now, right after Vision, or later. If now, set `discovery.design_early: true` and run step 5 second; the order becomes 1, 5, 2, 3, 4, 6, 7, 8. Step numbers and keys never change.
 - **One step at a time.** Never start a step before the previous one in the order is approved.
 - **Questions.** Ask from the step's question bank in small batches (at most 4 per message), adapting to earlier answers. Propose a recommended answer or default for each question, so the user can reply "ok". Never ask what earlier inputs already answer; state the assumption instead and let the user correct it.
 - **Writing.** Fill the step's input file (from the template already in `factory/input/`) in `state.input_language`. Record each answer with a small edit as soon as it is agreed; never rewrite the whole file. Keep the "Open questions" section until it is empty or the user accepts the remaining items as open.
@@ -144,10 +144,22 @@ For every step:
   - [ ] Slot runtime isolation: how to set the port and the database per slot (`FACTORY_SLOT`).
 - **Config keys set:** none.
 
-## 7. Step 5: Design
+## 7. Step 5: Interface design
 
-- **Key:** `s5_design` · **Output:** `factory/input/05-design-spec.md` (always), plus prototypes in `factory/input/prototypes/`
-- **Goal:** a design system and screen list precise enough for developers and for UI reviews.
+- **Key:** `s5_design` · **Output:** `factory/input/05-design-spec.md` (always), plus prototypes in `factory/input/prototypes/` (`gui` only)
+- **Goal:** a spec for every interface in `project.interfaces`, precise enough for developers and for reviews: a design system and screen list for `gui`, the contract other people or software rely on for the others.
+- **Interfaces.** Read `project.interfaces` in `factory/config.yaml`. If step 3 is not approved yet (Design early) and the log has no `interfaces set` line, first ask the interfaces question of step 3 (section 5; the details wait for step 3), then write `project.interfaces` and append `"<ISO time> interfaces set: [<ids>]"` to the log.
+- **How the step runs.** Read only the subsections of the product's interfaces:
+  - `gui`: section 7.1, the design flow. The UX/UI Designer takes part only when the product has `gui`.
+  - Every other interface: section 7.2, plus the interface's own subsection (7.3 to 7.7).
+  - With `gui` and other interfaces, run 7.1 first, then 7.2.
+- **Document.** `05-design-spec.md` has one part per interface: sections 1-14 for `gui`, then 15 `api`, 16 `cli`, 17 `service`, 18 `library` and 19 `plugin`. Each part starts with a scope line, `In scope.` or `Not in scope: <reason>.`, so readers skip what does not apply. Without `gui`, section 1 holds only its scope line and sections 2-14 are left out.
+- **Checklist:** the checklist of each interface in scope, plus:
+  - [ ] Every interface part starts with its scope line.
+- **Config keys set:** those of section 7.1 when the product has `gui`; none otherwise.
+
+### 7.1 `gui`
+
 - **Owners:** UX/UI Designer. You lead the conversation: read `factory/core/roles/ux-ui-designer.md` and follow its procedure.
 - **First:** show the three design modes from `factory/core/modes.md` (section 6) and ask the user to choose. Write `design.mode`.
 - **Question bank:**
@@ -177,6 +189,108 @@ For every step:
   - [ ] Tone of voice.
   - [ ] Prototype index (when prototypes exist), approved by the user.
 - **Config keys set:** `design.mode`; `design.review_ui_items` if the user wants to change it (show its description from `factory/core/modes.md` section 6).
+
+### 7.2 Other interfaces
+
+- **Owners:** Architect drafts; you discuss with the user.
+- **Question bank:** the question bank of each interface in scope (sections 7.3 to 7.7), in batches of at most 4. Recommend answers from the approved inputs and the usual conventions of the ecosystem. Skip what `03-platform-architecture.md` already answers (for example the API style) and, if step 2 is not approved yet, the questions that depend on the stack.
+- **Delegation:** one task message to `architect` (stage `DISCOVERY`, item `s5_design`) covering every non-GUI interface of the product: the agreed answers per interface, the paths of the approved input files it needs (`01-product-vision.md`, and `02` to `04` when approved), and the sections of `05-design-spec.md` to fill. Then review the draft with the user as usual.
+- **Checklist:** the checklist of each interface in scope.
+
+### 7.3 `api`
+
+- **Question bank:**
+  - Which resources and operations does each user story need?
+  - Where does the contract file live in the product repository? Default: `docs/openapi.yaml`, or the stack's schema file.
+  - How is the API versioned?
+  - Which error format? Default: RFC 9457 problem details.
+  - How do pagination, filtering, idempotency, authentication and rate limits work?
+  - Which naming conventions (paths, fields, case)?
+- **Checklist:**
+  - [ ] Resources and operations mapped to user stories.
+  - [ ] Contract file and its path in the product repository.
+  - [ ] Versioning.
+  - [ ] Error format.
+  - [ ] Pagination, filtering, idempotency, authentication and rate limits.
+  - [ ] Naming conventions.
+
+### 7.4 `cli`
+
+- **Question bank:**
+  - Which commands and subcommands does each user story need?
+  - Which argument and flag conventions (long and short flags, POSIX style)?
+  - Which exit codes?
+  - Which output formats? Default: human-readable, plus JSON for scripts.
+  - How do stdin and stdout behave (pipes, prompts)?
+  - Which configuration files and environment variables?
+  - Color and TTY detection? Shell completion?
+- **Checklist:**
+  - [ ] Command tree mapped to user stories.
+  - [ ] Argument and flag conventions.
+  - [ ] Help text for every command.
+  - [ ] Exit codes.
+  - [ ] Output formats: human-readable, and JSON for scripts.
+  - [ ] Stdin and stdout behavior.
+  - [ ] Configuration files and environment variables.
+  - [ ] Error messages.
+  - [ ] Color and TTY detection.
+  - [ ] Shell completion, or "Not wanted".
+
+### 7.5 `service`
+
+- **Question bank:**
+  - Which inputs does it consume and which outputs does it produce? With which message or event schemas?
+  - Which triggers and schedules?
+  - Which delivery guarantee? Default: at least once, with idempotent handlers.
+  - How many retries, with which backoff, and where do failed messages go (dead letters)?
+  - Which configuration?
+  - Which health checks, logs and metrics?
+  - How does it shut down gracefully?
+- **Checklist:**
+  - [ ] Inputs and outputs, with their message or event schemas.
+  - [ ] Triggers and schedules.
+  - [ ] Delivery guarantees and idempotent handlers.
+  - [ ] Retries and dead letters.
+  - [ ] Configuration.
+  - [ ] Health checks, logs and metrics.
+  - [ ] Graceful shutdown.
+
+### 7.6 `library`
+
+- **Question bank:**
+  - Which public functions, types or classes does each user story need?
+  - Which naming conventions?
+  - How are errors reported (exceptions, result types, error codes)?
+  - Which runtime versions are supported?
+  - Which versioning and deprecation policy? Default: semantic versioning, deprecate for one minor version before removing.
+  - Which package entry points (modules, exports, CommonJS or ESM)?
+- **Checklist:**
+  - [ ] Public API surface mapped to user stories.
+  - [ ] Naming.
+  - [ ] Error model.
+  - [ ] Supported runtime versions.
+  - [ ] Semantic versioning and deprecation policy.
+  - [ ] Package entry points.
+  - [ ] Usage examples.
+
+### 7.7 `plugin`
+
+- **Question bank:**
+  - Which host and host versions (confirm step 3)?
+  - Which extension points does each user story need, and what goes in the manifest?
+  - Which activation events?
+  - Which host permissions? Default: the least the stories need.
+  - Which settings, and which commands or menus in the host?
+  - How is it packaged?
+- **Checklist:**
+  - [ ] Host and supported versions.
+  - [ ] Extension points and manifest.
+  - [ ] Activation events.
+  - [ ] Permissions (least privilege).
+  - [ ] Settings.
+  - [ ] Commands or menus exposed in the host.
+  - [ ] Packaging.
+  - [ ] How to load it in the host's development mode.
 
 ## 8. Step 6: Constraints
 
