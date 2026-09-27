@@ -62,8 +62,8 @@ Paths are relative to the project root; your task message gives its absolute pat
 
 ### Stack profile (step 4)
 
-1. Define the folder structure, the `Touches` vocabulary (areas that match the modules), and exact commands for install, dev, test, lint, type-check, format and build.
-2. For test, lint, type-check and build, define a quiet form that prints only failures and a summary (for example a reporter flag such as `--reporter=dot`, `--silent`, `-q`, or piping through the tool's summary option). Verify each flag exists in the chosen tool's current version.
+1. Define the folder structure, the `Touches` vocabulary (areas that match the modules and interfaces), and exact commands for install, dev, test, lint, type-check, format and build, plus the command of each interface the product has: run the CLI, start the worker, build and pack the library locally, launch the plugin host in development mode.
+2. For test, lint, type-check and build, and for the interface commands that print output, define a quiet form that prints only failures and a summary (for example a reporter flag such as `--reporter=dot`, `--silent`, `-q`, or piping through the tool's summary option). Verify each flag exists in the chosen tool's current version.
 3. Define configuration and env patterns, the dependency policy, tooling exclusions for `factory/` (test runner, linter, formatter, type-checker, bundler, Docker build context), and parallel slot isolation: `FACTORY_SLOT` sets the port (base + 10 × slot) and the database name or file.
 
 ### Interface specs (step 5)

@@ -62,7 +62,7 @@ Field labels are exact and always English. Free text is in `state.input_language
 
 - **Types:** `feature`, `infra`, `test`, `docs`, `refactor`, `security`.
 - **Statuses:** `TODO`, `TESTING`, `IN_PROGRESS`, `IN_REVIEW`, `QA`, `SEC`, `AWAITING_APPROVAL`, `DONE`, `REVIEW_REJECTED`, `QA_REJECTED`, `SEC_REJECTED`, `BLOCKED`, `CANCELLED`.
-- **Touches:** a short, stable vocabulary of areas (`auth`, `db`, `data`, `migrations`, `api/<resource>`, `ui/<screen>`, `infra`, `ci`, `docs`). The vocabulary lives in `factory/input/04-stack-profile.md`; reuse it, and add a new area there before using it.
+- **Touches:** a short, stable vocabulary of areas (`auth`, `db`, `data`, `migrations`, `api/<resource>`, `ui/<screen>`, `cli/<command>`, `jobs/<name>`, `lib/<module>`, `plugin/<extension point>`, `infra`, `ci`, `docs`). The vocabulary lives in `factory/input/04-stack-profile.md`; reuse it, and add a new area there before using it.
 - **Refs:** stable IDs (`US-03`, `ADR-002`) or numbered sections of input files (`02-stack.md §5`), never heading text, because headings may be translated. Separate entries with `;`.
 
 ### 1.5 Checkpoint line
@@ -110,7 +110,13 @@ The Architect follows these rules and writes the result to `factory/output/draft
    4. data model and initial migrations;
    5. API contracts and shared types (for example OpenAPI);
    6. design system base (tokens → theme);
-   7. authentication skeleton, if needed.
+   7. authentication skeleton, if needed;
+   8. per interface in `factory/input/03-platform-architecture.md` section 1, its skeleton:
+      - `api`: the contract file, at the path in `05-design-spec.md` section 15 (item 5);
+      - `cli`: the entry point with `--help` and exit codes;
+      - `service`: the worker skeleton with a health check and graceful shutdown;
+      - `library`: packaging and the build of a local package;
+      - `plugin`: the manifest and a test harness that loads the plugin in the host's development mode.
 3. **Vertical slices.** Features are vertical slices that are testable end to end ("Login works end to end", not "login screen" plus "login endpoint").
 4. **Session-sized tasks.** Every task fits comfortably in one agent session: one slice, at most about 7 acceptance criteria, and roughly 8 production files or fewer. Split larger work.
 5. **Real dependencies only.** Declare a dependency only when a task needs code, a contract or data produced by another task. Never create cycles.

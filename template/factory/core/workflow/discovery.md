@@ -134,9 +134,10 @@ For every step:
   2. `tech-lead`: add or refine naming, error handling, logging, framework patterns and anti-patterns, and check that every command is exact and runnable for the stack.
 - **Checklist:**
   - [ ] Folder structure and naming conventions.
-  - [ ] `Touches` vocabulary: short, stable area names (`auth`, `db`, `api/<resource>`, `ui/<screen>`, `infra`, `ci`, ...).
+  - [ ] `Touches` vocabulary: short, stable area names (`auth`, `db`, `api/<resource>`, `ui/<screen>`, `cli/<command>`, `jobs/<name>`, `lib/<module>`, `plugin/<extension point>`, `infra`, `ci`, ...).
   - [ ] Lint, format and type-check tools with their configuration choices.
   - [ ] Exact commands: install, dev, test, lint, type-check, format, build.
+  - [ ] Per interface, when the product has it: run the CLI, start the worker, build and pack the library locally, launch the plugin host in development mode, each with its quiet form where it has output.
   - [ ] Quiet forms of the test, lint, type-check and build commands, printing only failures and a summary.
   - [ ] Error handling, logging, configuration and env patterns, dependency policy.
   - [ ] Framework patterns and anti-patterns.
