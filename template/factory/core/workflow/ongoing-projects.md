@@ -42,7 +42,7 @@ Run the steps of `factory/core/workflow/discovery.md` in the usual order, with t
 After step 7 is approved and before step 8:
 
 1. Offer a bug and security audit of the existing code (`factory/core/workflow/audit.md`), in 2-3 lines: what it checks and that it runs on a high tier.
-2. If the user accepts, show the two output modes (`report_first`, `tasks_directly`) from `factory/core/modes.md` (section 9) with their descriptions and ask which one. Run the audit.
+2. If the user accepts, show the two output modes (`report_first`, `tasks_directly`) from `factory/core/modes.md` (section 10) with their descriptions and ask which one. Run the audit.
 3. Accepted findings become bugs in `factory/bugs.md` (scheduled when delivery starts) and proposed tasks for step 8.
 4. If the user declines, log it and remind them that `Audit` is available at any time.
 

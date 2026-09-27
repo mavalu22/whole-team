@@ -2,7 +2,7 @@
 
 **Rule for the Orchestrator:** every time the user chooses or changes one of these settings, show all options of the group with their summary, what happens, trade-offs and when to choose them, translated to `config.language`. Keep mode identifiers as-is, in backticks. Mark the recommended option. Then write the chosen value to the config key named in the group.
 
-Sections: 1. Project type · 2. Execution · 3. Approval · 4. Testing level · 5. Design · 6. Security review depth · 7. Bug threshold · 8. Checkpoint merge · 9. Audit output
+Sections: 1. Project type · 2. Interfaces · 3. Execution · 4. Approval · 5. Testing level · 6. Design · 7. Security review depth · 8. Bug threshold · 9. Checkpoint merge · 10. Audit output
 
 ## 1. Project type
 
@@ -18,7 +18,31 @@ Config key: `project.type`. Set by the installer; change it only by reinstalling
 - **When to choose.** `new` when there is no product code yet, or when you will start over. `ongoing` when there is code the product must keep.
 - **Recommended.** Whichever matches the repository. The installer asks.
 
-## 2. Execution
+## 2. Interfaces
+
+Config key: `project.interfaces`, a list of one or more options. Set in Discovery step 3; in `ongoing` projects, asked before the code analysis. Combinations are normal: a web app with a public API is `[gui, api]`, a VS Code extension with a webview is `[plugin, gui]`.
+
+| Option | Summary |
+|---|---|
+| `gui` | Screens used by people: web, mobile or desktop apps, a plugin's panels or webviews. |
+| `api` | A network interface other software calls: REST, GraphQL, gRPC, webhooks. |
+| `cli` | A command-line program: developer tools, admin scripts, installers. |
+| `service` | A process with no direct user interface, driven by events or schedules: queue workers, cron jobs, stream processors, daemons. |
+| `library` | Code other code imports: npm, PyPI, crates.io, Maven or NuGet packages, SDKs. |
+| `plugin` | An extension loaded by a host application: VS Code or JetBrains extensions, browser extensions, WordPress plugins. |
+
+- **What happens.** Each interface gets its own part of the spec in Discovery step 5, its own foundation task, review rules, tests and QA procedure, and a block in the checkpoint report's "How to try it".
+  - `gui`: the UX/UI Designer designs the screens (design mode, tokens, components, flows) and reviews every `ui/*` item.
+  - `api`: step 5 defines the contract (resources, errors, versioning, pagination, auth); the Tech Lead reviews `api/*` items against it; QA sends requests to the running service.
+  - `cli`: step 5 defines the command tree, flags, exit codes and output formats; QA runs the commands and checks exit codes and output.
+  - `service`: step 5 defines inputs, outputs, triggers, delivery guarantees and health checks; QA feeds test inputs through the trigger.
+  - `library`: step 5 defines the public API and the version policy; QA installs the local package into a throwaway project; the checkpoint guide covers publishing instead of hosting.
+  - `plugin`: step 5 defines the host, the manifest, activation and permissions; QA loads it in the host's development mode; the guide covers publishing.
+- **Trade-offs.** Every interface is a surface to design, test and keep compatible, so each one adds spec work and checks. `library` and `plugin` releases are hard to take back once published, so their version policy matters from the start. A `plugin` depends on its host: checks the host cannot run headless become checks you do at checkpoints.
+- **When to choose.** List what the product exposes to people or to other software, not its internal parts: a web app's own backend is part of `gui` unless other software calls it too.
+- **Recommended.** Whatever matches the product. The default is `[gui]`.
+
+## 3. Execution
 
 Config keys: `execution.mode`, `execution.max_parallel_tasks`. Set in Discovery step 8.
 
@@ -33,7 +57,7 @@ Config keys: `execution.mode`, `execution.max_parallel_tasks`. Set in Discovery 
 - **`max_parallel_tasks`.** Items in progress at once (default 3). Use 2-3 on a laptop or a limited plan; 4-5 only when waves are wide, the machine can run several copies of the product, and your plan has headroom. More than the widest wave gains nothing.
 - **Recommended.** `sequential`: cheapest and easiest to follow; switch to `parallel` any time by editing the config.
 
-## 3. Approval
+## 4. Approval
 
 Config key: `execution.approval_mode`. Set in Discovery step 8.
 
@@ -48,7 +72,7 @@ Config key: `execution.approval_mode`. Set in Discovery step 8.
 - **When to choose.** `per_task` for sensitive products or when you are learning how the factory works. `per_checkpoint` for most projects. `none` for prototypes or when you will review the result as a whole.
 - **Recommended.** `per_checkpoint`: every increment gets your validation while the factory keeps moving between checkpoints.
 
-## 4. Testing level
+## 5. Testing level
 
 Config keys: `testing.level`, `testing.coverage_target`. Set in Discovery step 7.
 
@@ -64,7 +88,7 @@ Config keys: `testing.level`, `testing.coverage_target`. Set in Discovery step 7
 - **`coverage_target`.** Minimum line coverage (%) checked at checkpoints with `full` (default 70). 60-80 is a practical range; 0 disables the check. Higher numbers cost more tests without proportionate safety.
 - **Recommended.** `critical`: most of the protection for a fraction of the cost.
 
-## 5. Design
+## 6. Design
 
 Config key: `design.mode` (and `design.review_ui_items`). Set in Discovery step 5.
 
@@ -80,7 +104,7 @@ Config key: `design.mode` (and `design.review_ui_items`). Set in Discovery step 
 - **`review_ui_items`.** `true` (default) adds a UX/UI review to every item that touches `ui/*`, before QA.
 - **Recommended.** `spec` for most projects; `html_prototypes` when the product's interface is a key selling point.
 
-## 6. Security review depth
+## 7. Security review depth
 
 Config key: `security.review_default`. Each task also carries its own `Security review` value.
 
@@ -94,7 +118,7 @@ Config key: `security.review_default`. Each task also carries its own `Security 
 - **When to choose.** `light` as the default for most products. `required` when the whole product handles sensitive data or regulated workloads.
 - **Recommended.** `light`: sensitive items are already marked `required` individually.
 
-## 7. Bug threshold
+## 8. Bug threshold
 
 Config key: `bugs.block_features_on`.
 
@@ -117,7 +141,7 @@ Priority definitions:
 - **When to choose.** `P0` for a quick demo. `P1` for most products. `P2` or `P3` for polished releases or products already in use.
 - **Recommended.** `P1`: nothing major stays broken, and cosmetic issues don't stall progress.
 
-## 8. Checkpoint merge
+## 9. Checkpoint merge
 
 Config key: `git.checkpoint_merge`.
 
@@ -131,7 +155,7 @@ Config key: `git.checkpoint_merge`.
 - **When to choose.** `pr` when the repository has a GitHub or GitLab remote. `local` for private experiments or other hosts.
 - **Recommended.** `pr`: reviewable history and CI at every checkpoint, with an automatic local fallback.
 
-## 9. Audit output
+## 10. Audit output
 
 Not stored in the config: the Orchestrator asks each time an audit starts (`Audit`, or the offer for ongoing projects).
 

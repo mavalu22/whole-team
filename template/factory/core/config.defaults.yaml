@@ -9,7 +9,7 @@
 
 # Schema version of this file. Do not edit. Updates use it to add new
 # settings with their defaults while keeping your values.
-config_version: 1
+config_version: 2
 
 # Language the factory uses to talk to you: chat messages, questions, status
 # and checkpoint reports, and the descriptions of every selectable mode.
@@ -29,6 +29,17 @@ project:
   #           and the factory offers a bug and security audit.
   # Set by the installer.
   type: new
+
+  # How people or other software use the product. A list of one or more:
+  # gui     = screens used by people: web, mobile, desktop, plugin panels.
+  # api     = a network interface other software calls: REST, GraphQL, gRPC.
+  # cli     = a command-line program.
+  # service = a background process driven by events or schedules (workers).
+  # library = code other code imports: npm, PyPI or crates.io packages, SDKs.
+  # plugin  = an extension loaded by a host application (VS Code, browser).
+  # Combinations are normal, for example [gui, api] or [plugin, gui].
+  # Set during Discovery (step 3).
+  interfaces: [gui]
 
 # --- Execution: how tasks run and when the factory stops for you ------------
 execution:
