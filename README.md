@@ -12,6 +12,21 @@ From then on the main session acts as the **Orchestrator**. It talks to you, kee
 2. **Backlog:** it generates tasks with a dependency graph, waves and checkpoints.
 3. **Delivery:** it builds the backlog one task at a time, or several in parallel, through test, development, code review, QA and security gates, and stops at checkpoints so you can validate a working product.
 
+### What you can build
+
+A product has one or more **interfaces**, the ways people or other software use it. You choose them in Discovery step 3, and each one gets its own spec, reviews, tests, QA procedure and checkpoint instructions.
+
+| Interface | What it is | Example |
+|---|---|---|
+| `gui` | Screens used by people | A web, mobile or desktop app |
+| `api` | A network interface other software calls | A REST or GraphQL back end |
+| `cli` | A command-line program | A developer tool |
+| `service` | A background process driven by events or schedules | A queue worker or a cron job |
+| `library` | Code other code imports | An npm or PyPI package |
+| `plugin` | An extension loaded by a host application | A VS Code or browser extension |
+
+Combinations work: a web app with a public API is `gui` + `api`, and a VS Code extension with a webview is `plugin` + `gui`.
+
 ## 2. How it works
 
 ```mermaid
@@ -28,7 +43,7 @@ flowchart LR
   MAIN --> P
 ```
 
-- **Phases.** Kickoff (language, git checks), Discovery (vision, stack, architecture, stack profile, design, constraints, testing, backlog), Delivery, and Maintenance (bug fixes after the last task).
+- **Phases.** Kickoff (language, git checks), Discovery (vision, stack, architecture, stack profile, interface design, constraints, testing, backlog), Delivery, and Maintenance (bug fixes after the last task).
 - **Roles.** The Orchestrator (your main session) plus 13 role agents: Product Owner, UX/UI Designer, Architect, Tech Lead, Developer, Test Engineer, QA, Security, DBA, DevOps, Tech Writer, Support and Backlog Validator. Each runs on a `high`, `medium` or `low` model tier.
 - **Gates.** The Test Engineer writes tests before the Developer implements. The Tech Lead (plus the DBA and UX/UI Designer where relevant) reviews the diff, QA verifies every acceptance criterion by running the product, and Security reviews at the depth each task needs. Rejections go back to development, up to a limit, and then you decide.
 - **Checkpoints.** Milestones in the backlog. At each one the factory audits, runs the full verification, updates the product README, API docs and CHANGELOG, writes a report with a validation checklist, and merges `develop` into `main`, through a pull request when `gh` or `glab` is available.
@@ -108,15 +123,15 @@ Commands are case-insensitive and also work in your configured language (for exa
 Everything is in `factory/config.yaml` in your project. Every setting has a comment above it that explains what it does and lists its options. The main groups:
 
 - `language`, `product_docs_language`: conversation and documentation languages.
-- `project.type`: `new` or `ongoing`.
+- `project.type`: `new` or `ongoing`. `project.interfaces`: `gui`, `api`, `cli`, `service`, `library`, `plugin`, one or more.
 - `execution`: `sequential` or `parallel`, `max_parallel_tasks`, `approval_mode` (`per_task`, `per_checkpoint`, `none`), `max_rejections`.
 - `models`: the model for each tier in each tool, and the tier of each role.
 - `testing`: `none`, `critical` or `full`, and the coverage target.
-- `design`: `spec`, `html_prototypes` or `user_prototypes`.
+- `design`: `spec`, `html_prototypes` or `user_prototypes`, for products with a `gui`.
 - `security`: review depth, audit settings and tiers.
 - `bugs.block_features_on`: which bug priorities stop feature work.
 - `git`: branches, commit convention, merge strategy, checkpoint pull requests, tags, AI co-author trailer (off by default).
-- `deploy`: the factory runs the product only locally and never deploys; `hosting_guide` sets when it writes a guide for your hosting platform.
+- `deploy`: the factory runs the product only locally and never deploys; `hosting_guide` sets when it writes a guide for your hosting platform, and for publishing a library or plugin.
 
 Discovery asks you for the important ones and explains every option. You can edit any value by hand; the Orchestrator re-reads the file on the next `Let's code`.
 
@@ -198,7 +213,7 @@ Because `factory/` is ignored by git:
 
 ## 13. Limitations
 
-- The factory runs the product only on your machine. It never deploys; it writes a hosting guide instead.
+- The factory runs the product only on your machine. It never deploys or publishes; it writes a hosting and publishing guide instead.
 - Factory state lives only in your local `factory/` folder. Back it up; losing it loses the backlog and Discovery documents (the product code stays safe in git).
 - Output quality depends on the models available on your plan. Lower tiers are cheaper but make more mistakes, which the gates catch at the cost of more rework.
 - Subagent support and model names differ between tools and change over time. Without subagents, the Orchestrator runs every role itself, and all work uses the main session's model.
