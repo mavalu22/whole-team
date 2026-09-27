@@ -8,6 +8,10 @@ All notable changes to WholeTeam are documented in this file. The format is base
 
 - `project.interfaces` in the config: the ways people or other software use the product (`gui`, `api`, `cli`, `service`, `library`, `plugin`), described in `modes.md` section 2. The `1.1.0` migration asks projects that already passed Discovery step 3 for their interfaces.
 
+### Changed
+
+- Discovery step 3 asks for the product's interfaces, with the details each one needs, instead of its platforms. It asks for a hosting platform only when there is something to host, and for the registry or marketplace of a library or plugin.
+
 ## [1.0.1] - 2026-09-24
 
 ### Fixed

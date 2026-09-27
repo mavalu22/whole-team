@@ -86,10 +86,16 @@ For every step:
 ## 5. Step 3: Platform and architecture
 
 - **Key:** `s3_architecture` · **Output:** `factory/input/03-platform-architecture.md`, `factory/output/architecture.md`, ADRs
-- **Goal:** platforms, architecture, components, data model, integrations and non-functional requirements, precise enough to generate the backlog.
+- **Goal:** interfaces, architecture, components, data model, integrations and non-functional requirements, precise enough to generate the backlog.
 - **Owners:** Architect drafts; DBA reviews the data model; you discuss with the user.
 - **Question bank** (ask before delegating):
-  - Which platforms: web (SPA/SSR), mobile (native or cross-platform), desktop, API-only, CLI? Responsive? PWA?
+  - **Interfaces:** show the "Interfaces" descriptions from `factory/core/modes.md` (section 2) and ask which ones the product has (one or more). If `factory/state.yaml` already logs the user's answer (an `interfaces set` line), confirm it instead of asking again. Then ask the details each chosen interface needs:
+    - `gui`: platforms (web SPA or SSR, mobile native or cross-platform, desktop), responsive, PWA;
+    - `api`: style (REST, GraphQL, gRPC, webhooks); this also answers the API style question below;
+    - `cli`: target shells and operating systems;
+    - `service`: triggers (queue, schedule, stream);
+    - `library`: language runtimes and the registry to publish to;
+    - `plugin`: host application, supported host versions and the marketplace.
   - Expected users and load, now and in 12 months? Performance targets?
   - Which architecture style? Default recommendation: modular monolith unless justified.
   - What are the components and their boundaries?
@@ -97,14 +103,14 @@ For every step:
   - Which integrations and API style (REST, GraphQL, RPC)?
   - Any need for realtime, background jobs, file storage, multi-tenancy, i18n, offline or notifications?
   - Which environments?
-  - **Target hosting platform** (used later for the hosting guide)?
+  - **Target hosting platform** (used later for the hosting guide)? Ask it only when the product has `gui`, `api` or `service`, and not when its only `gui` is panels or webviews inside a `plugin`. For `library` and `plugin`, ask for the registry or marketplace instead (already answered with the interface details).
   - What observability is needed?
 - **Delegation:**
   1. `architect`: draft `03-platform-architecture.md` and `factory/output/architecture.md` (from `factory/core/templates/architecture.md`), with a Mermaid component diagram, and write ADRs. Inputs: agreed answers, paths to `01-product-vision.md` and `02-stack.md`.
   2. `dba`: review the data model section (entities, relations, constraints, PII). Stage `DISCOVERY`.
   3. If the DBA returns findings, send them to the `architect` to fix (one round), then check again.
 - **Checklist:**
-  - [ ] Platforms and responsiveness.
+  - [ ] Interfaces, each with its details.
   - [ ] Architecture style with rationale.
   - [ ] Mermaid component diagram.
   - [ ] Modules and boundaries.
@@ -112,10 +118,10 @@ For every step:
   - [ ] Integrations and API style.
   - [ ] Cross-cutting needs (realtime, jobs, storage, tenancy, i18n, offline, notifications): each answered or "Not applicable".
   - [ ] Environments.
-  - [ ] Target hosting platform.
+  - [ ] Target hosting platform, when the product has something to host; the registry or marketplace for `library` and `plugin`.
   - [ ] Non-functional requirements (performance, availability, scalability, observability).
   - [ ] ADRs written; `factory/output/architecture.md` written.
-- **Config keys set:** none.
+- **Config keys set:** `project.interfaces`, as a list (for example `interfaces: [gui, api]`), with a log line `"<ISO time> interfaces set: [<ids>]"`.
 
 ## 6. Step 4: Stack profile
 
@@ -185,7 +191,7 @@ For every step:
   - Data retention and deletion rules?
   - Password and session policies?
   - Audit logging needs?
-  - Browser and device support matrix?
+  - Browser and device support matrix (only with `gui`)?
   - Performance budgets?
   - Availability expectations?
   - Locales?

@@ -53,7 +53,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 2. Define modules with clear boundaries and a one-way dependency direction (`factory/core/guidelines/architecture.md`).
 3. Draw the component diagram in Mermaid (`flowchart`), naming each component and integration.
 4. List entities with key attributes and relations; mark personal data fields.
-5. Define the API style and conventions, integrations, cross-cutting needs, environments, target hosting platform and NFRs with measurable targets.
+5. Record the interfaces from the task message, each with its details. Define the API style and conventions, integrations, cross-cutting needs, environments, target hosting platform (only when the product has something to host; the registry or marketplace for `library` and `plugin`) and NFRs with measurable targets.
 6. Write `factory/output/architecture.md` from the template, including the ADR index.
 
 ### Stack profile (step 4)

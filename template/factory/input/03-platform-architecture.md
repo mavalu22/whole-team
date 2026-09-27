@@ -8,7 +8,7 @@ language: null       # set to input_language when first written
 # Platform and architecture
 
 ## 1. Platforms
-<!-- Web (SPA or SSR), mobile (native or cross-platform), desktop, API-only, CLI; responsive or not; PWA or not. -->
+<!-- The interfaces (project.interfaces: gui, api, cli, service, library, plugin), each with its details. gui: web (SPA or SSR), mobile (native or cross-platform), desktop; responsive or not; PWA or not. api: style. cli: target shells and operating systems. service: triggers (queue, schedule, stream). library: language runtimes and registry. plugin: host application, supported host versions and marketplace. -->
 
 ## 2. Architecture style
 <!-- The style (default: modular monolith) and why, with the ADR that records it. -->
@@ -35,7 +35,7 @@ language: null       # set to input_language when first written
 <!-- Environments (local, staging, production) and what differs between them. -->
 
 ## 10. Target hosting platform
-<!-- The platform the product will be hosted on, and why; used for the hosting guide. -->
+<!-- The platform the product will be hosted on, and why; used for the hosting guide. For library and plugin: the registry or marketplace. "Not applicable" when there is nothing to host. -->
 
 ## 11. Non-functional requirements
 <!-- Measurable targets: expected users and load now and in 12 months, performance, availability, scalability, observability. -->
