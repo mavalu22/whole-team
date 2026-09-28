@@ -29,7 +29,7 @@ Record the start in `factory/state.yaml` with a log line (`"<ISO time> CP-<n> st
 
 ## 3. Merge
 
-- **`git.checkpoint_merge: pr`**, with a remote and an authenticated `gh` or `glab` (checked at kickoff step 3.5; check again with `gh auth status` or `glab auth status`):
+- **`git.checkpoint_merge: pr`**, with a remote and an authenticated `gh` or `glab` (checked at kickoff step 4.5; check again with `gh auth status` or `glab auth status`):
   1. push both branches: `git push origin <base> <integration>`;
   2. write the body from `factory/core/templates/pr-body.md` to a temporary file outside the repository (for example in the system temp folder);
   3. open the pull request: `gh pr create --base <base> --head <integration> --title "<title>" --body-file <file>`, or `glab mr create --source-branch <integration> --target-branch <base> --title "<title>" --description "$(cat <file>)"`. The title is English: `Checkpoint CP-<n>: <English title>`;

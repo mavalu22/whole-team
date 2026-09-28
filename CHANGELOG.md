@@ -7,6 +7,7 @@ All notable changes to WholeTeam are documented in this file. The format is base
 ### Added
 
 - `pipeline` settings in the config (`preset`, `stages`, `ux_check`, `task_size`, `critical_full_pipeline`) and `discovery.quick_steps`, described in `modes.md` sections 11-15. Four presets (`mvp`, `standard`, `complete`, `custom`) choose how much delivery process runs per project; the default is `complete`, so an update never changes how an existing project runs. The `1.3.0` migration sets `pipeline.ux_check` from the old `design.review_ui_items`, which is now deprecated and no longer read.
+- Kickoff asks for the process preset right after the language, with a recommendation and a `custom` path that enforces the safety nets (at least one gate besides DEV, a UX check only where its stage runs). `ongoing` projects choose it at the same point.
 
 ## [1.2.0] - 2026-09-28
 
