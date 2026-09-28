@@ -12,7 +12,7 @@ An item may start only when all of these hold:
 - [ ] Dependencies and `Touches` are declared.
 - [ ] `Refs` are present (tasks) or `Reproduction` and `Evidence` are present (bugs).
 - [ ] `Critical` (tasks) and `Security review` are set.
-- [ ] The item fits one session: one slice, at most about 7 criteria, roughly 8 production files or fewer.
+- [ ] The item fits `pipeline.task_size`: with `session`, one slice, at most about 7 criteria, roughly 8 production files or fewer; with `feature`, one user-visible feature, page or capability with everything it needs, still at most about 7 criteria.
 - [ ] The input documents it references are approved (front matter `status: approved`).
 
 If a check fails, fix the item before starting it: criteria with the Product Owner role, dependencies and size with the Architect, anything that needs a decision with the user.

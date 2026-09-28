@@ -118,11 +118,11 @@ The Architect follows these rules and writes the result to `factory/output/draft
       - `library`: packaging and the build of a local package;
       - `plugin`: the manifest and a test harness that loads the plugin in the host's development mode.
 3. **Vertical slices.** Features are vertical slices that are testable end to end ("Login works end to end", not "login screen" plus "login endpoint").
-4. **Session-sized tasks.** Every task fits comfortably in one agent session: one slice, at most about 7 acceptance criteria, and roughly 8 production files or fewer. Split larger work.
+4. **Size tasks per `pipeline.task_size`.** `session` (default): every task fits comfortably in one agent session: one slice, at most about 7 acceptance criteria, and roughly 8 production files or fewer; split larger work. `feature`: a task is one user-visible feature, page or capability with everything it needs (layout, content, styles, data, its tests at the testing level); don't split work that would be reviewed together, but still keep at most about 7 acceptance criteria per task, splitting into more than one feature-task when a feature needs more.
 5. **Real dependencies only.** Declare a dependency only when a task needs code, a contract or data produced by another task. Never create cycles.
 6. **Compute waves.** A task's wave is 1 + the highest wave among its dependencies (wave 1 if it has none). Then, while two tasks in the same wave share a `Touches` area, move the one that unblocks fewer tasks to the next wave, and recompute the waves of the tasks that depend on it.
 7. **Number last.** Draft tasks with temporary keys. When the waves are final, assign IDs (`T-001`, `T-002`, ...) in wave order, foundation tasks first within a wave, and rewrite every `Depends on` with the final IDs. Every dependency then appears earlier in the file, and file order, ID order and wave order agree.
-8. **Mark critical tasks.** `Critical: yes` for auth, payments, personal data, core business rules and data integrity; `no` otherwise.
+8. **Mark critical tasks.** `Critical: yes` only when a defect in the task could cause: unauthorized access or privilege escalation; loss or corruption of stored data; wrong money movement or billing; exposure of personal or secret data; or legal or compliance harm. Everything else is `no`, including core features, layout, content, navigation, SEO and performance. A product with no login, no stored user data, no payments and no personal data has no critical tasks.
 9. **Mark security reviews.** `Security review: required` for authn/authz, payments, personal data, file upload, parsing of untrusted input, crypto, secrets, permissions and public endpoints. Everything else gets `config.security.review_default`.
 10. **Place checkpoints.** Propose checkpoints at wave boundaries, at points where the user can run and validate something meaningful. At least one is required, and the file always ends with one.
 11. **Reference inputs.** Every task has `Refs` to the user stories, ADRs or input sections it implements.
@@ -142,7 +142,7 @@ The Backlog Validator checks `factory/tasks.md` or the draft against this list a
 - [ ] Each checkpoint line sits between two different waves, checkpoint numbers increase in file order, and the last line of the task list is a checkpoint.
 - [ ] Every task has 1-7 testable acceptance criteria (observable behavior, no vague words such as "fast" or "user-friendly" without a measure).
 - [ ] Every task has at least one `Refs` entry in the allowed format (stable ID, `<file> §<n>`, or `factory/attachments/<ID>/<file>`).
-- [ ] `Critical` and `Security review` are consistent with rules 8 and 9 of section 3, judged from the title, criteria and `Touches`.
+- [ ] `Critical` is `yes` only where a defect in the task could cause unauthorized access or privilege escalation, loss or corruption of stored data, wrong money movement or billing, exposure of personal or secret data, or legal or compliance harm (section 3 rule 8); everything else is `no`. `Security review` is consistent with rule 9 of section 3. Both judged from the title, criteria and `Touches`.
 - [ ] Foundation tasks exist for the applicable items of rule 2, and the first scaffold task (new projects) includes the tooling exclusions for `factory/`.
 
 ## 5. Writing the backlog
@@ -160,4 +160,5 @@ After approval of the draft (Discovery step 8, change requests, audits), the Orc
 - Tasks that depended on a cancelled task: drop the dependency or cancel them too, as the user decides; then recompute waves.
 - Unstarted tasks may be edited (title, criteria, dependencies, `Touches`); add a history line `<date> · changed: <what> (<reason>)`.
 - Tasks that are `DONE` are never edited; new tasks modify their result.
+- **Re-checking `Critical` and `Security review`.** On request (for example after a migration tightens the definition, or the user asks), the Architect proposes new `Critical` and `Security review` values for tasks that are not started, each with its reason, following the rules of section 3 (rules 8 and 9). The user approves the list before anything changes; apply approved changes as edits to unstarted tasks (above).
 - After any structural change, run the Backlog Validator on `factory/tasks.md` and regenerate the graph.
