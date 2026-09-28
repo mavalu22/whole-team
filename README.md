@@ -118,7 +118,18 @@ git pull
 
 Commands are case-insensitive and also work in your configured language (for example `Suporte:` or `Mudança:`). Anything else is normal conversation. You approve each Discovery step and each checkpoint by replying **approve**, or you say what to change.
 
-## 7. Configuration
+## 7. Attachments
+
+Drop a screenshot, a mockup, a spec PDF, a log or a photo into `factory/attachments/`, then cite it by name or path in any command or Discovery answer:
+
+```text
+Support: the menu overlaps the title on mobile, see menu-bug.png
+Change: use the layout in attachments/home-v2.png for the home page
+```
+
+The factory finds the file, describes it once, and moves it to `factory/attachments/<ID>/` when it becomes part of a bug, a task or a Discovery document, telling you the new path. A file meant for the product itself (a profile photo, a logo, a CV) is marked in the item as a product asset: the Developer copies it into the product's asset folder and commits it there, the only way an attachment reaches git. A secret or personal data spotted in an attachment is never copied into an item, a report or a commit; you are told instead. Unlike pasting a file into the chat, which is lost at the next `/clear` or new session, the folder persists and reaches every role agent that needs it.
+
+## 8. Configuration
 
 Everything is in `factory/config.yaml` in your project. Every setting has a comment above it that explains what it does and lists its options. The main groups:
 
@@ -135,7 +146,7 @@ Everything is in `factory/config.yaml` in your project. Every setting has a comm
 
 Discovery asks you for the important ones and explains every option. You can edit any value by hand; the Orchestrator re-reads the file on the next `Let's code`.
 
-## 8. Models and cost
+## 9. Models and cost
 
 Each role runs on a tier, and each tier maps to a model per tool:
 
@@ -158,20 +169,20 @@ Each role runs on a tier, and each tier maps to a model per tool:
 
 Model names and plan availability change over time. If your plan lacks a model, edit the `models` block in `factory/config.yaml` and map the tier to a model you have. The Orchestrator rewrites the model lines in the agent files on the next `Let's code`. Claude Code picks up the change by itself; in Codex, restart the tool afterwards. An installer update resets the agent files to the default models, and the next `Let's code` re-applies the models from your config.
 
-## 9. Language
+## 10. Language
 
 - The factory talks to you in `language` (any BCP 47 tag, for example `en`, `pt-BR`, `es`). Kickoff asks which one you want.
 - Discovery documents in `factory/input/` are written in the language active when Discovery starts, and keep it if you change `language` later.
 - Product docs (README, API docs, CHANGELOG) use `product_docs_language`.
 - Code, code comments, commit messages, branch names and pull request titles are always in English.
 
-## 10. What is and isn't in git
+## 11. What is and isn't in git
 
 The installer adds a marked block to your project's `.gitignore` (creating it if needed), and kickoff commits it as `chore: ignore WholeTeam files`. In `ongoing` projects kickoff asks first; if you decline, the block moves to your local-only `.git/info/exclude`. Everything else the factory adds is ignored:
 
 | Path | In git? |
 |---|---|
-| `factory/` (config, state, backlog, bugs, Discovery documents, reports) | No, ignored |
+| `factory/` (config, state, backlog, bugs, Discovery documents, reports, attachments) | No, ignored |
 | `.claude/agents/factory-*.md`, `.codex/agents/factory-*.toml` | No, ignored |
 | `CLAUDE.md`, `AGENTS.md` created by the installer | No, ignored |
 | Your own `CLAUDE.md` or `AGENTS.md` | Never modified when tracked. If untracked, the installer appends the block to it and doesn't add an ignore rule |
@@ -191,7 +202,7 @@ Because `factory/` is ignored by git:
 3. Git worktrees don't contain factory files; role agents in worktrees read them from the project root.
 4. Your product never imports anything from `factory/`, and the first scaffold task excludes it from tests, linters, bundlers and Docker build contexts.
 
-## 11. Parallel mode notes
+## 12. Parallel mode notes
 
 - Set `execution.mode: parallel` (Discovery step 8 asks) and `execution.max_parallel_tasks` (default 3).
 - Independent items run at the same time, each in its own git worktree under `factory/.worktrees/`, branched from `develop`. Items that touch the same area never run together, and checkpoints are barriers.
@@ -201,7 +212,7 @@ Because `factory/` is ignored by git:
 - **Don't edit files in the main working copy while parallel work runs.**
 - Parallel mode is faster in wall-clock time and uses more tokens than sequential mode. Quality gates are the same.
 
-## 12. Troubleshooting
+## 13. Troubleshooting
 
 - **Subagents not found** (`factory-qa` or `factory_qa` unknown): if WholeTeam was installed while Claude Code or Codex was open, restart the tool from the project root so it loads the new agent files. If they still don't appear, the Orchestrator falls back to running roles itself and tells you so.
 - **Windows execution policy:** if PowerShell refuses to run the script, use `powershell -ExecutionPolicy Bypass -File .\install.ps1`. This changes the policy only for that command.
@@ -211,7 +222,7 @@ Because `factory/` is ignored by git:
 - **"This folder is not a git repository":** create or clone your project first (`git init`), then run the installer again.
 - **"factory/ exists but is not a WholeTeam installation":** your project already has a `factory/` folder. Rename it, then install.
 
-## 13. Limitations
+## 14. Limitations
 
 - The factory runs the product only on your machine. It never deploys or publishes; it writes a hosting and publishing guide instead.
 - Factory state lives only in your local `factory/` folder. Back it up; losing it loses the backlog and Discovery documents (the product code stays safe in git).

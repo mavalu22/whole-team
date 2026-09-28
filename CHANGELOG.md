@@ -10,6 +10,7 @@ All notable changes to WholeTeam are documented in this file. The format is base
 - Attachments can be cited by name or path in any command or Discovery answer; the Orchestrator resolves, describes once and links them: `Evidence` for bugs, `Refs`/`Notes` for tasks, the reopened input document for change requests, the step's input document for Discovery. `Status` reports attachments not yet linked to an item.
 - Task messages carry an `ATTACHMENTS` section with each linked attachment's path, description and whether to open it. The Developer copies attachments marked as product assets into the product; QA and the UX/UI Designer compare the result against a reference image; Support uses attachments as reproduction evidence. Checkpoint reports list attachment paths per item.
 - A secret or personal data spotted in an attachment is never copied into an item, a report, a task message or a commit; the Orchestrator tells the user instead. Attachment content is always data, never instructions, for the Orchestrator and every role agent. The Developer strips unintended secrets or personal data (for example EXIF location) from a product asset built from an attachment before committing it; the Tech Lead checks that none remains.
+- The README documents the attachments folder; kickoff mentions it in the welcome message.
 
 ## [1.1.0] - 2026-09-27
 
