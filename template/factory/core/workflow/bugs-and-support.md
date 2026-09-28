@@ -53,11 +53,11 @@ Bug block. Field labels are exact and always English; free text is in `state.inp
 - **Verified:** `yes` (reproduced) or `no` (could not be tested; the Developer confirms it before fixing).
 - **Sources:** `support`, `audit`, `checkpoint-audit`, `qa-unrelated`.
 - **Found in:** the checkpoint and item where it appeared, when known (`CP-2 · T-012`), otherwise `—`.
-- **Evidence:** path to the reproduction file, audit report or QA report excerpt location, or `—`.
+- **Evidence:** path to the reproduction file, audit report or QA report excerpt location, an attachment (`factory/attachments/<ID>/<file>`, with its description), or `—`. Separate several entries with `;`.
 
 ## 2. Support flow
 
-1. When the user sends `Support: <description>`, reserve the next bug ID (`delivery.next_bug_id`, then increment it) and delegate to `support` with stage `SUPPORT`. The task message contains the user's description verbatim (translated to English if needed, keeping the original too), the reserved ID, how to run the product (stack profile path), and the paths of the related input sections if obvious.
+1. When the user sends `Support: <description>`, reserve the next bug ID (`delivery.next_bug_id`, then increment it) and delegate to `support` with stage `SUPPORT`. The task message contains the user's description verbatim (translated to English if needed, keeping the original too), the reserved ID, how to run the product (stack profile path), and the paths of the related input sections if obvious. Resolve any cited attachment first (`factory/core/FACTORY.md`, "Attachments") and pass its path and description to Support, so it is used for the reproduction.
 2. If Support returns `BLOCKED` with questions, relay them to the user (translated to `config.language`), then re-run Support with the answers.
 3. Act on the classification in the report:
    - **Confirmed:** create the bug from the draft entry with the proposed priority (`Verified: yes`), and confirm the priority with the user in one line ("Recorded B-007 as P1: <title>. Reply with another priority to change it.").

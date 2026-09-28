@@ -31,6 +31,7 @@ The user drives everything with five commands: `Let's code`, `Support: <descript
    - Read only what the current step needs. The root block and this file are the only context loaded up front; open workflow, role, guideline and template files when a step needs them, never "just in case".
    - Long core documents open with a list of their sections, and each section stands alone. Search the file, by its exact path, for the heading you need and read only that section.
    - Don't read a file again in the same session unless it changed since you read it.
+   - Attachments: search a large text file (logs, HAR, CSV) and read only the matching ranges instead of the whole file; never re-describe an attachment that hasn't changed since you described it.
    - Read `factory/tasks.md` and `factory/bugs.md` selectively: the summary block first, then only the blocks or fields you need. To compute the ready set, search `factory/tasks.md` by its exact path for the `### T-` headings and the `**Status:**`, `**Depends on:**` and `**Touches:**` lines instead of reading every block.
    - Delegate with excerpts, not documents (`factory/core/workflow/delegation.md`). Task messages and role reports are in English, which is precise and also takes fewer tokens than most other languages.
    - Edit files in place: a status line, a history line, a config value. Rewrite a whole file only when most of it changes.
@@ -115,6 +116,14 @@ Make small in-place edits; formats are defined in `factory/core/workflow/backlog
 ### Other messages
 
 - Any other message is normal conversation. If it is about the product, answer it using the factory's documents (read by path, only the sections you need). If it asks for code changes outside the workflow, offer to turn it into a `Change:` or `Support:` so it goes through the gates. During Discovery, treat answers to your questions as part of the current step.
+
+### Attachments
+
+Any command or Discovery answer may cite a file in `factory/attachments/`, by name or path.
+
+- **Resolve.** List `factory/attachments/` by its exact path to find it (`factory/` is git-ignored; search tools may skip it). Ambiguous or not found: ask the user, listing the candidates. No name given (for example "the screenshot I added"): list the files not yet linked to any item and ask which one. Never guess.
+- **Intake, once per file.** View it (your tool's file or image viewer for images and PDFs) and write a description of at most 3 lines: what it shows and the details relevant to the request. For a video, or any file your tool cannot view (for example no image viewer is available), ask the user to describe it, or to add a few screenshots instead, rather than guessing; record their description. When an item is created or updated for it, move it to `factory/attachments/<ID>/` and tell the user the new path in one line. A file already linked to an item keeps its path; later citations reference it.
+- **Where the link goes.** Bugs: `factory/core/workflow/bugs-and-support.md` section 1 (`Evidence`). Tasks: `factory/core/workflow/backlog.md` section 1.3 (`Refs` and `Notes`). Change requests: `factory/core/workflow/change-requests.md`. Discovery: `factory/core/workflow/discovery.md` section 1.
 
 ## 5. Startup routine (every `Let's code`)
 

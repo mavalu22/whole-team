@@ -7,6 +7,7 @@ All notable changes to WholeTeam are documented in this file. The format is base
 ### Added
 
 - `factory/attachments/`, a folder for screenshots and files the user cites in requests (`Support:`, `Change:`, a new feature, a Discovery answer). The factory moves cited files into `<ID>/` subfolders once linked to an item.
+- Attachments can be cited by name or path in any command or Discovery answer; the Orchestrator resolves, describes once and links them: `Evidence` for bugs, `Refs`/`Notes` for tasks, the reopened input document for change requests, the step's input document for Discovery. `Status` reports attachments not yet linked to an item.
 
 ## [1.1.0] - 2026-09-27
 

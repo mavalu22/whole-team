@@ -16,7 +16,7 @@ Sections: 1. Triage · 2. Reopen and update the inputs · 3. Impact on the backl
 
 1. Set each affected step's `status: reopened` in `factory/state.yaml` and `status: draft` in the file's front matter.
 2. Discuss the change with the user, one decision at a time, using the step's owners and delegation from `factory/core/workflow/discovery.md` (for example the Architect for a stack change, with a new or superseding ADR).
-3. Update the input files with small edits. Keep section numbers stable: add new sections at the end of the relevant list, never renumber.
+3. Update the input files with small edits. Keep section numbers stable: add new sections at the end of the relevant list, never renumber. Any attachment cited in the change is recorded in the reopened input document with its path and description (`factory/core/FACTORY.md`, "Attachments").
 4. Re-run the affected step's checklist, then ask for re-approval with a summary of what changed. On approval, set the step back to `approved` with the new `approved_at`.
 
 ## 3. Impact on the backlog
@@ -27,6 +27,7 @@ Delegate the impact analysis to `architect` (stage `DISCOVERY`), with the change
 - **In-flight tasks:** if the change affects them, finish the current stage, then either continue with updated criteria (the item returns to DEV) or cancel them, as the user decides.
 - **Done tasks:** never edited; create new tasks that modify their result.
 - **New tasks:** take the next free IDs and are appended after the existing tasks, followed by a new checkpoint, unless the user asks to insert them before the next pending checkpoint (`factory/core/workflow/backlog.md` section 3, rule 13).
+- **Attachments** cited in the change go to every task it creates or updates: the path in `Refs`, the description in `Notes` (`factory/core/workflow/backlog.md` section 1.3).
 
 ## 4. Validate and approve
 

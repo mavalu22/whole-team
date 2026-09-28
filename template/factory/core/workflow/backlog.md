@@ -63,7 +63,7 @@ Field labels are exact and always English. Free text is in `state.input_language
 - **Types:** `feature`, `infra`, `test`, `docs`, `refactor`, `security`.
 - **Statuses:** `TODO`, `TESTING`, `IN_PROGRESS`, `IN_REVIEW`, `QA`, `SEC`, `AWAITING_APPROVAL`, `DONE`, `REVIEW_REJECTED`, `QA_REJECTED`, `SEC_REJECTED`, `BLOCKED`, `CANCELLED`.
 - **Touches:** a short, stable vocabulary of areas (`auth`, `db`, `data`, `migrations`, `api/<resource>`, `ui/<screen>`, `cli/<command>`, `jobs/<name>`, `lib/<module>`, `plugin/<extension point>`, `infra`, `ci`, `docs`). The vocabulary lives in `factory/input/04-stack-profile.md`; reuse it, and add a new area there before using it.
-- **Refs:** stable IDs (`US-03`, `ADR-002`) or numbered sections of input files (`02-stack.md §5`), never heading text, because headings may be translated. Separate entries with `;`.
+- **Refs:** stable IDs (`US-03`, `ADR-002`), numbered sections of input files (`02-stack.md §5`), or an attachment (`factory/attachments/<ID>/<file>`); never heading text, because headings may be translated. Separate entries with `;`. Put an attachment's description in `Notes`.
 
 ### 1.5 Checkpoint line
 
@@ -141,7 +141,7 @@ The Backlog Validator checks `factory/tasks.md` or the draft against this list a
 - [ ] Waves never decrease in file order, and no two tasks in one wave share a `Touches` area.
 - [ ] Each checkpoint line sits between two different waves, checkpoint numbers increase in file order, and the last line of the task list is a checkpoint.
 - [ ] Every task has 1-7 testable acceptance criteria (observable behavior, no vague words such as "fast" or "user-friendly" without a measure).
-- [ ] Every task has at least one `Refs` entry in the allowed format (stable ID or `<file> §<n>`).
+- [ ] Every task has at least one `Refs` entry in the allowed format (stable ID, `<file> §<n>`, or `factory/attachments/<ID>/<file>`).
 - [ ] `Critical` and `Security review` are consistent with rules 8 and 9 of section 3, judged from the title, criteria and `Touches`.
 - [ ] Foundation tasks exist for the applicable items of rule 2, and the first scaffold task (new projects) includes the tooling exclusions for `factory/`.
 
