@@ -1,6 +1,6 @@
 # WholeTeam
 
-A software factory for AI coding agents. WholeTeam turns Claude Code or OpenAI Codex into a complete software team (Product Owner, Architect, Developer, Test Engineer, QA, Security and more) that defines your product with you and then builds it task by task, with tests, code review, QA and security checks at every step.
+A software factory for AI coding agents. WholeTeam turns Claude Code or OpenAI Codex into a complete software team (Product Owner, Architect, Developer, Test Engineer, QA, Security and more) that defines your product with you and then builds it task by task, with as much of tests, code review, QA and security checks as the process you choose calls for.
 
 ## 1. What it is
 
@@ -10,7 +10,7 @@ From then on the main session acts as the **Orchestrator**. It talks to you, kee
 
 1. **Discovery:** it defines the product with you in 8 short steps, each one approved by you.
 2. **Backlog:** it generates tasks with a dependency graph, waves and checkpoints.
-3. **Delivery:** it builds the backlog one task at a time, or several in parallel, through test, development, code review, QA and security gates, and stops at checkpoints so you can validate a working product.
+3. **Delivery:** it builds the backlog one task at a time, or several in parallel, through the gates your chosen process enables (test, development, code review, QA, security), and stops at checkpoints so you can validate a working product.
 
 ### What you can build
 
@@ -43,12 +43,34 @@ flowchart LR
   MAIN --> P
 ```
 
-- **Phases.** Kickoff (language, git checks), Discovery (vision, stack, architecture, stack profile, interface design, constraints, testing, backlog), Delivery, and Maintenance (bug fixes after the last task).
-- **Roles.** The Orchestrator (your main session) plus 13 role agents: Product Owner, UX/UI Designer, Architect, Tech Lead, Developer, Test Engineer, QA, Security, DBA, DevOps, Tech Writer, Support and Backlog Validator. Each runs on a `high`, `medium` or `low` model tier.
-- **Gates.** The Test Engineer writes tests before the Developer implements. The Tech Lead (plus the DBA and UX/UI Designer where relevant) reviews the diff, QA verifies every acceptance criterion by running the product, and Security reviews at the depth each task needs. Rejections go back to development, up to a limit, and then you decide.
-- **Checkpoints.** Milestones in the backlog. At each one the factory audits, runs the full verification, updates the product README, API docs and CHANGELOG, writes a report with a validation checklist, and merges `develop` into `main`, through a pull request when `gh` or `glab` is available.
+The diagram shows the `complete` preset, every gate on every item. Your chosen process decides which gates actually run (section 3).
 
-## 3. Requirements
+- **Phases.** Kickoff (language, process preset, git checks), Discovery (vision, stack, architecture, stack profile, interface design, constraints, testing, backlog), Delivery, and Maintenance (bug fixes after the last task).
+- **Roles.** The Orchestrator (your main session) plus 13 role agents: Product Owner, UX/UI Designer, Architect, Tech Lead, Developer, Test Engineer, QA, Security, DBA, DevOps, Tech Writer, Support and Backlog Validator. Each runs on a `high`, `medium` or `low` model tier.
+- **Gates.** DEV and merging into `develop` always happen; which of TEST, REVIEW, QA and SEC also run depends on your chosen process (section 3). When they run: the Test Engineer writes tests before the Developer implements, the Tech Lead (plus the DBA and UX/UI Designer where relevant) reviews the diff, QA verifies every acceptance criterion by running the product, and Security reviews at the depth each task needs. Rejections go back to development, up to a limit, and then you decide.
+- **Checkpoints.** Milestones in the backlog. At each one the factory verifies the build and the test suite, audits when your process enables it, updates the product README, API docs and CHANGELOG, writes a report with a validation checklist, and merges `develop` into `main`, through a pull request when `gh` or `glab` is available.
+
+## 3. Choosing how much process
+
+Not every product needs every gate. Kickoff asks which process to run, right after the language, and you can change it at any time, including on a project already running, with the `Process` command.
+
+| Preset | Stages besides DEV | UX check | Task size | Best for |
+|---|---|---|---|---|
+| `mvp` | REVIEW | none | feature | Prototypes, MVPs, personal tools |
+| `standard` | REVIEW, QA | QA applies it | feature | Marketing or portfolio sites, internal tools, small apps |
+| `complete` | TEST, REVIEW, QA, SEC | UX/UI Designer in REVIEW | session | Products with users' data, payments, compliance, or a team depending on them |
+| `custom` | you choose | you choose | you choose | Anything that doesn't fit a preset |
+
+**Safety nets, kept in every preset including `custom`:**
+
+- At least one gate besides DEV: `custom` must keep `review` or `qa`.
+- A required security review always runs, whatever the preset says.
+- An item that is truly critical (a defect could allow unauthorized access, lose or corrupt data, move money wrongly, expose personal or secret data, or cause legal harm) always runs every gate.
+- Checkpoints always verify the build and the test suite, update the docs and write a report, whatever the preset.
+
+Changing the process with `Process` never disturbs work in progress: an item finishes its current stage under the old settings, then follows the new stage list for what's left; a checkpoint in progress finishes with the settings it started with. See `factory/core/modes.md` (sections 11-15) for every option's trade-offs.
+
+## 4. Requirements
 
 - **git.**
 - **A shell:** bash (Linux, macOS, Git Bash on Windows) or PowerShell (Windows PowerShell 5.1 or PowerShell 7).
@@ -56,7 +78,7 @@ flowchart LR
 - **Optional:** `gh` (GitHub CLI) or `glab` (GitLab CLI), authenticated, so checkpoints open pull requests.
 - **Your project:** an existing folder that is already a git repository (it may have no commits yet). The factory never creates project folders.
 
-## 4. Install
+## 5. Install
 
 Clone WholeTeam once, anywhere on your machine:
 
@@ -95,7 +117,7 @@ Then:
 2. Start Claude Code or Codex **in the project root**. Recommended main-session model: Claude Code `sonnet`; Codex `gpt-6-sol` at medium effort.
 3. Type `Let's code`.
 
-## 5. Update
+## 6. Update
 
 ```bash
 cd whole-team
@@ -105,7 +127,7 @@ git pull
 
 (or `.\install.ps1 -Path C:\code\my-app -Mode update`). The update replaces `factory/core/` and the `factory-*` agent files, refreshes the WholeTeam blocks, and adds any new starting files. It never touches your `config.yaml`, `state.yaml`, `tasks.md`, `tasks-graph.md`, `bugs.md`, `input/` or `output/`. On your next `Let's code`, the Orchestrator migrates your config and state to the new version if needed. The update resets the agent files to the default models; the next `Let's code` re-applies the models from your `factory/config.yaml`. Claude Code picks up the new agent files by itself; restart Codex after updating so it loads them.
 
-## 6. Using it
+## 7. Using it
 
 | Command | What it does | Example |
 |---|---|---|
@@ -119,7 +141,7 @@ git pull
 
 Commands are case-insensitive and also work in your configured language (for example `Suporte:` or `Mudança:`). Anything else is normal conversation. You approve each Discovery step and each checkpoint by replying **approve**, or you say what to change.
 
-## 7. Attachments
+## 8. Attachments
 
 Drop a screenshot, a mockup, a spec PDF, a log or a photo into `factory/attachments/`, then cite it by name or path in any command or Discovery answer:
 
@@ -130,13 +152,15 @@ Change: use the layout in attachments/home-v2.png for the home page
 
 The factory finds the file, describes it once, and moves it to `factory/attachments/<ID>/` when it becomes part of a bug, a task or a Discovery document, telling you the new path. A file meant for the product itself (a profile photo, a logo, a CV) is marked in the item as a product asset: the Developer copies it into the product's asset folder and commits it there, the only way an attachment reaches git. A secret or personal data spotted in an attachment is never copied into an item, a report or a commit; you are told instead. Unlike pasting a file into the chat, which is lost at the next `/clear` or new session, the folder persists and reaches every role agent that needs it.
 
-## 8. Configuration
+## 9. Configuration
 
 Everything is in `factory/config.yaml` in your project. Every setting has a comment above it that explains what it does and lists its options. The main groups:
 
 - `language`, `product_docs_language`: conversation and documentation languages.
 - `project.type`: `new` or `ongoing`. `project.interfaces`: `gui`, `api`, `cli`, `service`, `library`, `plugin`, one or more.
+- `discovery.quick_steps`: which Discovery steps 3-7 draft their document from defaults instead of asking (section 3).
 - `execution`: `sequential` or `parallel`, `max_parallel_tasks`, `approval_mode` (`per_task`, `per_checkpoint`, `none`), `max_rejections`.
+- `pipeline`: the process preset, the delivery stages, the UX check and the task size (section 3).
 - `models`: the model for each tier in each tool, and the tier of each role.
 - `testing`: `none`, `critical` or `full`, and the coverage target.
 - `design`: `spec`, `html_prototypes` or `user_prototypes`, for products with a `gui`.
@@ -147,7 +171,7 @@ Everything is in `factory/config.yaml` in your project. Every setting has a comm
 
 Discovery asks you for the important ones and explains every option. You can edit any value by hand; the Orchestrator re-reads the file on the next `Let's code`.
 
-## 9. Models and cost
+## 10. Models and cost
 
 Each role runs on a tier, and each tier maps to a model per tool:
 
@@ -170,14 +194,14 @@ Each role runs on a tier, and each tier maps to a model per tool:
 
 Model names and plan availability change over time. If your plan lacks a model, edit the `models` block in `factory/config.yaml` and map the tier to a model you have. The Orchestrator rewrites the model lines in the agent files on the next `Let's code`. Claude Code picks up the change by itself; in Codex, restart the tool afterwards. An installer update resets the agent files to the default models, and the next `Let's code` re-applies the models from your config.
 
-## 10. Language
+## 11. Language
 
 - The factory talks to you in `language` (any BCP 47 tag, for example `en`, `pt-BR`, `es`). Kickoff asks which one you want.
 - Discovery documents in `factory/input/` are written in the language active when Discovery starts, and keep it if you change `language` later.
 - Product docs (README, API docs, CHANGELOG) use `product_docs_language`.
 - Code, code comments, commit messages, branch names and pull request titles are always in English.
 
-## 11. What is and isn't in git
+## 12. What is and isn't in git
 
 The installer adds a marked block to your project's `.gitignore` (creating it if needed), and kickoff commits it as `chore: ignore WholeTeam files`. In `ongoing` projects kickoff asks first; if you decline, the block moves to your local-only `.git/info/exclude`. Everything else the factory adds is ignored:
 
@@ -203,7 +227,7 @@ Because `factory/` is ignored by git:
 3. Git worktrees don't contain factory files; role agents in worktrees read them from the project root.
 4. Your product never imports anything from `factory/`, and the first scaffold task excludes it from tests, linters, bundlers and Docker build contexts.
 
-## 12. Parallel mode notes
+## 13. Parallel mode notes
 
 - Set `execution.mode: parallel` (Discovery step 8 asks) and `execution.max_parallel_tasks` (default 3).
 - Independent items run at the same time, each in its own git worktree under `factory/.worktrees/`, branched from `develop`. Items that touch the same area never run together, and checkpoints are barriers.
@@ -213,7 +237,7 @@ Because `factory/` is ignored by git:
 - **Don't edit files in the main working copy while parallel work runs.**
 - Parallel mode is faster in wall-clock time and uses more tokens than sequential mode. Quality gates are the same.
 
-## 13. Troubleshooting
+## 14. Troubleshooting
 
 - **Subagents not found** (`factory-qa` or `factory_qa` unknown): if WholeTeam was installed while Claude Code or Codex was open, restart the tool from the project root so it loads the new agent files. If they still don't appear, the Orchestrator falls back to running roles itself and tells you so.
 - **Windows execution policy:** if PowerShell refuses to run the script, use `powershell -ExecutionPolicy Bypass -File .\install.ps1`. This changes the policy only for that command.
@@ -223,7 +247,7 @@ Because `factory/` is ignored by git:
 - **"This folder is not a git repository":** create or clone your project first (`git init`), then run the installer again.
 - **"factory/ exists but is not a WholeTeam installation":** your project already has a `factory/` folder. Rename it, then install.
 
-## 14. Limitations
+## 15. Limitations
 
 - The factory runs the product only on your machine. It never deploys or publishes; it writes a hosting and publishing guide instead.
 - Factory state lives only in your local `factory/` folder. Back it up; losing it loses the backlog and Discovery documents (the product code stays safe in git).
