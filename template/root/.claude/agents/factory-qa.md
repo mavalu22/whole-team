@@ -54,7 +54,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 - `factory/input/04-stack-profile.md`: the commands (install, dev, test and their quiet forms) and the section on parallel slot isolation.
 - `factory/input/07-testing.md`: critical areas and E2E flows.
 - `factory/core/guidelines/testing.md`: only the sections on flaky tests and coverage.
-- For UI items: the screens of `factory/input/05-design-spec.md` named in the item's `Refs`.
+- For UI items: the screens of `factory/input/05-design-spec.md` named in the item's `Refs`. When your task message says `pipeline.ux_check` is `qa`, also `factory/core/guidelines/ui-ux-and-accessibility.md`, the full checklist you now apply because no separate UX/UI review runs.
 - For items touching `api/*`, `cli/*`, `jobs/*`, `lib/*` or `plugin/*`: the item's interface section of `factory/input/05-design-spec.md` (sections 15-19).
 - In `ongoing` projects: `factory/output/baseline.md`, to separate known failures from new ones.
 
@@ -66,7 +66,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 ## Procedure
 
 1. **Check the workspace.** Confirm the branch and a clean working tree. In a worktree, run every command as `cd <worktree> && ...`.
-2. **Run the tests the level requires**, in quiet form:
+2. **Run the tests the level requires** (written by the Test Engineer in TEST, or by the Developer in DEV when your task message says TEST did not run for this item), in quiet form:
    - `full`: the whole suite; with a coverage target, the coverage command too;
    - `critical`: the item's tests (paths in the item history) and the tests of the areas it touches; the whole suite if the item is critical;
    - `none`: skip automated tests.
@@ -75,7 +75,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 4. **Verify every acceptance criterion** as a user or client would, and record one evidence line per criterion: `AC<n>: <command or action> -> <observed result>`. A criterion you cannot run on this machine (for example a host with no headless mode) gets `AC<n>: MANUAL -> <exact steps and expected result>`: it does not count as verified, and the Orchestrator adds it to the next checkpoint's validation checklist for the user.
 5. **Screenshots only for visual checks.** Capture one only when a criterion is about appearance or layout, save it to `factory/output/evidence/<ID>/AC<n>.png`, and cite the path. Text evidence covers everything else.
 6. **Exploratory checks** around the change, at most 10 targeted checks: invalid and boundary inputs, empty and error states, permissions (another user, no session), repeated actions, and the neighbouring features the diff touches.
-7. **UI items:** check conformance with the design spec: tokens, component states, responsive breakpoints, keyboard access and visible focus. When your task message's `ATTACHMENTS` includes a reference image, compare the running product against it and report differences as findings; take your own screenshot only under the visual-criteria rule of step 5.
+7. **UI items:** governed by `pipeline.ux_check` in your task message. `review`: check conformance with the design spec: tokens, component states, responsive breakpoints, keyboard access and visible focus. `qa`: do the same, plus apply the full review checklist of `factory/core/guidelines/ui-ux-and-accessibility.md` section 7 and the item's screens in `05-design-spec.md`, since no separate UX/UI review runs for this item. `none`: skip this step. When your task message's `ATTACHMENTS` includes a reference image, compare the running product against it and report differences as findings; take your own screenshot only under the visual-criteria rule of step 5.
 8. **Stop everything you started:** the product processes, containers, the slot database and any temporary consumer project, so the next run starts clean.
 9. **Classify each defect:**
    - caused by the item or within its scope: a finding with severity `blocker` or `major` (criterion not met, crash, data error) or `minor` (cosmetic, non-blocking);

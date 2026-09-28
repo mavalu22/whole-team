@@ -9,6 +9,10 @@ All notable changes to WholeTeam are documented in this file. The format is base
 - `pipeline` settings in the config (`preset`, `stages`, `ux_check`, `task_size`, `critical_full_pipeline`) and `discovery.quick_steps`, described in `modes.md` sections 11-15. Four presets (`mvp`, `standard`, `complete`, `custom`) choose how much delivery process runs per project; the default is `complete`, so an update never changes how an existing project runs. The `1.3.0` migration sets `pipeline.ux_check` from the old `design.review_ui_items`, which is now deprecated and no longer read.
 - Kickoff asks for the process preset right after the language, with a recommendation and a `custom` path that enforces the safety nets (at least one gate besides DEV, a UX check only where its stage runs). `ongoing` projects choose it at the same point.
 
+### Changed
+
+- Delivery runs only the item's enabled stages (`pipeline.stages`, plus SEC for required reviews and every stage for critical items), recorded once in the item's `pipeline: dev, ...` history line; a skipped stage gets no status, no history line, and is named in the other stages' `CONSTRAINTS`. When TEST is not enabled but `testing.level` requires tests, the Developer writes them in DEV; QA and the Tech Lead still check they exist. When `pipeline.ux_check` is `qa`, QA applies the UX checklist and the design spec instead of the UX/UI Designer reviewing in REVIEW; `none` skips the UI conformance check entirely. Rejections restart the item's enabled gates from the first one after DEV. The Definition of Done checks only the stages that ran.
+
 ## [1.2.0] - 2026-09-28
 
 ### Added

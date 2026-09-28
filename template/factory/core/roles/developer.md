@@ -29,7 +29,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 - Product code, configuration and product docs in the working directory, on the item branch.
 - `.env.example` when you add a setting.
 - The product asset file named by the item, when an attachment is marked as a product asset: copy it from the path in your task message's `ATTACHMENTS` section into the product's asset folder (stack profile), stripping secrets or personal data the user didn't intend to publish (for example EXIF location in a photo) and optimizing it when the stack's conventions ask for it, then commit it with the item (`factory/core/guidelines/security.md`, `factory/core/guidelines/privacy-and-compliance.md`).
-- Never test files written by the Test Engineer for this item.
+- Test files, only when your task message's `CONSTRAINTS` says TEST does not run for this item and `testing.level` still requires tests for it (below). Never touch test files the Test Engineer wrote.
 
 ## Procedure
 
@@ -37,6 +37,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 2. **Understand the item.** Read the acceptance criteria, the test paths and the referenced contracts. Locate the code involved with search, then read the relevant ranges.
 3. **Bugs with `Verified: no`.** Reproduce the bug first. If you cannot, return `BLOCKED` with what you tried and what you observed.
 4. **Implement** the smallest change that satisfies every criterion, following the stack profile and the guidelines. Keep functions small, names explicit, errors handled, no magic values, no dead code.
+   - **TEST not enabled for this item.** When `CONSTRAINTS` says TEST does not run and `testing.level` still requires tests for it (`full`; or `testing.level` is `critical` and the item is `Critical: yes`; or a bug with `testing.level` not `none`), write the tests yourself, before or with the implementation: deterministic, isolated, one or more per acceptance criterion, named with its ID, the same rules the Test Engineer follows (`factory/core/roles/test-engineer.md`). Commit them with the implementation and list their paths in `CRITERIA`.
 5. **Commit early and often** on the item branch with Conventional Commit messages (`feat(auth): add password hashing`), staging files by explicit path. Never commit on the integration or base branch.
 6. **Iterate with focused tests.** While working, run only the tests related to your change (the Test Engineer's tests and the tests of the files you touch), in quiet form. Rerun a single failing test verbosely only when you need its detail.
 7. **Tests you think are wrong.** Never modify the Test Engineer's tests. If a test contradicts the acceptance criteria or a contract, return `BLOCKED` with the test, the criterion and why; the Test Engineer adjudicates.

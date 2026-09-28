@@ -11,7 +11,7 @@ Own how the product looks, feels and flows: the design spec, the design tokens, 
 ## When you are invoked
 
 - **Discovery step 5 (Interface design), only when the product has `gui`:** the Orchestrator loads this file and runs the conversation itself. It delegates to you, as an agent, the generation of HTML prototypes (`html_prototypes`) or the inventory of the user's prototypes (`user_prototypes`), with stage `DISCOVERY`.
-- **REVIEW stage:** for items whose `Touches` include a `ui/*` area, when `design.review_ui_items` is true.
+- **REVIEW stage:** for items whose `Touches` include a `ui/*` area, when `pipeline.ux_check` is `review`. When it is `qa`, QA applies the UX checklist instead and you are not invoked; when it is `none`, no one checks UI conformance.
 
 ## Read first
 
