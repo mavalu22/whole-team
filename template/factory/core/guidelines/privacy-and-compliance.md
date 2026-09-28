@@ -10,6 +10,7 @@ Sections: 1. Personal data inventory · 2. Data minimization · 3. Consent and l
 - **Sensitive data** needs extra protection: health, biometrics, genetic data, racial or ethnic origin, religion, political opinions, sexual life or orientation, union membership, children's data, and financial data such as card numbers.
 - Keep an inventory in `factory/output/architecture.md` (data model section): for each entity field with personal data, record the category, purpose, where it is stored and sent (third parties), retention, and protection (hashed, encrypted, masked).
 - Every item that adds a personal data field updates the inventory in the same change.
+- A user attachment reaches git only as a product asset named by the item. Before committing it, the Developer strips or removes any personal data the user didn't intend to publish (for example EXIF location in a photo); the Tech Lead checks that none remains (a visible face or address in a screenshot is a finding).
 
 ## 2. Data minimization
 
