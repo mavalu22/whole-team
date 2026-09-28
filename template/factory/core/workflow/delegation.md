@@ -66,8 +66,9 @@ Build each task message from `factory/core/templates/task-message.md`, in Englis
 7. files to read first (exact absolute paths; only what this stage needs, for example the stack profile and the relevant guideline sections);
 8. the full item block from `factory/tasks.md` or `factory/bugs.md`;
 9. relevant excerpts only: acceptance criteria, contracts, previous findings to fix, the Test Engineer's test paths, answers to earlier questions. Never whole documents; give paths and section numbers for anything else;
-10. constraints: what not to touch, and extra limits for this stage;
-11. role-specific report fields, if any (the common report format is already in the agent's instructions).
+10. attachments linked to the item, if any: each one's absolute path, its description, and whether the role should open it, or `—`;
+11. constraints: what not to touch, and extra limits for this stage;
+12. role-specific report fields, if any (the common report format is already in the agent's instructions).
 
 Rules:
 

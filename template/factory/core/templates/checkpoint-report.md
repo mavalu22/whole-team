@@ -14,10 +14,12 @@
 
 ## 2. Items included
 
-| ID | Title | Type | Merge commit |
-|---|---|---|---|
-| T-{{xxx}} | {{title}} | {{type}} | {{short hash}} |
-| B-{{xxx}} | {{title}} | bug {{priority}} | {{short hash}} |
+<!-- Attachments column: the paths linked to the item (factory/attachments/<ID>/...), so the user can compare during validation, or "—". -->
+
+| ID | Title | Type | Merge commit | Attachments |
+|---|---|---|---|---|
+| T-{{xxx}} | {{title}} | {{type}} | {{short hash}} | {{paths or —}} |
+| B-{{xxx}} | {{title}} | bug {{priority}} | {{short hash}} | {{paths or —}} |
 
 ## 3. How to try it
 
