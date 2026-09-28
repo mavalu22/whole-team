@@ -83,3 +83,11 @@ The config merge (section 2) adds `project.interfaces` with its default `[gui]`.
 ### 1.2.0
 
 No steps. The config and state formats are unchanged; the update adds `factory/attachments/`.
+
+### 1.3.0
+
+The config merge (section 2) adds `pipeline.preset`, `pipeline.stages`, `pipeline.ux_check`, `pipeline.task_size`, `pipeline.critical_full_pipeline` and `discovery.quick_steps`, all with their `complete` defaults, so a project mid-delivery keeps running exactly as before.
+
+1. `factory/config.yaml`: `pipeline.ux_check`. Set it from the old `design.review_ui_items`: `true` becomes `review`, `false` becomes `none`. Replace only that line. Reason: `pipeline.ux_check` replaces `design.review_ui_items`, which is no longer read.
+2. Tell the user, in at most 3 lines: the project keeps running with the full process (`complete`); process presets now exist (`mvp`, `standard`, `complete`, `custom`, `factory/core/modes.md` section 11); they can change the process at any time with the `Process` command. Reason: the update must not surprise a project already mid-delivery.
+3. If `factory/tasks.md` has a task with `Critical: yes` that is not `DONE` or `CANCELLED`, tell the user the definition of "critical" is stricter now (`factory/core/workflow/backlog.md` section 3, rule 8) and offer to have the Architect re-check `Critical` and `Security review` on tasks that are not started (`factory/core/workflow/backlog.md` section 6). Apply nothing without the user's answer. Reason: some tasks marked critical under the old rule may no longer qualify, and `pipeline.critical_full_pipeline` now depends on the flag being accurate.
