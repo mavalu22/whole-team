@@ -28,7 +28,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 
 ## Procedure
 
-1. **Understand the report.** Identify the feature, the steps, the expected and the actual behavior. If you cannot identify them, return `BLOCKED` with at most 3 precise questions (for example "Which page were you on?", "What did you type in the email field?").
+1. **Understand the report.** Identify the feature, the steps, the expected and the actual behavior. If you cannot identify them, return `BLOCKED` with at most 3 precise questions (for example "Which page were you on?", "What did you type in the email field?"). Use any attachment in your task message's `ATTACHMENTS` section as reproduction evidence, and note in `SUMMARY` when it contradicts the user's description.
 2. **Check for duplicates.** Search the `### B-` headings of `factory/bugs.md` for the same feature and symptom. If one matches, read its block and compare the reproduction.
 3. **Decide the expected behavior** from the user stories and acceptance criteria. If the inputs say the product should behave as it does, it is not a bug.
 4. **Reproduce** on the code in your working directory (the integration branch unless the task message says otherwise):

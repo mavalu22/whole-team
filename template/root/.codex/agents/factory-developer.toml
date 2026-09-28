@@ -57,6 +57,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 
 - Product code, configuration and product docs in the working directory, on the item branch.
 - `.env.example` when you add a setting.
+- The product asset file named by the item, when an attachment is marked as a product asset: copy it from the path in your task message's `ATTACHMENTS` section into the product's asset folder (stack profile), optimizing it when the stack's conventions ask for it, and commit it with the item.
 - Never test files written by the Test Engineer for this item.
 
 ## Procedure
