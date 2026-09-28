@@ -64,7 +64,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 5. **Waves.** Each task's `Wave` equals the heading it sits under; waves never decrease in file order; no two tasks in the same wave share a `Touches` area.
 6. **Checkpoints.** Each checkpoint line sits between two different waves; numbers increase in file order; the last line of the task list is a checkpoint.
 7. **Acceptance criteria.** 1-7 per task, each `AC<n>:` with an observable, testable statement. Flag vague words without a measure ("fast", "easy", "intuitive", "secure", "user-friendly", "properly").
-8. **Refs.** At least one per task; each is a stable ID (`US-03`, `ADR-002`) or `<file> §<n>`; entries separated by `;`; no heading text.
+8. **Refs.** At least one per task; each is a stable ID (`US-03`, `ADR-002`), `<file> §<n>`, or `factory/attachments/<ID>/<file>`; entries separated by `;`; no heading text.
 9. **Flags.** `Critical: yes` where the title, criteria or `Touches` involve auth, payments, personal data, core business rules or data integrity. `Security review: required` where they involve authn/authz, payments, personal data, file upload, parsing of untrusted input, crypto, secrets, permissions or public endpoints.
 10. **Foundation.** The applicable foundation tasks exist, and the first scaffold task of a new project includes the tooling exclusions for `factory/`.
 11. **Draft or live file.** In a draft every status is `TODO` and there is no summary block. In `factory/tasks.md`, other statuses are expected, `CANCELLED` tasks still count for ID uniqueness, and dependencies on `CANCELLED` tasks are violations.

@@ -15,6 +15,7 @@ Sections: 1. Rules · 2. Step procedure · 3. Step 1: Vision and scope · 4. Ste
 - **Changes after approval.** An approved step changes only through `Change:` (`factory/core/workflow/change-requests.md`).
 - **Checklists.** Each step has a completion checklist. Don't ask for approval until every item passes.
 - **Delegated drafts.** When a role drafts a document, send it a task message (`factory/core/templates/task-message.md`) with `STAGE: DISCOVERY`, the answers agreed so far, and the paths of the approved input files it needs. Drafting roles write the input file directly; you then discuss it with the user and apply small corrections yourself. Re-delegate only when a correction needs the role's expertise (for example a different stack option).
+- **Attachments.** A file cited in an answer (`factory/core/FACTORY.md`, "Attachments") is recorded in the step's input document with its path and description. It stays in `factory/attachments/discovery/<step key>/`, because there is no item yet.
 
 ## 2. Step procedure
 
