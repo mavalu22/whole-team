@@ -190,7 +190,7 @@ For every step:
   - [ ] Accessibility target and rules.
   - [ ] Tone of voice.
   - [ ] Prototype index (when prototypes exist), approved by the user.
-- **Config keys set:** `design.mode`; `design.review_ui_items` if the user wants to change it (show its description from `factory/core/modes.md` section 6).
+- **Config keys set:** `design.mode`. (The UI conformance check is `pipeline.ux_check`, set by the process preset at kickoff and changed with the `Process` command; `factory/core/modes.md` section 13.)
 
 ### 7.2 Other interfaces
 
