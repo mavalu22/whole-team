@@ -105,7 +105,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 
 ### Backlog (step 8)
 
-1. Follow `factory/core/workflow/backlog.md` section 3 exactly: modules, foundation first, vertical slices, session-sized tasks, real dependencies, waves, numbering last, critical and security marks, checkpoints, refs.
+1. Follow `factory/core/workflow/backlog.md` section 3 exactly: modules, foundation first, vertical slices, tasks sized per `pipeline.task_size`, real dependencies, waves, numbering last, critical and security marks, checkpoints, refs.
 2. Write the body to `factory/output/drafts/backlog-draft.md`.
 3. Self-check against section 4 of that file before reporting.
 
