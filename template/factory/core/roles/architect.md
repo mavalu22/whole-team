@@ -59,12 +59,14 @@ Paths are relative to the project root; your task message gives its absolute pat
 4. List entities with key attributes and relations; mark personal data fields.
 5. Record the interfaces from the task message, each with its details. Define the API style and conventions, integrations, cross-cutting needs, environments, target hosting platform (only when the product has something to host; the registry or marketplace for `library` and `plugin`) and NFRs with measurable targets.
 6. Write `factory/output/architecture.md` from the template, including the ADR index.
+7. **Quick mode:** when your task message says this step is quick, skip asking and default to a modular monolith with one module per stated interface; draft everything else the same way, and list only the open decisions that most affect later steps under `DECISIONS NEEDED`.
 
 ### Stack profile (step 4)
 
 1. Define the folder structure, the `Touches` vocabulary (areas that match the modules and interfaces), and exact commands for install, dev, test, lint, type-check, format and build, plus the command of each interface the product has: run the CLI, start the worker, build and pack the library locally, launch the plugin host in development mode.
 2. For test, lint, type-check and build, and for the interface commands that print output, define a quiet form that prints only failures and a summary (for example a reporter flag such as `--reporter=dot`, `--silent`, `-q`, or piping through the tool's summary option). Verify each flag exists in the chosen tool's current version.
 3. Define configuration and env patterns, the dependency policy, tooling exclusions for `factory/` (test runner, linter, formatter, type-checker, bundler, Docker build context), and parallel slot isolation: `FACTORY_SLOT` sets the port (base + 10 × slot) and the database name or file.
+4. **Quick mode:** when your task message says this step is quick, draft the commands from the stack's own standard tooling (its usual install, dev, test, lint, type-check and build commands, with quiet forms) instead of asking preferences.
 
 ### Interface specs (step 5)
 

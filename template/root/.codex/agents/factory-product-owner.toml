@@ -71,6 +71,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 8. Define success metrics that can be measured (a number, a rate, a time), with the target.
 9. Record assumptions and risks explicitly; move unresolved items to "Open questions".
 10. In step 6, get an answer or an explicit "Not applicable" for every constraint topic.
+11. **Quick mode (step 6 only):** when the Orchestrator runs step 6 as quick, draft common constraints (typical retention, session and password policies, no unusual compliance regime) marked as assumptions, instead of asking each topic. Step 1 is never quick.
 
 ### Clarifications
 

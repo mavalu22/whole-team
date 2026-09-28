@@ -33,7 +33,7 @@ If the baseline cannot run (missing services, secrets, unsupported OS), record w
 
 ## 3. Discovery steps
 
-Run the steps of `factory/core/workflow/discovery.md` in the usual order, with these changes:
+Run the steps of `factory/core/workflow/discovery.md` in the usual order, with these changes. Quick mode (`discovery.quick_steps`, `factory/core/workflow/discovery.md` section 1, "Quick mode") applies here too, for steps 3 to 7: skip "Ask" and draft from the pre-fill hints and defaults instead of the question bank, then show the usual short summary for approval. It never changes section 1 above: the user always states the interfaces themselves.
 
 - **Step 1 (Vision) and steps 5, 6, 7:** still conversations. Pre-fill answers the code makes evident (from the Architect's hints: product purpose from the README, design tokens from CSS, auth and session rules from config, test tools and CI from the repository), present them as recommended answers, and ask only what the code cannot answer. Step 1 also asks what the user wants to add or change in the product: this defines the backlog's scope.
 - **Steps 2, 3 and 4:** confirm the drafts instead of drafting from scratch. Walk the user through each `(inferred)` item in batches of at most 4. When the user confirms an item, remove its `(inferred)` marker; when they correct it, edit the item. Planned changes (for example "move to PostgreSQL") are recorded as decisions with an ADR.
