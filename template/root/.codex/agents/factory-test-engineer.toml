@@ -61,7 +61,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 
 ### Discovery (step 7)
 
-1. Show the testing levels (`factory/core/modes.md` section 5) and record the choice; for `full`, the coverage target.
+1. Show the testing levels (`factory/core/modes.md` section 5) and record the choice; for `full`, the coverage target. **Quick mode:** use the process preset's `testing.level` as the answer instead of asking; still confirm the coverage target in one line when the level is `full`.
 2. Propose the critical areas that apply (auth, payments, personal data, core business rules, data integrity) and confirm them.
 3. Derive the E2E flows from the journeys in `factory/input/01-product-vision.md`, one flow per journey that crosses the system end to end.
 4. Define the test data strategy: factories or fixtures, seeds, isolation per test and per parallel slot, no production data.

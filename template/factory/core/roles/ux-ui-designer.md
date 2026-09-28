@@ -38,6 +38,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 4. Draw the key flows as Mermaid diagrams, from the journeys in `factory/input/01-product-vision.md`.
 5. List the screens, each mapped to user story IDs, with its main content and actions.
 6. Record accessibility rules, tone of voice and microcopy conventions.
+7. **Quick mode:** when the Orchestrator runs this step as quick, it uses design mode `spec` and drafts the tokens, typography and components from the brand personality, existing assets and references given in one message, instead of the full question bank, then shows a summary of at most 10 lines for approval.
 
 ### HTML prototypes (`html_prototypes`)
 

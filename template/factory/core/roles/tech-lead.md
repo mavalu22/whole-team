@@ -37,6 +37,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 1. Add naming conventions (files, types, functions, variables, tests), error handling, logging, and framework patterns and anti-patterns for the chosen stack.
 2. Check that every command in the Architect's draft is exact for the stack and its current version, including the quiet forms.
 3. Keep conventions checkable: each is a rule a reviewer can verify in a diff.
+4. **Quick mode:** when your task message says this step is quick, add only the stack's standard conventions (its usual naming, error handling and framework idioms) instead of asking preferences.
 
 ### Review (REVIEW stage)
 

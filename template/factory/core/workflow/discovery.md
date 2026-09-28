@@ -16,6 +16,7 @@ Sections: 1. Rules · 2. Step procedure · 3. Step 1: Vision and scope · 4. Ste
 - **Checklists.** Each step has a completion checklist. Don't ask for approval until every item passes.
 - **Delegated drafts.** When a role drafts a document, send it a task message (`factory/core/templates/task-message.md`) with `STAGE: DISCOVERY`, the answers agreed so far, and the paths of the approved input files it needs. Drafting roles write the input file directly; you then discuss it with the user and apply small corrections yourself. Re-delegate only when a correction needs the role's expertise (for example a different stack option).
 - **Attachments.** A file cited in an answer (`factory/core/FACTORY.md`, "Attachments") is recorded in the step's input document with its path and description. It stays in `factory/attachments/discovery/<step key>/`, because there is no item yet.
+- **Quick mode.** Steps 3 to 7 run in quick mode when their key is in `discovery.quick_steps` (`factory/core/modes.md` section 15). A quick step still produces its full output document, because later stages and agents depend on it, but skips "Ask" (section 2, step 3): its owner drafts the document straight from the answers already agreed, the stack's conventions and the documented defaults, without the question bank. The step's checklist still applies before it can be approved.
 
 ## 2. Step procedure
 
@@ -23,10 +24,10 @@ For every step:
 
 1. **Start.** In `factory/state.yaml`: set `discovery.current_step` to the step key and the step's `status: in_progress`. In the input file's front matter set `language:` to `state.input_language` if it is `null`.
 2. **First.** Do the step's "First" actions, if any (for example, choose a mode).
-3. **Ask.** Work through the question bank in batches, recording answers as they settle.
+3. **Ask.** Work through the question bank in batches, recording answers as they settle. Skip this step for a quick step (Rules, "Quick mode"): go straight to Draft.
 4. **Draft.** Delegate the drafts listed under "Delegation", if any, and review the result against the checklist.
 5. **Check.** Run the checklist. Resolve gaps with the user or the drafting role.
-6. **Approve.** Present the summary and ask for approval.
+6. **Approve.** Present the summary and ask for approval: the step's usual summary (at most 15 lines), or for a quick step, a summary of at most 10 lines with the choices that matter most, drafted by the owner alongside the document.
 7. **On approval:**
    1. in the input file's front matter, set `status: approved` and `approved_at: <YYYY-MM-DD>`;
    2. in `factory/state.yaml`, set the step's `status: approved` and `approved_at`, set `current_step` to the next step key (or `null` after step 8), and append a log line;
@@ -110,6 +111,7 @@ For every step:
   1. `architect`: draft `03-platform-architecture.md` and `factory/output/architecture.md` (from `factory/core/templates/architecture.md`), with a Mermaid component diagram, and write ADRs. Inputs: agreed answers, paths to `01-product-vision.md` and `02-stack.md`.
   2. `dba`: review the data model section (entities, relations, constraints, PII). Stage `DISCOVERY`.
   3. If the DBA returns findings, send them to the `architect` to fix (one round), then check again.
+- **Quick mode:** draft from the standard architecture default (a modular monolith, `factory/core/guidelines/architecture.md`) and the interfaces already agreed; list only the open decisions that most affect later steps in the summary.
 - **Checklist:**
   - [ ] Interfaces, each with its details.
   - [ ] Architecture style with rationale.
@@ -133,6 +135,7 @@ For every step:
 - **Delegation:**
   1. `architect`: draft folder structure, `Touches` vocabulary, commands, quiet command forms, tooling configuration, configuration and env, dependency policy, tooling exclusions for `factory/`, and parallel slot isolation.
   2. `tech-lead`: add or refine naming, error handling, logging, framework patterns and anti-patterns, and check that every command is exact and runnable for the stack.
+- **Quick mode:** draft the commands from the stack's standard tooling (its usual install, dev, test, lint, type-check and build commands, with quiet forms) and the `Touches` vocabulary already used in `03-platform-architecture.md`, instead of asking preferences.
 - **Checklist:**
   - [ ] Folder structure and naming conventions.
   - [ ] `Touches` vocabulary: short, stable area names (`auth`, `db`, `api/<resource>`, `ui/<screen>`, `cli/<command>`, `jobs/<name>`, `lib/<module>`, `plugin/<extension point>`, `infra`, `ci`, ...).
@@ -164,6 +167,7 @@ For every step:
 
 - **Owners:** UX/UI Designer. You lead the conversation: read `factory/core/roles/ux-ui-designer.md` and follow its procedure.
 - **First:** show the three design modes from `factory/core/modes.md` (section 6) and ask the user to choose. Write `design.mode`.
+- **Quick mode:** use design mode `spec` (skip the mode choice), drafted from brand personality, existing assets and references the user gives in one message, instead of the full question bank.
 - **Question bank:**
   - Brand personality in 3 adjectives?
   - Existing brand assets (logo, colors, fonts)?
@@ -314,6 +318,7 @@ For every step:
   - Open-source license policy?
   - Third-party restrictions?
 - **Delegation:** after the constraints are agreed, `security` writes the initial threat model (STRIDE-lite) in `factory/output/threat-model.md` from `factory/core/templates/threat-model.md`. Inputs: paths to `01`, `03` and `06`. Summarize the top risks for the user in at most 5 lines.
+- **Quick mode:** draft common constraints (typical retention, session and password policies, no unusual compliance regime) marked as assumptions, instead of asking each topic; the threat model still runs as usual.
 - **Checklist:**
   - [ ] Each topic of the question bank answered or marked "Not applicable".
   - [ ] Threat model written.
@@ -324,7 +329,8 @@ For every step:
 - **Key:** `s7_testing` · **Output:** `factory/input/07-testing.md`
 - **Goal:** how much the factory tests, where, and with which tools.
 - **Owners:** Test Engineer. You lead the conversation: read `factory/core/roles/test-engineer.md` and follow its Discovery procedure.
-- **First:** show the testing levels from `factory/core/modes.md` (section 5) and ask. Write `testing.level`. If the level is `full`, ask for the coverage target (default 70) and write `testing.coverage_target`.
+- **First:** show the testing levels from `factory/core/modes.md` (section 5) and ask, recommending the value the process preset already wrote (`pipeline.preset`, `factory/core/modes.md` section 11). Write `testing.level`. If the level is `full`, ask for the coverage target (default 70) and write `testing.coverage_target`.
+- **Quick mode:** use the preset's `testing.level` as the answer instead of asking; still confirm the coverage target in one line when the level is `full`.
 - **Then:**
   1. Propose the critical areas (auth, payments, personal data, core business rules, data integrity) that apply to this product, and confirm them.
   2. List the E2E flows from the journeys in `01-product-vision.md`.
