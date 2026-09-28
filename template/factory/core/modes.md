@@ -2,7 +2,7 @@
 
 **Rule for the Orchestrator:** every time the user chooses or changes one of these settings, show all options of the group with their summary, what happens, trade-offs and when to choose them, translated to `config.language`. Keep mode identifiers as-is, in backticks. Mark the recommended option. Then write the chosen value to the config key named in the group.
 
-Sections: 1. Project type · 2. Interfaces · 3. Execution · 4. Approval · 5. Testing level · 6. Design · 7. Security review depth · 8. Bug threshold · 9. Checkpoint merge · 10. Audit output
+Sections: 1. Project type · 2. Interfaces · 3. Execution · 4. Approval · 5. Testing level · 6. Design · 7. Security review depth · 8. Bug threshold · 9. Checkpoint merge · 10. Audit output · 11. Process preset · 12. Delivery stages · 13. UX check · 14. Task size · 15. Discovery quick mode
 
 ## 1. Project type
 
@@ -101,7 +101,7 @@ Config key: `design.mode` (and `design.review_ui_items`). Set in Discovery step 
 - **What happens.** `spec`: the UX/UI Designer writes `factory/input/05-design-spec.md` (tokens, typography, components, flows, screens). `html_prototypes`: also generates one shared stylesheet from the design tokens and a static HTML file per key screen, which you open in a browser and approve; developers consult them. `user_prototypes`: you add exports, images or HTML from your own tools; the designer inventories them and extracts the spec.
 - **Trade-offs.** `spec`: cheapest; you first see the look when the product runs. `html_prototypes`: costs tokens up front but catches layout and flow problems before any code exists. `user_prototypes`: best fidelity when you already have designs; costs your time to prepare them.
 - **When to choose.** `spec` for internal tools, APIs and simple interfaces. `html_prototypes` when the interface matters and no designs exist. `user_prototypes` when a designer already made the screens.
-- **`review_ui_items`.** `true` (default) adds a UX/UI review to every item that touches `ui/*`, before QA.
+- **`review_ui_items`.** Deprecated since 1.3.0 and no longer read. The UI conformance check is now `pipeline.ux_check` (section 13).
 - **Recommended.** `spec` for most projects; `html_prototypes` when the product's interface is a key selling point.
 
 ## 7. Security review depth
@@ -168,3 +168,79 @@ Not stored in the config: the Orchestrator asks each time an audit starts (`Audi
 - **Trade-offs.** `report_first`: you stay in control of scope; costs one more round of conversation. `tasks_directly`: fastest; may add work you would have skipped.
 - **When to choose.** `report_first` for existing products with many findings expected. `tasks_directly` when you want everything fixed and trust the priorities.
 - **Recommended.** `report_first`: audits of existing code often find more than you want to fix at once.
+
+## 11. Process preset
+
+Config key: `pipeline.preset`. Set at kickoff, right after the language; change it any time with the `Process` command.
+
+| Option | Summary |
+|---|---|
+| `mvp` | Fastest process: prototypes, MVPs, personal tools. |
+| `standard` | Balanced process: marketing or portfolio sites, internal tools, small apps. |
+| `complete` | Full process (every gate, today's flow): products with users' data, payments, compliance, or a team depending on them. |
+| `custom` | Set every key below yourself. |
+
+- **What happens.** Choosing `mvp`, `standard` or `complete` writes `pipeline.stages`, `pipeline.ux_check`, `pipeline.task_size`, `pipeline.critical_full_pipeline`, `testing.level`, `security.audit_on_checkpoint` and `discovery.quick_steps` to the preset's values (table below); you still confirm `testing.level` at Discovery step 7. `custom` asks each of those settings in turn (`pipeline.stages`: section 12; `pipeline.ux_check`: section 13; `pipeline.task_size`: section 14; `testing.level`: section 5; `discovery.quick_steps`: section 15; `pipeline.critical_full_pipeline` and `security.audit_on_checkpoint` as described above), then enforces the safety nets: at least one gate besides DEV, and a UX check only where its stage runs.
+
+| Setting | `mvp` | `standard` | `complete` |
+|---|---|---|---|
+| `pipeline.stages` | `[review]` | `[review, qa]` | `[test, review, qa, sec]` |
+| `pipeline.ux_check` | `none` | `qa` | `review` |
+| `pipeline.task_size` | `feature` | `feature` | `session` |
+| `pipeline.critical_full_pipeline` | `true` | `true` | `true` |
+| `testing.level` | `none` | `critical` | the Discovery step 7 answer (default `critical`) |
+| `security.audit_on_checkpoint` | `false` | `true` | `true` |
+| `discovery.quick_steps` | `[s4_stack_profile, s6_constraints, s7_testing]` | `[s6_constraints, s7_testing]` | `[]` |
+
+- **Trade-offs.** `mvp`: fastest and cheapest, with only one gate (REVIEW) and no automated tests; fine for throwaway or low-stakes work, risky for anything users depend on. `standard`: a second gate (QA) and critical-path tests, for products with real but modest stakes. `complete`: every gate, and tests as Discovery step 7 decides; the most protection, at the highest per-item cost. `custom`: exactly the process you want, at the cost of choosing it yourself and keeping it coherent.
+- **Safety nets**, kept in every preset including `custom`: at least one gate besides DEV; a required security review always runs SEC; a critical item always runs every stage when `pipeline.critical_full_pipeline` is true; checkpoints always verify, audit (per `security.audit_on_checkpoint`) and report.
+- **When to choose.** `mvp` for a prototype, a personal tool, or code nobody but you depends on. `standard` for most products: marketing sites, internal tools, small apps with some real users. `complete` for anything that stores user data, moves money, must meet a compliance regime, or that a team relies on. `custom` when a project's needs don't match a preset, for example a `complete` product that also wants `task_size: feature`.
+- **Recommended.** `standard` as a starting point when the product's stakes aren't yet clear; `complete` for anything sensitive from the first task.
+
+## 12. Delivery stages
+
+Config key: `pipeline.stages`, a list from `test`, `review`, `qa`, `sec`. Part of a preset, or set directly with `custom`.
+
+- **What happens.** Every item runs DEV, then the stages in this list, in order (`test`, `review`, `qa`, `sec`), skipping the rest, then APPROVAL when `execution.approval_mode` asks for it, then MERGE; DEV and MERGE always run. A stage left out is never delegated and leaves no status or history line for that item, except: a required security review still runs SEC even when `sec` is off, and a critical item runs every stage when `pipeline.critical_full_pipeline` is true.
+- **Trade-offs.** Every stage you drop saves the fixed cost of a fresh agent and a review round, at the cost of that check. `test` off means no automated tests unless `testing.level` still requires them for the item (the Developer then writes them in DEV). `review` off removes the only code-quality gate; `qa` off removes the only running-product verification; `sec` off removes review of ordinary items (required reviews still run).
+- **When to choose.** Keep `review` or `qa` (or both): the factory refuses to drop the last gate besides DEV. Add `test` when regressions are costly to find by hand. Add `sec` when most items touch sensitive code, instead of relying on the per-item required flag alone.
+- **Recommended.** `[review, qa]` for most products (the `standard` preset); `[test, review, qa, sec]` for anything sensitive (the `complete` preset).
+
+## 13. UX check
+
+Config key: `pipeline.ux_check`.
+
+| Option | Summary |
+|---|---|
+| `review` | The UX/UI Designer reviews every `ui/*` item in REVIEW. |
+| `qa` | QA applies the UX checklist and the design spec; no separate designer review. |
+| `none` | No UX conformance check. |
+
+- **What happens.** `review`: the UX/UI Designer joins REVIEW for items touching `ui/*`. `qa`: the UX/UI Designer is not added to REVIEW; QA applies `factory/core/guidelines/ui-ux-and-accessibility.md` and the item's screens in `05-design-spec.md` itself. `none`: neither role checks UI conformance; only the acceptance criteria are verified.
+- **Trade-offs.** `review`: a specialist check, at the cost of one more reviewer. `qa`: folds the check into a stage that already runs, cheaper but less specialized. `none`: cheapest, and risks visual and accessibility regressions nobody catches.
+- **Constraints.** `qa` requires `qa` in `pipeline.stages`; `review` requires `review` in it.
+- **When to choose.** `review` for products where the interface is a selling point. `qa` for most `gui` products, to save a reviewer without dropping the check. `none` only for internal tools or prototypes where appearance doesn't matter.
+- **Recommended.** `qa`: most of the protection, without a dedicated reviewer.
+
+## 14. Task size
+
+Config key: `pipeline.task_size`.
+
+| Option | Summary |
+|---|---|
+| `session` | Every task fits one focused agent session. |
+| `feature` | A task is a whole user-visible feature or page. |
+
+- **What happens.** `session`: today's rule (`factory/core/workflow/backlog.md` section 3, rule 4): one vertical slice, at most about 7 acceptance criteria, roughly 8 production files or fewer. `feature`: a task covers one user-visible feature, page or capability with everything it needs (layout, content, styles, data, its tests at the testing level); work that would be reviewed together stays in one task instead of being split.
+- **Trade-offs.** `session`: more tasks and more review rounds, each small and easy to verify, at a higher fixed cost per unit of work. `feature`: fewer, larger tasks and fewer gate rounds, at the cost of a bigger diff per review and a longer session per task.
+- **When to choose.** `session` for complex, high-stakes work where small, reviewable steps matter. `feature` for simple products where most of the cost is process overhead, not the work itself.
+- **Recommended.** `feature` for `mvp` and `standard` projects; `session` for `complete` projects, where every gate already runs.
+
+## 15. Discovery quick mode
+
+Config key: `discovery.quick_steps`, a list of step keys from `s3_architecture`, `s4_stack_profile`, `s5_design`, `s6_constraints`, `s7_testing`. Steps 1, 2 and 8 always run in full.
+
+- **What happens.** A quick step still produces its full output document, because later stages and agents depend on it. Instead of working through the question bank, the owner drafts it from the answers already agreed, the stack's conventions and the documented defaults; the Orchestrator shows a summary of at most 10 lines with the choices that matter most, and you approve or correct it in one reply. The step's checklist still applies before it can be approved.
+- **Trade-offs.** Fewer questions and a shorter Discovery, at the cost of more defaults chosen for you; a wrong default costs a `Change:` later instead of a question now.
+- **When to choose.** Quick mode for steps where the stack, the product type or common practice already answers most questions (the stack profile's commands, common constraints, the testing level). Keep a step out of quick mode when its answers are unusual or you want to be asked.
+- **Recommended.** Set by the pipeline preset (section 11); adjust it with `custom` or the `Process` command.

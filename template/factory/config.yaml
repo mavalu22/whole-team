@@ -9,7 +9,7 @@
 
 # Schema version of this file. Do not edit. Updates use it to add new
 # settings with their defaults while keeping your values.
-config_version: 2
+config_version: 3
 
 # Language the factory uses to talk to you: chat messages, questions, status
 # and checkpoint reports, and the descriptions of every selectable mode.
@@ -41,6 +41,18 @@ project:
   # Set during Discovery (step 3).
   interfaces: [gui]
 
+# --- Discovery: how thoroughly Discovery steps run ---------------------------
+discovery:
+  # Discovery steps that run in quick mode: the owner drafts the step's
+  # document from the answers already agreed, the stack's conventions and the
+  # documented defaults, without the question bank; the Orchestrator then shows
+  # a summary of at most 10 lines and the user approves or corrects it in one
+  # reply. A list of step keys from: s3_architecture, s4_stack_profile,
+  # s5_design, s6_constraints, s7_testing. Steps 1, 2 and 8 always run in full.
+  # Written by the chosen pipeline preset (see pipeline.preset below); you can
+  # still add or remove steps by hand, or with the "Process" command.
+  quick_steps: []
+
 # --- Execution: how tasks run and when the factory stops for you ------------
 execution:
   # sequential = one item at a time, in your working copy. Cheapest and
@@ -69,6 +81,48 @@ execution:
   # Folder for parallel-mode git worktrees, relative to the project root.
   # Keep it inside factory/ so git ignores it and sandboxed agents can write to it.
   worktrees_dir: factory/.worktrees
+
+# --- Pipeline: how much delivery process runs per item -----------------------
+pipeline:
+  # mvp      = fastest process, for prototypes, MVPs and personal tools.
+  # standard = balanced process, for marketing or portfolio sites, internal
+  #            tools and small apps.
+  # complete = full process (every gate, the default): products with users'
+  #            data, payments, compliance, or a team depending on them.
+  # custom   = set every key below yourself.
+  # Choosing a preset writes every other key in this block (and testing.level,
+  # security.audit_on_checkpoint, discovery.quick_steps) to its values; see
+  # factory/core/modes.md section 11. Set at kickoff, right after the language;
+  # change it any time with the "Process" command.
+  preset: complete
+
+  # Which optional delivery stages run for each item: a list from test, review,
+  # qa, sec. DEV and MERGE always run; APPROVAL runs when execution.approval_mode
+  # asks for it. Must include "review" or "qa": at least one gate besides DEV.
+  # A required security review or a critical item can still add a stage this
+  # list leaves out (factory/core/modes.md section 12).
+  stages: [test, review, qa, sec]
+
+  # Where the UI conformance check for ui/* items happens:
+  # review = the UX/UI Designer checks it in REVIEW (today's flow).
+  # qa     = QA applies the UX checklist and the design spec; no separate
+  #          designer review.
+  # none   = no UX conformance check.
+  # "qa" requires "qa" in pipeline.stages; "review" requires "review" in it.
+  # factory/core/modes.md section 13.
+  ux_check: review
+
+  # session = every task fits one focused agent session (today's rule).
+  # feature = a task is a whole user-visible feature or page with everything
+  #           it needs (layout, content, styles, data, tests), instead of
+  #           being split into session-sized slices.
+  # factory/core/modes.md section 14.
+  task_size: session
+
+  # true = items with "Critical: yes" always run every stage (test, review,
+  # qa, sec), whatever pipeline.stages says. Keep this true unless you fully
+  # understand the risk: it is the main safety net for sensitive work.
+  critical_full_pipeline: true
 
 # --- Models: which AI model each role uses (quality vs speed vs cost) -------
 models:
@@ -149,7 +203,7 @@ design:
   # Set during Discovery (step 5).
   mode: spec
 
-  # true = the UX/UI Designer reviews every item that touches the UI, before QA.
+  # Deprecated since 1.3.0: replaced by pipeline.ux_check; no longer read.
   review_ui_items: true
 
 # --- Security: how deep security reviews and audits go ----------------------
