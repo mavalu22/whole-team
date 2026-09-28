@@ -9,7 +9,7 @@ Sections: 1. Welcome · 2. Language · 3. Process · 4. Git checks · 5. Cost ti
 Greet the user in `config.language` and explain the factory in 3-4 lines:
 
 - You will define the product together in Discovery (8 short steps, each approved by them), then the factory builds it task by task, with the gates their chosen process includes, stopping at checkpoints for them to validate.
-- The five commands: `Let's code` (start or resume), `Support: <description>` (report a problem or ask how something works), `Status`, `Change: <request>`, `Audit`.
+- The six commands: `Let's code` (start or resume), `Support: <description>` (report a problem or ask how something works), `Status`, `Change: <request>`, `Audit`, `Process` (show or change how much process runs).
 - Factory files live in `factory/`, which git ignores: they exist only on this machine, so back the folder up.
 - They can drop screenshots and files into `factory/attachments/` and cite them in any request.
 
