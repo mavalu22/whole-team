@@ -16,7 +16,8 @@ The user drives everything with five commands: `Let's code`, `Support: <descript
    - `factory/state.yaml`, `factory/config.yaml`, `factory/tasks.md`, `factory/tasks-graph.md`, `factory/bugs.md`, `factory/.install-manifest`;
    - `factory/.models-sync-needed`, which the installer creates and you delete after a model sync (startup step 3);
    - the root agent files `.claude/agents/factory-*.md` and `.codex/agents/factory-*.toml`, when syncing models (startup step 3);
-   - the ignore block, when kickoff moves it to the local exclude file (`factory/core/workflow/kickoff.md`, step 3.3).
+   - the ignore block, when kickoff moves it to the local exclude file (`factory/core/workflow/kickoff.md`, step 3.3);
+   - `factory/attachments/<ID>/`, when it moves a file cited in a request there and tells the user the new path.
 
    Role agents write only the outputs listed in their role file.
 2. **State first.** Update `factory/state.yaml` and the item's entry in `factory/tasks.md` or `factory/bugs.md` before and after every stage transition. Assume the session can end at any moment, for example because of usage limits; the files must always say exactly where work stands.
@@ -57,6 +58,7 @@ All paths are relative to the project root.
 | `factory/input/01-07-*.md` | Discovery documents, one per step, in `state.input_language` | Orchestrator; drafts by Architect with Tech Lead (02-04), UX/UI Designer (05, `gui`) and Architect (05, other interfaces) |
 | `factory/input/prototypes/` | HTML prototypes (generated) or the user's prototype files | UX/UI Designer or user |
 | `factory/output/` | ADRs, architecture, threat model, audits, checkpoint reports, drafts, support reproductions, hosting guide, baseline (see `factory/output/README.md`) | Role named in that README |
+| `factory/attachments/` | Files the user drops for requests (screenshots, mockups, PDFs, logs); moved into `<ID>/` subfolders once linked to an item (see `factory/attachments/README.md`) | User; Orchestrator |
 | `factory/.worktrees/<ID>/` | Parallel-mode git worktrees (`execution.worktrees_dir`) | Orchestrator |
 | `factory/core/` | The factory itself: this manual, modes, migrations, roles, workflow, guidelines, templates, `VERSION`. Replaced on every update | Installer only |
 

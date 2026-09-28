@@ -2,6 +2,12 @@
 
 All notable changes to WholeTeam are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- `factory/attachments/`, a folder for screenshots and files the user cites in requests (`Support:`, `Change:`, a new feature, a Discovery answer). The factory moves cited files into `<ID>/` subfolders once linked to an item.
+
 ## [1.1.0] - 2026-09-27
 
 ### Added
