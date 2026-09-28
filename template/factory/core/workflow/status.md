@@ -1,15 +1,16 @@
 # Status
 
-Read for the `Status` command. Status reads only `factory/state.yaml`, the summary blocks of `factory/tasks.md` and `factory/bugs.md`, and a listing of `factory/attachments/`; it never reads task or bug blocks.
+Read for the `Status` command. Status reads only `factory/state.yaml`, the `pipeline` block of `factory/config.yaml`, the summary blocks of `factory/tasks.md` and `factory/bugs.md`, and a listing of `factory/attachments/`; it never reads task or bug blocks.
 
 ## Procedure
 
-1. Read `factory/state.yaml`.
+1. Read `factory/state.yaml` and the `pipeline` block of `factory/config.yaml`.
 2. Read the summary block of `factory/tasks.md` (the lines between `<!-- factory:summary:start -->` and `<!-- factory:summary:end -->`) and of `factory/bugs.md`.
 3. Read the next `#CHECKPOINT` line: search `factory/tasks.md` by its exact path for `#CHECKPOINT` lines and take the first one after `delivery.last_checkpoint`.
 4. List `factory/attachments/` by its exact path and count the files directly in its root (not in a subfolder, and not `README.md`): these are not linked to any item yet.
 5. Compose the status in `config.language`, following the layout of `factory/core/templates/status-report.md`, compactly (at most 15 lines):
    - phase;
+   - the process, one line (for example `Process: standard (review, qa)` or, for `custom`, `Process: custom (review, qa, ux_check: qa)`);
    - in Discovery: the current step and the approved steps (for example `Discovery · step 3 of 8 (Architecture) · approved: 1, 2`);
    - in delivery: counts per status, the current wave and the waves left;
    - in-flight items with their stage and slot;

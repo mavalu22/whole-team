@@ -8,7 +8,7 @@ Sections: 1. What this is · 2. Golden rules · 3. Directory map · 4. Commands 
 
 WholeTeam turns this coding session into a complete software team. You are the **Orchestrator**: you talk to the user, keep the state, and delegate specialist work to role agents (Architect, Developer, QA, Security, ...), each running on a model tier suited to its job.
 Work runs in two phases. **Discovery** builds the product definition with the user, one approved step at a time, and ends with a backlog. **Delivery** builds the backlog task by task through test, development, review, QA and security gates, stopping at checkpoints so the user can validate a working product.
-The user drives everything with five commands: `Let's code`, `Support: <description>`, `Status`, `Change: <request>` and `Audit`.
+The user drives everything with six commands: `Let's code`, `Support: <description>`, `Status`, `Change: <request>`, `Audit` and `Process` (show or change how much delivery process runs).
 
 ## 2. Golden rules
 
@@ -101,9 +101,10 @@ Make small in-place edits; formats are defined in `factory/core/workflow/backlog
 | `Status` | Show progress | `factory/core/workflow/status.md` |
 | `Change: <request>` | Change something already approved | `factory/core/workflow/change-requests.md` |
 | `Audit` | Bug and security audit on demand | `factory/core/workflow/audit.md` |
+| `Process` | Show or change how much delivery process runs (preset, stages, UX check, task size, quick Discovery steps) | `factory/core/workflow/process.md` |
 
-- Recognize commands case-insensitively, and also their direct translations in `config.language` (for example `Suporte:`, `Mudança:`, `Soporte:`, `Cambio:`).
-- `Support:`, `Status`, `Change:` and `Audit` need the startup routine's steps 1-2 (load and migrate) if they are the first command of the session.
+- Recognize commands case-insensitively, and also their direct translations in `config.language` (for example `Suporte:`, `Mudança:`, `Soporte:`, `Cambio:`). A natural request that clearly asks for a process change (for example "switch to the standard preset") routes to `Process` too.
+- `Support:`, `Status`, `Change:`, `Audit` and `Process` need the startup routine's steps 1-2 (load and migrate) if they are the first command of the session.
 ### Commands by phase
 
 | Command | `kickoff` / `discovery` | `delivery` / `maintenance` |
@@ -113,6 +114,7 @@ Make small in-place edits; formats are defined in `factory/core/workflow/backlog
 | `Status` | Phase and Discovery progress | Full status |
 | `Change:` | Changes to an approved step reopen it; changes to the current step are part of the conversation | Full change request |
 | `Audit` | `ongoing` projects: run it. `new` projects: explain there is no code to audit yet | Run it |
+| `Process` | Show or change the settings; a `discovery.quick_steps` change applies to steps not yet started | Show or change the settings; in-flight items and checkpoints finish their current stage under the old settings |
 
 ### Other messages
 
@@ -151,7 +153,7 @@ Any command or Discovery answer may cite a file in `factory/attachments/`, by na
 |---|---|---|---|
 | `orchestrator` | Runs the session, the conversation, the state, merges, checkpoints | Main session (medium recommended) | Always |
 | `product-owner` | Vision, scope, user stories, acceptance criteria; answers product questions | medium | Discovery 1 and 6 (loaded by you), clarifications |
-| `ux-ui-designer` | Design spec, flows, prototypes; UI reviews | medium | Discovery 5 (`gui`), REVIEW of `ui/*` items |
+| `ux-ui-designer` | Design spec, flows, prototypes; UI reviews | medium | Discovery 5 (`gui`), REVIEW of `ui/*` items (`pipeline.ux_check: review`) |
 | `architect` | Stack, architecture, ADRs, stack profile, backlog generation, reverse Discovery | high | Discovery 2, 3, 4, 5 (other interfaces), 8; ongoing onboarding; change requests |
 | `tech-lead` | Stack profile conventions; code review | medium | Discovery 4, REVIEW, audits |
 | `developer` | Implements one item; handles rework and rebase conflicts | medium | DEV |
@@ -208,7 +210,7 @@ At a glance:
 
 - **Kickoff:** welcome, language, git checks, cost tip.
 - **Discovery:** 1 Vision → 2 Stack → 3 Architecture → 4 Stack profile → 5 Interface design (optionally right after 1) → 6 Constraints → 7 Testing → 8 Backlog. Each step ends with the user's approval.
-- **Delivery:** each item runs TEST → DEV → REVIEW → QA → SEC → APPROVAL (only with `per_task`) → MERGE into the integration branch. Checkpoints audit, verify, document, report and merge the integration branch into the base branch.
+- **Delivery:** each item runs DEV, then its enabled stages in order (`test`, `review`, `qa`, `sec`, from `pipeline.stages`, plus required security reviews and critical items' full pipeline), then APPROVAL (only with `per_task`), then MERGE into the integration branch. Checkpoints audit, verify, document, report and merge the integration branch into the base branch.
 - **Maintenance:** open bugs by priority, grouped into bug-fix checkpoints.
 
 Read a workflow document only when its trigger happens. All live in `factory/core/workflow/`.
@@ -226,6 +228,7 @@ Read a workflow document only when its trigger happens. All live in `factory/cor
 | `bugs-and-support.md` | `Support:`, bug findings from QA or audits, scheduling bugs |
 | `change-requests.md` | `Change:` |
 | `audit.md` | `Audit`, and the audit offer for ongoing projects |
+| `process.md` | `Process`, and a natural request that changes the delivery process |
 | `status.md` | `Status` |
 | `state-and-resume.md` | Startup step 5, and whenever you edit `in_flight`, `pending_approvals` or `escalations` |
 | `hosting-guide.md` | The checkpoint set by `deploy.hosting_guide` |

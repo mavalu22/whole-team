@@ -115,6 +115,7 @@ git pull
 | `Status` | Show progress: phase, current work, approvals waiting, bugs, next checkpoint | `Status` |
 | `Change: <request>` | Change something already approved; it goes back through approvals and the backlog | `Change: users should also log in with Google` |
 | `Audit` | Run a bug and security audit of the code on demand | `Audit` |
+| `Process` | Show or change how much delivery process runs (preset, stages, UX check, task size) | `Process` or `Switch to the standard preset` |
 
 Commands are case-insensitive and also work in your configured language (for example `Suporte:` or `Mudança:`). Anything else is normal conversation. You approve each Discovery step and each checkpoint by replying **approve**, or you say what to change.
 
