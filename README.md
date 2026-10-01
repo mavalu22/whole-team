@@ -30,18 +30,28 @@ Combinations work: a web app with a public API is `gui` + `api`, and a VS Code e
 ## 2. How it works
 
 ```mermaid
-flowchart LR
-  K[Kickoff] --> D[Discovery<br/>8 approved steps]
-  D --> B[Backlog<br/>waves + checkpoints]
-  B --> P
-  subgraph P[Delivery: every task and bug]
-    direction LR
-    T[TEST] --> V[DEV] --> R[REVIEW] --> Q[QA] --> S[SEC] --> M[MERGE into develop]
+flowchart TD
+  K["Kickoff<br/>language + process preset"] --> D["Discovery<br/>8 approved steps"]
+  D --> B["Backlog<br/>waves + checkpoints"]
+  B --> T
+
+  subgraph P["Delivery: every task and bug"]
+    T["TEST*"] --> V["DEV"]
+    V --> R["REVIEW*"]
+    R --> Q["QA*"]
+    Q --> S["SEC*"]
+    S --> A["APPROVAL*"]
+    A --> M["MERGE into develop"]
+    R & Q & S -.->|rejected| V
   end
-  P --> C{{Checkpoint<br/>audit, verify, docs, report}}
-  C -->|you approve| MAIN[develop merged into main]
-  MAIN --> P
+
+  M --> C["Checkpoint<br/>audit*, verify, docs, report"]
+  C -->|"you approve*"| MAIN["develop merged into main"]
+  MAIN -->|next wave| T
+  MAIN -->|last task done| MT["Maintenance<br/>bug-fix checkpoints"]
 ```
+
+\* Depends on your process preset and settings. DEV and MERGE always run; critical items and required security reviews always add their stages.
 
 The diagram shows the `complete` preset, every gate on every item. Your chosen process decides which gates actually run (section 3).
 
