@@ -12,6 +12,7 @@ All notable changes to WholeTeam are documented in this file. The format is base
 
 - A read-only Python check verifies role and agent copies, common preambles, agent names, TOML literal safety and identical config files.
 - CI runs the consistency check, Bash syntax check and ShellCheck on pushes and pull requests to main.
+- Root instructions and README maintenance rules require updating all role copies, keeping config files identical, running the check before commits and omitting attribution from commits and pull requests.
 
 ## [1.3.0] - 2026-09-28
 
