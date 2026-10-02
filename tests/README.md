@@ -14,3 +14,5 @@ python tests/test_installers.py --shell powershell --shell pwsh
 ```
 
 Each test installs into a disposable git repository, prepares a different replacement version, then runs the real installer. Fault wrappers inject failed copies, incomplete copies reporting success, failed promotions, terminated processes, and failed or interrupted recovery. Tests compare file bytes, permissions, and links, including project data and unrelated agent files, and check that a running update is protected from another invocation. Supplying both Bash and PowerShell also tests recovery using the other installer. No test modifies the source repository or downloads dependencies.
+
+Manifest regressions create real Git worktrees with a main repository path containing spaces, move the WholeTeam ignore block to the shared exclude file returned by `git rev-parse --git-path info/exclude`, and update twice. They verify LF and CRLF manifests, relative and absolute paths, tab separators, retained ownership records, the absence of unintended files, and that factory files and created guides remain ignored through the shared exclude file.

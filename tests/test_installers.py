@@ -333,10 +333,11 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual(snapshot(self.project), self.before)
 
     def test_absolute_ignore_target_rolls_back_with_other_files(self):
-        external = self.base / 'external ignore file'
+        name = 'external \\temp\\notes ignore file' if self.is_bash and os.name != 'nt' else 'external ignore file'
+        external = self.base / name
         external.write_text('# User exclusions\n')
         manifest = self.project / 'factory/.install-manifest'
-        manifest.write_text(manifest.read_text().replace('.gitignore', str(external)))
+        manifest.write_text(manifest.read_text().replace('block .gitignore', 'created ' + str(external)))
         self.before = snapshot(self.project)
         self.assertNotEqual(self.run_installer('move:starter').returncode, 0)
         self.assertEqual(external.read_text(), '# User exclusions\n')
@@ -344,6 +345,116 @@ class InstallerTests(unittest.TestCase):
         self.assert_success(self.run_installer())
         self.assertIn('# User exclusions\n', external.read_text())
         self.assertIn('# >>> whole-team >>>', external.read_text())
+        self.assertIn('created ' + str(external) + '\n', manifest.read_text())
+
+    def test_manifest_path_keeps_trailing_spaces(self):
+        if os.name == 'nt':
+            self.skipTest('Windows does not support trailing spaces in ordinary file names.')
+        external = self.base / 'external  ignore file  '
+        external.write_bytes(b'# User exclusions\n')
+        manifest = self.project / 'factory/.install-manifest'
+        manifest.write_bytes(manifest.read_bytes().replace(b'block .gitignore', ('created ' + str(external)).encode()))
+        result = self.run_installer()
+        self.assert_success(result)
+        self.assertIn('created ' + str(external) + '\n', manifest.read_text())
+        self.assertIn('  created    ' + str(external) + '\n', result.stdout)
+        self.assertTrue(external.read_bytes().startswith(b'# User exclusions\n'))
+        self.assertFalse(external.with_name(external.name.rstrip()).exists())
+
+    def assert_worktree_exclude_update(self, line_ending, relative=False, separator=' '):
+        main = self.base / 'main repository  with spaces'
+        worktree = self.base / 'linked worktree with spaces'
+        main.mkdir()
+
+        def main_git(*arguments):
+            return subprocess.run(['git', '-C', str(main)] + list(arguments),
+                                  check=True, capture_output=True, text=True)
+
+        main_git('init', '-q')
+        (main / 'CLAUDE.md').write_bytes(b'Tracked user instructions\n')
+        (main / '.gitignore').write_bytes(b'# User ignore rules\n/user-output/\n')
+        main_git('add', 'CLAUDE.md', '.gitignore')
+        main_git('-c', 'user.name=Installer tests', '-c', 'user.email=installer-tests@example.com',
+                 'commit', '-qm', 'test: seed worktree fixture')
+        main_git('worktree', 'add', '-q', '-b', 'manifest-fixture', str(worktree))
+        self.project = worktree
+        self.assertTrue((worktree / '.git').is_file())
+        self.assert_success(self.run_installer())
+
+        # Follow kickoff's local-only ignore procedure using Git's actual shared path.
+        exclude = Path(self.git('rev-parse', '--git-path', 'info/exclude').stdout.rstrip('\r\n'))
+        self.assertTrue(exclude.is_absolute())
+        self.assertEqual(exclude.resolve(), (main / '.git/info/exclude').resolve())
+        ignore = worktree / '.gitignore'
+        text = ignore.read_text()
+        begin = text.index('# >>> whole-team >>>')
+        end = text.index('# <<< whole-team <<<', begin) + len('# <<< whole-team <<<')
+        if text[end:end + 1] == '\n':
+            end += 1
+        block = text[begin:end]
+        ignore.write_bytes((text[:begin] + text[end:]).encode())
+        ignore_before = ignore.read_bytes()
+        prefix = exclude.read_text() + '\n# User exclude prefix\n'
+        suffix = '\n# User exclude suffix\n/user-cache/\n'
+        stale = block.replace('# <<< whole-team <<<', '/obsolete-ignore-pattern/\n# <<< whole-team <<<')
+        exclude.write_bytes((prefix + stale + suffix).encode())
+
+        manifest = worktree / 'factory/.install-manifest'
+        target = os.path.relpath(exclude, worktree) if relative else str(exclude)
+        expected = [row if not row.endswith(' .gitignore') else 'block ' + target
+                    for row in manifest.read_text().splitlines()]
+        rows = [row.replace(' ', separator, 1) for row in expected]
+        # Empty and incomplete records must not become ignore targets or hide guides.
+        rows = ['', ' \t', 'created'] + rows
+        manifest.write_bytes(line_ending.join(row.encode() for row in rows) + line_ending)
+        before = snapshot(worktree)
+
+        (self.source / 'VERSION').write_bytes(b'10.0.0\n')
+        guide = self.source / 'template/root/AGENTS.md'
+        guide.write_bytes(guide.read_bytes().replace(b'<!-- <<< whole-team <<< -->',
+                                                   b'Worktree update instructions\n<!-- <<< whole-team <<< -->'))
+        result = self.run_installer()
+        self.assert_success(result)
+        self.assertEqual(exclude.read_bytes(), (prefix + block + suffix).encode())
+        self.assertEqual(ignore.read_bytes(), ignore_before)
+        self.assertEqual(manifest.read_bytes(), ('\n'.join(expected) + '\n').encode())
+        self.assertIn(target, result.stdout)
+        self.assertIn('Worktree update instructions', (worktree / 'AGENTS.md').read_text())
+        self.assertEqual((worktree / 'factory/core/VERSION').read_bytes(), b'10.0.0\n')
+        after = snapshot(worktree)
+        self.assertEqual(set(after), set(before), 'Update created an unintended file')
+        self.assertEqual(after['factory/config.yaml'], before['factory/config.yaml'])
+        self.assertEqual(after['factory/state.yaml'], before['factory/state.yaml'])
+        self.assertFalse(Path(str(exclude).split(' ', 1)[0]).exists(), 'A truncated-path file was created')
+
+        paths = ['factory/config.yaml', 'factory/core/VERSION', 'factory/state.yaml',
+                 '.claude/agents/factory-architect.md', '.codex/agents/factory-architect.toml',
+                 'CLAUDE.local.md', 'AGENTS.md']
+        ignored = subprocess.run(['git', '-C', str(worktree), 'check-ignore', '-v', '-z', '--stdin'],
+                                 input='\0'.join(paths) + '\0', check=True, capture_output=True, text=True)
+        fields = ignored.stdout.rstrip('\0').split('\0')
+        self.assertEqual(len(fields), len(paths) * 4)
+        for index, path in enumerate(paths):
+            self.assertEqual(Path(fields[index * 4]).resolve(), exclude.resolve())
+            self.assertEqual(fields[index * 4 + 3], path)
+
+        # The canonical manifest must keep the exclude location on the next update.
+        after_exclude = exclude.read_bytes()
+        self.assert_success(self.run_installer())
+        self.assertEqual(exclude.read_bytes(), after_exclude)
+        self.assertEqual(snapshot(worktree), after)
+
+    def test_worktree_shared_exclude_path_with_spaces(self):
+        self.assert_worktree_exclude_update(b'\n')
+
+    def test_worktree_shared_exclude_path_with_spaces_crlf(self):
+        self.assert_worktree_exclude_update(b'\r\n')
+
+    def test_worktree_relative_exclude_path_with_spaces_crlf(self):
+        self.assert_worktree_exclude_update(b'\r\n', relative=True)
+
+    def test_worktree_shared_exclude_path_with_tab_separator(self):
+        self.assert_worktree_exclude_update(b'\n', separator='\t')
 
 
 if __name__ == '__main__':
