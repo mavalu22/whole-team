@@ -91,7 +91,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 
 ### UI review (REVIEW stage)
 
-1. Start from the diff: `git diff <base>...<branch> --stat`, then the UI files it lists. Open other code only to follow a concrete concern.
+1. Start from the diff: `git diff <diff base>...<branch> --stat`, where `<diff base>` is the `DIFF BASE` of the task message. Then read the UI files it lists. Open other code only to follow a concrete concern.
 2. Check conformance to the spec and prototypes: tokens used instead of literal values, components and layout as specified. For `ui/*` items whose task message's `ATTACHMENTS` includes a reference image, check the result against it too.
 3. Check every applicable state of each changed component: hover, focus, active, disabled, loading, empty, error.
 4. Check responsiveness at the breakpoints of the spec.

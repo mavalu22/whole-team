@@ -7,6 +7,7 @@ All notable changes to WholeTeam are documented in this file. The format is base
 ### Fixed
 
 - Claude agents give the Tech Writer shell tools, Security and the Tech Lead write tools, and DevOps web search, as their roles require.
+- Task messages name the integration branch as DIFF BASE; item reviews and conflict rebases use it instead of the stable base branch.
 
 ## [1.3.1] - 2026-10-02
 

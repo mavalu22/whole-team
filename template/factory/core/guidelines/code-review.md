@@ -6,7 +6,7 @@ Sections: 1. Method · 2. Review checklist · 3. Severity levels · 4. Finding f
 
 ## 1. Method
 
-1. Scope the change: `git diff <base>...<branch> --stat`, then the diff file by file.
+1. Scope the change: `git diff <diff base>...<branch> --stat`, where `<diff base>` is the `DIFF BASE` of the task message. Then read the diff file by file.
 2. Read the item's acceptance criteria first; review the diff against them.
 3. Open code outside the diff only to follow a concrete concern: a caller of a changed function, a contract, a shared helper.
 4. Run the quiet lint and type-check commands from `factory/input/04-stack-profile.md`; record the result lines.

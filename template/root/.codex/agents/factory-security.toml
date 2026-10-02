@@ -69,7 +69,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 
 ### Light review (SEC, `light`)
 
-1. Start from the diff: `git diff <base>...<branch>`. Open other code only to follow a concrete concern.
+1. Start from the diff: `git diff <diff base>...<branch>`, where `<diff base>` is the `DIFF BASE` of the task message. Open other code only to follow a concrete concern.
 2. Apply the light checklist of `factory/core/guidelines/security.md`: input validation, authn and authz, secrets, injection, XSS and CSRF, unsafe deserialization, dependency additions, sensitive data in logs, error leakage.
 3. **Documentation-only diffs:** check only for secrets and sensitive data (keys, tokens, passwords, internal hostnames, personal data in examples).
 

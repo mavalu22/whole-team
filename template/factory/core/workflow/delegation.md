@@ -61,7 +61,7 @@ Build each task message from `factory/core/templates/task-message.md`, in Englis
 2. item ID and title;
 3. stage and stage goal;
 4. absolute working directory;
-5. branch and base branch;
+5. branch and diff base (the integration branch);
 6. slot and runtime environment (parallel mode; otherwise `—`);
 7. files to read first (exact absolute paths; only what this stage needs, for example the stack profile and the relevant guideline sections);
 8. the full item block from `factory/tasks.md` or `factory/bugs.md`;

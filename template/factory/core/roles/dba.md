@@ -40,7 +40,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 
 ### Review (REVIEW stage)
 
-1. Start from the diff: `git diff <base>...<branch> -- <schema, migration, model and query paths>`, then open other code only to follow a concrete concern (for example the caller of a new query).
+1. Start from the diff: `git diff <diff base>...<branch> -- <schema, migration, model and query paths>`, where `<diff base>` is the `DIFF BASE` of the task message. Then open other code only to follow a concrete concern (for example the caller of a new query).
 2. **Migrations:** each is reversible (a down migration, or a documented forward-only fix with a backup step), safe on existing data (defaults for new non-null columns, batched backfills, no long table locks on large tables), and ordered correctly.
 3. **Constraints:** `NOT NULL`, unique, foreign key and check constraints enforce the rules the criteria state; the database, not only the application, protects integrity.
 4. **Indexes:** foreign keys and the columns used in filters, joins and sorts of new queries are indexed; no redundant indexes.
