@@ -9,7 +9,7 @@ STAGE: {{stage}}
 GOAL: {{stage_goal}}
 WORKING DIRECTORY: {{absolute_working_directory}}
 PROJECT ROOT: {{absolute_project_root}} (factory files are here: open them by exact path)
-BRANCH: {{branch}} · BASE: {{base_branch}}
+BRANCH: {{branch}} · DIFF BASE: {{integration_branch}}
 SLOT: {{slot_number_or_dash}}
 RUNTIME ENV: {{slot_environment_variables_or_dash}}
 
@@ -38,6 +38,7 @@ REPORT FIELDS:
 
 <!-- Notes for the Orchestrator:
 - STAGE is one of TEST, DEV, REVIEW, QA, SEC, AUDIT, SUPPORT, DISCOVERY, VALIDATION, DOCS.
+- DIFF BASE is git.integration_branch, the branch the item was created from and will merge into.
 - In parallel mode, WORKING DIRECTORY is the worktree, and CONSTRAINTS adds: "Every command must start with cd <worktree> && ... or use git -C <worktree>."
 - When the item's pipeline (factory/core/workflow/delivery.md section 4) skips a stage, CONSTRAINTS adds: "Stages that don't run for this item: TEST, SEC." (the actual skipped stages, upper case, comma-separated).
 - EXCERPTS for rework contain only the open findings, each with file:line and the required fix.

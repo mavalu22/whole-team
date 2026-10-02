@@ -94,7 +94,7 @@ Audits check every category; reviews check the ones the diff touches. Category n
 
 ## 11. Light review checklist
 
-Start from the diff (`git diff <base>...<branch>`). For documentation-only diffs, check only the last two items.
+Start from the diff (`git diff <diff base>...<branch>`), where `<diff base>` is the `DIFF BASE` of the task message. For documentation-only diffs, check only the last two items.
 
 - [ ] **Input validation:** every new input is validated at the edge with allowlists.
 - [ ] **Authn/authz:** new routes require authentication unless explicitly public; authorization is checked per resource on the server.

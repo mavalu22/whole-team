@@ -85,7 +85,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 
 ### Rebase conflicts
 
-1. `git -C <dir> rebase <base branch>`.
+1. `git -C <dir> rebase <diff base>`, where `<diff base>` is the `DIFF BASE` of the task message.
 2. Resolve each conflict keeping both intents: the integration branch's change and the item's change. Never drop the other side's change to make a conflict disappear.
 3. Continue the rebase, then re-run the checks of step 8.
 4. If a conflict needs a product or design decision, `git rebase --abort` and return `BLOCKED`.
