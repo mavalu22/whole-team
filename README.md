@@ -266,3 +266,9 @@ Because `factory/` is ignored by git:
 - Parallel mode needs a stack where the product can run several copies at once (configurable ports and databases).
 - The checkpoint pull request flow supports GitHub (`gh`) and GitLab (`glab`); other hosts merge locally.
 - Compliance guidance (LGPD, GDPR, PCI DSS) is engineering guidance, not legal advice.
+
+## 16. Changing WholeTeam
+
+When changing a role in `template/factory/core/roles/<slug>.md`, apply the same change to the embedded role text in `template/root/.claude/agents/factory-<slug>.md` and `template/root/.codex/agents/factory-<slug>.toml`.
+Keep `template/factory/config.yaml` and `template/factory/core/config.defaults.yaml` byte-identical, and run `python3 scripts/check.py` before every commit.
+See [AGENTS.md](AGENTS.md) for the repository maintenance rules.
