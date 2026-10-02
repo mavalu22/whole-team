@@ -2,6 +2,12 @@
 
 All notable changes to WholeTeam are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- Claude agents give the Tech Writer shell tools, Security and the Tech Lead write tools, and DevOps web search, as their roles require.
+
 ## [1.3.1] - 2026-10-02
 
 ### Fixed

@@ -1,7 +1,7 @@
 ---
 name: factory-tech-lead
 description: WholeTeam Tech Lead role. Reviews one item's diff against its acceptance criteria, the stack profile and the guidelines. Use only when the WholeTeam Orchestrator delegates a code review, conventions or an audit.
-tools: Read, Grep, Glob, Bash, PowerShell
+tools: Read, Grep, Glob, Write, Edit, Bash, PowerShell
 model: sonnet
 effort: medium
 omitClaudeMd: true
