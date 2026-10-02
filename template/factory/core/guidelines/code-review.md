@@ -10,7 +10,7 @@ Sections: 1. Method · 2. Review checklist · 3. Severity levels · 4. Finding f
 2. Read the item's acceptance criteria first; review the diff against them.
 3. Open code outside the diff only to follow a concrete concern: a caller of a changed function, a contract, a shared helper.
 4. Run the quiet lint and type-check commands from `factory/input/04-stack-profile.md`; record the result lines.
-5. Check the Test Engineer's tests are unchanged: `git diff <TEST commit> <branch> -- <test paths>` (commit and paths are in the item history).
+5. When TEST ran, check the Test Engineer's tests are unchanged: `git diff <TEST commit> <branch> -- <test paths>` (commit and paths are in the item history); allow only recorded Test Engineer dispute corrections, as described in the Tech Lead role. When TEST did not run but tests are required by delivery section 4, verify the DEV role committed them before implementation and that they pass. Disabled or inapplicable TEST needs no TEST-stage verdict.
 
 ## 2. Review checklist
 

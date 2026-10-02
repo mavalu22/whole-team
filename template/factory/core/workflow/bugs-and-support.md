@@ -74,7 +74,7 @@ Bug block. Field labels are exact and always English; free text is in `state.inp
 - A bug is **blocking** when its priority is `bugs.block_features_on` or more severe (P0 is the most severe). With the default `P1`, P0 and P1 bugs block.
 - Blocking bugs run before any new task starts, P0 first, then by ID. A checkpoint cannot complete while one is open. In-flight tasks finish their current stage and continue; they are not interrupted.
 - Non-blocking bugs run after all tasks are done, or earlier when the user asks (`Let's code B-004`).
-- Bugs use the same pipeline as tasks (`factory/core/workflow/delivery.md` section 4), with a regression test in TEST (unless `testing.level` is `none`), on a branch from `git.bug_branch_pattern`. The bug's `Expected` field and reproduction steps are its acceptance criteria.
+- Bugs use the same effective order as tasks (`factory/core/workflow/delivery.md` section 4), on a branch from `git.bug_branch_pattern`. When tests are required, commit a failing regression test before the fix: in TEST when enabled, otherwise within DEV. At level `none`, no regression test is required unless the critical full-pipeline override applies; bug priority alone does not enable TEST. The bug's `Expected` field and reproduction steps are its acceptance criteria. Rework executes the existing regression test and repeats the applicable post-DEV gates without fresh TEST writing.
 - In parallel mode, bugs follow the same ready-set and `Touches` rules as tasks.
 - After the final checkpoint and in `maintenance`, fixed bugs are grouped into bug-fix checkpoints (`factory/core/workflow/checkpoints.md` section 5).
 

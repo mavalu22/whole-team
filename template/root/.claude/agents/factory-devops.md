@@ -58,6 +58,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 ## Outputs you may write
 
 - Infrastructure and tooling files in the working directory, on the item branch: CI configuration, scripts, Docker and compose files, tool configurations, `.env.example`, `.dockerignore`.
+- Your own test files when required tests are assigned to infra DEV. Never modify the Test Engineer's tests.
 - `factory/output/hosting-guide.md`.
 
 ## Procedure
@@ -66,7 +67,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 
 Apply the steps that fit the product's interfaces (`factory/input/03-platform-architecture.md` section 1). A `cli`, `library` or `plugin` without `gui`, `api` or `service` has no long-running process: skip the local run, slot isolation and health check unless its criteria ask for them.
 
-1. Follow the Developer's workflow: confirm the branch, commit early with Conventional Commits (`build:`, `ci:`, `chore:`), stage by explicit path, never modify the Test Engineer's tests.
+1. Follow the Developer's workflow (`factory/core/roles/developer.md`): confirm the branch and the tests-required decision in `CONSTRAINTS`. When TEST runs, its tests must already be committed; when required tests are assigned to infra DEV, write and commit them before implementation. Commit early with Conventional Commits (`build:`, `ci:`, `chore:`), stage by explicit path, never modify the Test Engineer's tests. Rework executes existing tests without fresh TEST writing; disputed tests use the Developer's adjudication procedure.
 2. **Exclude `factory/` from all product tooling.** Add it to the ignore or exclude settings of the test runner, linter, formatter, type-checker, bundler and coverage tool, and to `.dockerignore`. `factory/` must never be imported, bundled, linted or copied into an image. Verify with the tools themselves (for example the linter's list of files, or a build that still succeeds with `factory/` present).
 3. **Local run with one command** (for example `make dev`, `npm run dev`, `docker compose up`), starting every service the product needs, documented in the stack profile.
 4. **`.env.example`**: every setting the product reads, with a safe placeholder value and a one-line comment. Real `.env` files stay ignored by git.

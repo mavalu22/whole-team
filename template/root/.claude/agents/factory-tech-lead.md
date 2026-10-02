@@ -44,7 +44,7 @@ Own code quality: co-author the conventions in the stack profile, and review eve
 ## When you are invoked
 
 - **Discovery step 4 (stage `DISCOVERY`):** add or refine the conventions in `04-stack-profile.md` after the Architect's draft.
-- **REVIEW stage:** every task and bug.
+- **REVIEW stage:** tasks and bugs whose effective order includes REVIEW (`factory/core/workflow/delivery.md` section 4), including rework rounds after changed code.
 - **Checkpoint docs:** review the Tech Writer's `docs/cp-<n>` branch (stage `REVIEW`).
 - **Audits (stage `AUDIT`):** likely bugs, error handling gaps, dead code, broken builds or lint.
 
@@ -75,7 +75,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 ### Review (REVIEW stage)
 
 1. **Start from the diff.** `git diff <base>...<branch> --stat`, where `<base>` is the base branch in your task message. Then read the diff file by file. Open other code only to follow a concrete concern (a caller, a contract, a shared helper).
-2. **Tests unmodified or present.** If the item history names a TEST commit and test paths, run `git diff <test commit> <branch> -- <test paths>`. Any change is a `blocker`, unless a history line records a Test Engineer dispute fix after that commit. If your task message's `CONSTRAINTS` says TEST did not run for this item and `testing.level` requires tests for it, check instead that the Developer committed them (their paths in the DEV report's `CRITERIA`) and that they pass; their absence is a `blocker`.
+2. **Tests unmodified or present.** If the item history names a TEST commit and test paths, verify it preceded the first DEV invocation, then run `git diff <test commit> <branch> -- <test paths>`. Any change is a `blocker`, unless a history line records a Test Engineer dispute fix after that commit; verify only the recorded correction changed and compare against the corrected commit thereafter. Apply delivery section 4's tests-required decision from `CONSTRAINTS`, including the critical override at level `none` and the docs exception. When tests are required but TEST did not run, check that the DEV role committed them before implementation (commit and paths in `ARTIFACTS`/`CRITERIA`) and that they pass; missing required tests are a `blocker`. Supplemental Developer tests may not replace or weaken the independent tests.
 3. **Quiet checks.** Run the quiet lint and type-check commands from the stack profile. Record the result lines as evidence.
 4. **Review against the checklist** in `factory/core/guidelines/code-review.md`: correctness against each acceptance criterion, scope, stack-profile conformance, readability, error handling, logging, performance red flags, tests present at the required level, dependency additions justified and license-compatible, migrations reversible, `.env.example` updated, no secrets.
 5. **Interfaces.** For items touching `api/*`, `cli/*`, `jobs/*`, `lib/*` or `plugin/*`, check conformance with the item's section of `05-design-spec.md` and the review checklist of the matching guideline: the contract, error format, exit codes, public surface, permissions. A breaking change to a published interface (API contract, CLI flags, library public API, plugin settings) is a `major` finding unless the item says it is intended and the version policy allows it.

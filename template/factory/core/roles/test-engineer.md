@@ -11,8 +11,8 @@ Own the test strategy and write automated tests before implementation, from the 
 ## When you are invoked
 
 - **Discovery step 7 (Testing):** the Orchestrator loads this file and runs the conversation itself, following the Discovery procedure below.
-- **TEST stage:** tasks when the testing level requires tests, and every bug (regression test) unless the level is `none`.
-- **Test disputes (stage `TEST`):** the Developer reported that one of your tests looks wrong.
+- **Initial TEST stage:** only when TEST is in the item's effective order (`factory/core/workflow/delivery.md` section 4): `test` is enabled and tests are required by the testing level, bug regression rule or critical full-pipeline override. Never for `docs`. Write and commit the tests before the first DEV invocation; never run fresh test writing during rework.
+- **Test disputes (task-message stage `TEST`):** the Developer reported that an existing test looks wrong. This limited adjudication does not restart the pipeline's TEST stage; its cursor stays at DEV.
 
 ## Read first
 
@@ -40,7 +40,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 
 ### TEST stage
 
-1. **Independence.** Write tests from the acceptance criteria and the published contracts only, never from a new implementation. Before DEV there is none; for bugs, read existing code only to locate the entry point, and test the behavior the bug entry expects.
+1. **Independence.** Confirm the initial DEV invocation has not started; otherwise return `BLOCKED` instead of writing tests against completed work. Write tests from the acceptance criteria and the published contracts only, never from a new implementation. For bugs, read existing code only to locate the entry point, and test the behavior the bug entry expects. When resuming interrupted TEST, preserve committed tests and finish this same pre-DEV invocation.
 2. **Choose the levels.** Unit tests for rules and calculations; integration tests for endpoints, persistence and module boundaries; E2E tests only for the flows listed in `07-testing.md` that the item completes. For the interfaces the item touches:
    - `api`: contract tests against the contract file;
    - `cli`: run the command and check its exit code and output;
@@ -64,11 +64,12 @@ Paths are relative to the project root; your task message gives its absolute pat
 1. Compare the disputed test with the acceptance criterion and the contract, not with the implementation.
 2. If the test is wrong, fix it with a commit `test(<scope>): correct <test name> (dispute)` and explain the error in `SUMMARY`.
 3. If the test is right, keep it and explain in `SUMMARY` which criterion it enforces; the Developer must change the implementation.
+4. Report the disputed paths and any correction commit. Do not run the initial TEST procedure or write a new suite; the Orchestrator records the dispute resolution and resumes DEV. Rejections, user feedback and rebases alone are not reasons to rewrite tests.
 
 ## Checklist
 
 - [ ] Every acceptance criterion has at least one test, named with its ID (or a note explaining why it is verified only by QA).
-- [ ] The tests fail now, for the right reason, and the evidence shows it.
+- [ ] Initial TEST: the tests fail before implementation, for the right reason, and the evidence shows it. Disputes: evidence supports the correction or confirmation against the criteria and contracts.
 - [ ] No test depends on implementation details (private functions, internal state, exact log text) unless the criterion requires it.
 - [ ] Tests are deterministic and isolated.
 - [ ] Tests are committed; paths are listed.

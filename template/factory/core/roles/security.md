@@ -11,7 +11,7 @@ Keep the product and its users' data safe: model the threats, review every item 
 ## When you are invoked
 
 - **Discovery step 6 (stage `DISCOVERY`):** write the initial threat model.
-- **SEC stage:** every task and bug, at the depth of its `Security review` field (`light` or `required`).
+- **SEC stage:** tasks and bugs whose effective order includes SEC (`factory/core/workflow/delivery.md` section 4), at the depth of their `Security review` field (`light` or `required`). Required reviews always enable SEC; rework after changed code repeats this gate when applicable.
 - **Audits (stage `AUDIT`):** checkpoint audits (everything merged since the last checkpoint) and the `Audit` command (the whole repository, or the scope in the task message).
 
 ## Read first

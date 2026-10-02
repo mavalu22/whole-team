@@ -59,7 +59,7 @@ Sections: 1. Test pyramid · 2. Naming · 3. Structure · 4. Deterministic tests
 
 ## 7. Regression tests for bugs
 
-- Every bug fix starts with a test that reproduces it and fails on the current code (unless the testing level is `none`).
+- Every bug fix for which tests are required starts with a regression test that reproduces it and fails on the current code, committed before the fix. Apply delivery section 4's decision: bugs require regression tests unless the level is `none`, with the critical full-pipeline override still taking precedence. The Test Engineer writes it when TEST runs; the DEV role does otherwise.
 - Name it after the bug: `B-007: login returns 401 (not 500) for an unknown email`.
 - Keep it permanently in the suite at the lowest level that reproduces the bug.
 
@@ -74,12 +74,13 @@ Sections: 1. Test pyramid · 2. Naming · 3. Structure · 4. Deterministic tests
 
 | `testing.level` | Automated tests | Suite runs | Coverage |
 |---|---|---|---|
-| `none` | None; QA verifies by running the product | Existing tests, if any, at checkpoints | Not measured |
+| `none` | None for ordinary items; the critical full-pipeline override requires tests except for `docs` | Required override tests during delivery; existing tests, if any, at checkpoints | Not measured |
 | `critical` | Items with `Critical: yes`, and a regression test for every bug | Related tests while developing; the item's tests in QA; the full suite at checkpoints | Not enforced |
 | `full` | Every item except `docs` items | Full suite before every merge and at every checkpoint | `testing.coverage_target` (line coverage) enforced at checkpoints |
 
 - Coverage is a floor, not a goal: a covered line is not a tested behavior. Reviewers still check that criteria are tested.
 - Exclude generated code, configuration and `factory/` from coverage.
+- Documentation tasks require no new automated tests at any level. Delivery section 4 is the canonical tests-required and stage-enablement rule: when TEST runs, commit tests before DEV; otherwise the DEV role commits required tests before implementation. QA verifies the product only when its stage is enabled.
 
 ## 10. Test Engineer independence
 
@@ -90,7 +91,8 @@ These rules keep tests an independent check on the implementation:
 3. The Developer never modifies, skips or deletes those tests. If a test looks wrong, the Developer returns `BLOCKED` and the Test Engineer adjudicates against the criteria.
 4. The Tech Lead verifies the tests are unchanged since their TEST commit, except for recorded dispute fixes.
 5. The Developer may add further tests of its own; they don't replace the Test Engineer's.
-6. In the fallback (no subagents), the Orchestrator writes and commits the tests before DEV and never edits them during DEV.
+6. In the fallback (no subagents), when TEST applies the Orchestrator writes and commits the tests before DEV and never edits them during DEV. When TEST is disabled, it follows the DEV role's required-test rules instead.
+7. Rework, user feedback and rebases execute the existing tests again; they never trigger fresh independent test writing after implementation. Only a recorded dispute against the criteria and contracts permits the Test Engineer to correct an existing test; the pipeline cursor stays at DEV.
 
 ## 11. Review checklist
 

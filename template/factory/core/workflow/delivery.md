@@ -36,30 +36,44 @@ Between items, give the user a one-to-three line progress message (FACTORY.md se
 1. Check the Definition of Ready (`factory/core/workflow/quality-gates.md` section 1). If it fails, fix the item with the relevant role (Product Owner for criteria, Architect for dependencies) or ask the user.
 2. Build the branch name from `git.task_branch_pattern` or `git.bug_branch_pattern`: `{id}` is the item ID, `{slug}` is a short English kebab-case summary of the title (at most 5 words), even when the title is in another language.
 3. Create the branch from the integration branch (section 9 or 10 for the command).
-4. Compute the item's enabled stages (section 4). Update, in this order: the item's `**Branch:**` line and a history line `<date> · started · pipeline: dev, <enabled stages>`; a new `delivery.in_flight` entry (`factory/core/workflow/state-and-resume.md` section 1); the summary block.
+4. Compute the item's effective order (section 4). Update, in this order: the item's `**Branch:**` line and a history line `<date> · started · pipeline: <effective order, lower case>`; a new `delivery.in_flight` entry at the first stage in that order (`factory/core/workflow/state-and-resume.md` section 1); the summary block. Start at TEST when it applies, otherwise DEV.
 
 ## 4. Item pipeline
 
-Every task and bug runs DEV, then its **enabled stages** in order (`test`, `review`, `qa`, `sec`), then APPROVAL when `execution.approval_mode` asks for it, then MERGE. DEV and MERGE always run.
+**Canonical order:** `TEST → DEV → REVIEW → QA → SEC → APPROVAL → MERGE`.
 
-**Enabled stages.** An item's enabled stages are `pipeline.stages`, plus `sec` when the item's `Security review` is `required` (even when `sec` is not in `pipeline.stages`), plus every stage (`test`, `review`, `qa`, `sec`) when the item has `Critical: yes` and `pipeline.critical_full_pipeline` is true. Compute this set once, when the item starts (section 3), and record it in the item's `<date> · started` history line as `pipeline: dev, <enabled stages in order>` (for example `pipeline: dev, review, qa`). A stage not in the set is never delegated: it gets no status and no history line for that item. For every stage that does run, add one line to its task message's `CONSTRAINTS` section: "Stages that don't run for this item: `<SKIPPED STAGES, upper case, comma-separated>`." (`factory/core/templates/task-message.md`).
+This section defines stage selection and testing requirements for all delivery instructions and roles. Compute the **effective order** when the item starts:
 
-Before each stage, set the item's status and `in_flight[].stage`, `stage_started_at`; after each stage, record the verdict (`last_report`) and a history line. Delegate each stage with a task message (`factory/core/workflow/delegation.md`). Skip a stage only where this section says so.
+1. **Enabled optional stages:** start with `pipeline.stages`. Add `sec` when `Security review: required`. Add all four optional stages (`test`, `review`, `qa`, `sec`) when `Critical: yes` and `pipeline.critical_full_pipeline: true`. Neither bug priority nor `Security review: required` alone enables TEST.
+2. **Tests required:** for an item whose type is not `docs`, tests are required when any of these holds:
+   - `testing.level: full`;
+   - `testing.level: critical` and `Critical: yes`;
+   - it is a bug and `testing.level` is not `none`;
+   - `Critical: yes` and `pipeline.critical_full_pipeline: true`, even with `testing.level: none`.
+   Documentation tasks never require new automated tests, including critical documentation tasks. Required tests and the TEST stage are separate decisions: retain TEST only when `test` is enabled **and** tests are required. When tests are required but `test` is disabled, the DEV role writes and commits them before implementing the change or bug fix, following the Developer's test rules.
+3. **Order:** retain the applicable stages from the canonical order, regardless of how `pipeline.stages` is listed. DEV and MERGE always run. REVIEW, QA and SEC run only when enabled by step 1. APPROVAL runs only with `execution.approval_mode: per_task`; checkpoint approval is a separate procedure.
+
+Record the entire effective order, including MERGE and any item APPROVAL, in the item's start history. Examples: `pipeline: test, dev, review, qa, sec, approval, merge` for a tested item with every gate and per-task approval; `pipeline: dev, review, qa, merge` for a standard non-critical feature. This line is the planned order; only completed-stage verdicts establish what actually ran. A disabled or inapplicable stage is omitted from the order, never delegated as a pipeline stage, and gets no status or completion history line.
+
+Every delivery task message's `CONSTRAINTS` states "Stages that don't run for this item: `<SKIPPED STAGES, upper case, comma-separated; none if empty>`." It also states whether tests are required, why (including any critical override), and their owner: Test Engineer when TEST runs, DEV role otherwise, or no new tests required (`factory/core/templates/task-message.md`). This decision also governs QA, REVIEW and the Definition of Done.
+
+Before each stage, set the item's status and `in_flight[].stage`, `stage_started_at`, and clear `last_report` to `null`; after each stage, record the verdict and a history line. Delegate with a task message (`factory/core/workflow/delegation.md`). TEST must finish and commit its tests before the first DEV invocation. Rework follows section 6; never restart the initial pipeline to handle rework.
 
 ### 4.1 TEST
 
 - **Status:** `TESTING`. **Role:** `test-engineer`.
-- **Runs when:** `test` is one of the item's enabled stages, and: `testing.level` is `full`; or `testing.level` is `critical` and the item has `Critical: yes`; or the item is a bug and `testing.level` is not `none` (regression test); or the item has `Critical: yes` and `pipeline.critical_full_pipeline` is true (the safety net always writes tests for a critical item, whatever `testing.level` says).
-- **Skipped:** otherwise, and always for items of type `docs`.
-- **`test` not enabled:** when `testing.level` still requires tests for the item, the Developer writes them in DEV instead (`factory/core/roles/developer.md`); QA and the Tech Lead still check that the required tests exist and pass.
+- **Runs when:** TEST is retained in the effective order above: enabled and tests required. It runs once, before implementation.
+- **Skipped:** when disabled or tests are not required, and always for items of type `docs`. Do not set `TESTING` or record a TEST completion for these items.
+- **`test` disabled:** required tests are written before implementation within DEV (`factory/core/roles/developer.md`); QA and the Tech Lead check them when their stages run.
 - **Task message excerpts:** acceptance criteria, published contracts (API spec, shared types, UI spec paths, and the interface sections of `05-design-spec.md` for the areas the item touches), and for bugs the reproduction steps and evidence file.
 - **Result:** tests committed on the item branch with `test(<scope>): ...`, expected to fail until DEV finishes. Record a history line with the commit and the test paths: `<date> · TEST done · <commit> · tests: <path>, <path>`. Later stages read these paths from the item block.
 
 ### 4.2 DEV
 
 - **Status:** `IN_PROGRESS`. **Role:** `developer`; `devops` for items of type `infra`; `tech-writer` for items of type `docs`.
-- **Task message excerpts:** acceptance criteria, relevant contracts and design references, the Test Engineer's test paths (or, when `test` is not enabled and tests are required, a note asking the Developer to write them), and on rework the findings to fix (only the open ones).
-- **Result:** commits on the item branch; lint, type-check and the relevant tests pass. A `BLOCKED` verdict with "test looks wrong" goes to the Test Engineer for adjudication against the acceptance criteria (`test-engineer` with stage `TEST`); the Test Engineer either fixes the test (history line) or confirms it, and DEV resumes. When `test` is not enabled and the Developer wrote tests, record their paths from `ARTIFACTS`/`CRITERIA` the same way as a TEST stage would.
+- **Task message excerpts:** acceptance criteria, relevant contracts and design references, the Test Engineer's committed test paths (or, when TEST does not run and tests are required, an instruction to write and commit them before implementation), and on rework the findings to fix (only the open ones). The same test ownership rules apply to DevOps in infra DEV.
+- **Result:** commits on the item branch; lint, type-check and the relevant tests pass. When the DEV role wrote required tests, record their paths and commit in a `DEV done` history line from `ARTIFACTS`/`CRITERIA`; do not invent a `TEST done` line.
+- **Test disputes:** a `BLOCKED` verdict with "test looks wrong" goes to the Test Engineer for adjudication against the acceptance criteria (`test-engineer` with task-message stage `TEST`). This is a dispute about existing tests, not a fresh test-writing stage: keep the item's pipeline cursor at DEV. Before delegation, record `TEST dispute pending` with the disputed paths and reason; after the verdict record `TEST dispute resolved` with the correction commit and paths, or confirmation that the tests stand. The Test Engineer may correct a faulty test against the criteria and contracts, never against the new implementation. Resume DEV with `last_report: null`; the Developer may not modify, weaken, skip or delete the Test Engineer's tests.
 - **Bugs with `Verified: no`:** the Developer first confirms the bug. If it cannot be reproduced, it returns `BLOCKED`; ask the user whether to close it as `NOT_A_BUG` or give more details.
 
 ### 4.3 REVIEW
@@ -76,7 +90,7 @@ Before each stage, set the item's status and `in_flight[].stage`, `stage_started
 
 - **Status:** `QA`. **Role:** `qa`. **Runs when:** `qa` is one of the item's enabled stages.
 - **UX check in QA.** When `pipeline.ux_check` is `qa`, add to the task message that QA also applies the checklist of `factory/core/guidelines/ui-ux-and-accessibility.md` and the item's screens in `05-design-spec.md` for `ui/*` items (`factory/core/roles/qa.md`); the UX/UI Designer does not join REVIEW for this item. When `pipeline.ux_check` is `none`, neither role checks UI conformance.
-- **Required tests.** When `test` is not enabled and `testing.level` requires tests for the item, QA also checks that the Developer's tests exist and pass, in addition to verifying acceptance criteria by running the product.
+- **Required tests.** Apply the tests-required decision above, including the critical override at level `none` and the docs exception. Check the committed tests exist and pass, whether the Test Engineer or DEV role wrote them, in addition to verifying criteria by running the product.
 - **Task message excerpts:** acceptance criteria, the testing level, the run commands (from the stack profile), the slot and its environment in parallel mode, the interfaces the item touches (QA reads only their procedures), design references for UI items, and the baseline's known failures in `ongoing` projects.
 - **Result:** each acceptance criterion verified with evidence. Check the item's boxes (`[x]`) only for criteria the report proves. Criteria QA marks `MANUAL` (it cannot run them on this machine) stay unchecked: add them to the item's `**Notes:**` as `MANUAL AC<n>: <exact steps>`, so the next checkpoint's validation checklist includes them. `UNRELATED_DEFECT` findings go to Support (`factory/core/workflow/bugs-and-support.md`, source `qa-unrelated`) and are not a rejection.
 
@@ -111,8 +125,8 @@ The Orchestrator merges; never delegate it. Merge one item at a time.
    4. **Otherwise,** continue with step 2.
 2. **Check the Definition of Done** (`factory/core/workflow/quality-gates.md` section 2).
 3. **Update the branch** onto the latest integration branch: `git -C <dir> rebase <integration>`, where `<dir>` is the worktree (parallel) or the project root (sequential).
-   - If conflicts appear: `git -C <dir> rebase --abort`, then send the item back to DEV with a conflict note ("rebase onto `<integration>` and resolve conflicts in: <files>"). This is not a rejection. The item then runs its enabled gates again.
-4. **Re-run tests** after a rebase that changed anything: the quiet test command from the stack profile, for the tests related to the item; with `testing.level: full`, the whole suite. A failure sends the item back to DEV with the failing lines as findings (not a rejection).
+   - If conflicts appear: `git -C <dir> rebase --abort`, then send the item back to DEV with a conflict note ("rebase onto `<integration>` and resolve conflicts in: <files>"). This is not a rejection. Follow the rework order in section 6.
+4. **Revalidate changed code** after a rebase: execute the existing tests related to the item in quiet form; with `testing.level: full`, the whole suite. A failure sends the item back to DEV with the failing lines as findings (not a rejection). Changed code also invalidates earlier REVIEW, QA, SEC and item approval evidence: rerun those applicable stages in order, then return to MERGE and repeat the Definition of Done check. Do not invoke a fresh TEST stage. A rebase that leaves the item's code unchanged does not require another gate round.
 5. **Merge** from the integration branch checkout (the project root):
    - `squash`: `git switch <integration> && git merge --squash <branch> && git commit -m "<subject>" -m "<body>"`.
    - `merge`: `git switch <integration> && git merge --no-ff <branch> -m "<subject>"`.
@@ -126,9 +140,11 @@ The Orchestrator merges; never delegate it. Merge one item at a time.
 
 ## 6. Rejections
 
-- A rejection at REVIEW, QA or SEC sets `REVIEW_REJECTED`, `QA_REJECTED` or `SEC_REJECTED`, increments `**Rejections:**`, appends a history line naming the gate and the main finding, and sends the findings back to DEV. `max_rejections` counts rejections from whatever gates are enabled for the item. After DEV, the item runs its enabled gates again, starting from the first enabled gate after DEV (`review`, or `qa` when `review` is not enabled).
+- A rejection at REVIEW, QA or SEC sets `REVIEW_REJECTED`, `QA_REJECTED` or `SEC_REJECTED`, increments `**Rejections:**`, appends a history line naming the gate and the main finding, and sends the findings back to DEV. `max_rejections` counts rejections from the gates that actually run for the item.
 - User feedback at APPROVAL, rebase conflicts and post-rebase test failures send the item back to DEV without counting as rejections.
 - When `Rejections` reaches `execution.max_rejections`, set `BLOCKED` and create an escalation (section 7).
+
+**Rework order:** DEV, then the applicable REVIEW, QA and SEC stages in canonical order, then APPROVAL when required, then MERGE. Record `<date> · rework · pipeline: <rework order, lower case>` before restarting DEV, and clear `last_report` when starting each stage so an old verdict cannot complete a new round. After changed code, rerun every applicable downstream gate, including ones that approved an earlier round; skipped gates stay skipped. DEV and those gates execute the existing tests again. They do not delegate a fresh TEST stage or rewrite the Test Engineer's tests. Only the explicit test-dispute procedure in section 4.2 can correct those tests.
 
 ## 7. Escalations
 
@@ -167,7 +183,7 @@ When a role returns `BLOCKED` with a question:
   4. install dependencies inside the worktree with the stack profile's install command: worktrees share git history, not installed packages.
 - **Runtime isolation:** use the stack profile's mechanism, for example `FACTORY_SLOT=<n>`, a port offset (base + 10 × slot) and a per-slot database name or file. Put the slot environment in every task message.
 - **Delegation:** run role agents in the background, with absolute paths to the worktree and to factory files in the task message (worktrees don't contain `factory/`). In Claude Code, a subagent's `cd` does not persist between commands, so every command must be `cd <worktree> && ...` or use `git -C <worktree>`. Don't use Claude Code's own `isolation: worktree`: it branches from the default branch, not from the integration branch.
-- **Merge queue:** merge one item at a time (section 5). After each merge, rebase every other in-flight branch at its next stage boundary: `git -C <worktree> rebase <integration>`; on conflicts, abort and send that item to DEV with a conflict note.
+- **Merge queue:** merge one item at a time (section 5). After each merge, rebase every other in-flight branch at its next stage boundary after its initial TEST has finished (if applicable): `git -C <worktree> rebase <integration>`. Never start implementation or conflict resolution ahead of unfinished TEST. On conflicts, abort and send the item to DEV with a conflict note; if DEV already finished, use the rework order (section 6). After DEV has finished, a rebase that changes code also requires the revalidation in section 5, step 4; it never invokes fresh TEST writing.
 - **Approvals:** with `per_task`, finished items wait in `delivery.pending_approvals` while other items continue.
 - **Checkpoints:** a checkpoint waits for every in-flight item before it to merge; items after it do not start until it completes.
 - **Warning:** when parallel work starts, tell the user once not to edit files in the main working copy while it runs.

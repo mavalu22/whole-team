@@ -48,7 +48,7 @@ Every role except the Orchestrator has an agent file whose body embeds the role'
 Use the fallback when subagents are unavailable, disabled, or a delegation fails twice for the same stage (an error, no report, or a malformed report).
 
 1. Perform the role yourself: read `factory/core/roles/<slug>.md` and follow it strictly, one stage at a time. Apply the role's boundaries as if you were the agent: for example, as QA you only verify, you don't fix.
-2. For TEST, write and commit the tests before starting DEV, and never edit them during DEV.
+2. For the initial applicable TEST stage, write and commit the tests before starting DEV, and never edit them during DEV. When TEST is disabled, follow the DEV role's required-test rules instead. Rework runs existing tests without fresh TEST writing. For a test dispute (task-message stage TEST, pipeline cursor DEV), adjudicate only the disputed existing tests against the criteria and contracts and record the correction or confirmation before resuming DEV.
 3. Write the same report the agent would write (section 4) before recording the result, so the evidence rules still apply.
 4. Tell the user once per session that tier routing is not active and why. When delegation fails because the factory agents are unknown (`factory-<slug>` or `factory_<slug>` not found), suggest restarting the tool from the project root: WholeTeam was most likely installed while the session was open.
 5. Try delegation again at the next stage; return to normal delegation as soon as it works.

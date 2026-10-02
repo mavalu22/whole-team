@@ -21,7 +21,7 @@ The user drives everything with six commands: `Let's code`, `Support: <descripti
 
    Role agents write only the outputs listed in their role file.
 2. **State first.** Update `factory/state.yaml` and the item's entry in `factory/tasks.md` or `factory/bugs.md` before and after every stage transition. Assume the session can end at any moment, for example because of usage limits; the files must always say exactly where work stands.
-3. **Never skip a gate.** Never skip a Discovery approval, a quality gate, a checkpoint or an approval required by `execution.approval_mode`. Never invent test results. Never mark an acceptance criterion as met without evidence from a role report.
+3. **Never skip a required gate.** Never skip a Discovery approval, the Definition of Ready or Done, an applicable delivery gate, a checkpoint or an approval required by `execution.approval_mode`. Delivery section 4 determines which stages apply; disabled or inapplicable stages are not invoked or recorded as completed. Never invent test results. Never mark an acceptance criterion as met without evidence from a role report.
 4. **Stay out of git with the factory.** Never commit anything under `factory/`, the factory agent files, or any file that holds a factory block (`CLAUDE.md`, `AGENTS.md`, `CLAUDE.local.md`, `AGENTS.override.md` when they carry the block). Stage files by explicit path; never use `git add -A`, `git add .` or `git commit -a`. Never make the product import from `factory/`. The only factory-related commit is `.gitignore` at kickoff.
 5. **Read by path.** Open factory files by exact path. `factory/` is ignored by git, and search tools such as ripgrep often skip ignored files.
 6. **One decision at a time.** Ask the user at most 3-4 questions per message. Propose a recommended answer whenever you can, so the user can reply "ok".
@@ -177,15 +177,15 @@ Every role ends with the report format of `factory/core/templates/role-report.md
 
 | Verdict | Action |
 |---|---|
-| `DONE` | Record `ARTIFACTS` (commits, files, test paths) in the item's history and state, then move to the next stage |
-| `APPROVED` | Record the verdict and move to the next stage |
+| `DONE` | Record `ARTIFACTS` (commits, files, test paths) in the item's history and state, then move to the next applicable stage in its effective order; a test-dispute report resumes DEV instead |
+| `APPROVED` | Record the verdict and move to the next applicable stage in the item's effective order |
 | `REJECTED` | Apply the rejection policy in `factory/core/workflow/delivery.md` (section "Rejections") and send `FINDINGS` back to DEV |
 | `BLOCKED` | Apply the clarification procedure in `factory/core/workflow/delivery.md` (section "Clarifications"): answer from the inputs, consult the Product Owner role, ask the user only for a real decision |
 
 - Check cheap facts before recording them: cited commits exist (`git log --oneline -1 <hash>`), cited test files exist, the branch is the one you assigned.
 - A missing or malformed report counts as a failed delegation: re-request once, then use the fallback.
 - A QA finding marked `UNRELATED_DEFECT` is not a rejection: route it to `factory/core/workflow/bugs-and-support.md` with source `qa-unrelated`.
-- Store only the verdict and a one-line summary in `in_flight[].last_report`; keep full findings only as long as the next stage needs them.
+- Store only the current invocation's verdict and a one-line summary in `in_flight[].last_report`; clear it on every stage entry, including rework. Test-dispute reports go into item history while the cursor stays DEV; clear `last_report` before DEV resumes. Keep full findings only as long as the next stage needs them.
 
 ## 7. Language rules
 
@@ -210,7 +210,7 @@ At a glance:
 
 - **Kickoff:** welcome, language, git checks, cost tip.
 - **Discovery:** 1 Vision → 2 Stack → 3 Architecture → 4 Stack profile → 5 Interface design (optionally right after 1) → 6 Constraints → 7 Testing → 8 Backlog. Each step ends with the user's approval.
-- **Delivery:** each item runs DEV, then its enabled stages in order (`test`, `review`, `qa`, `sec`, from `pipeline.stages`, plus required security reviews and critical items' full pipeline), then APPROVAL (only with `per_task`), then MERGE into the integration branch. Checkpoints audit, verify, document, report and merge the integration branch into the base branch.
+- **Delivery:** canonical order is TEST when enabled and applicable, DEV, enabled REVIEW, QA and SEC, APPROVAL only with `per_task`, then MERGE into the integration branch. `factory/core/workflow/delivery.md` section 4 defines the effective order, testing-level rules, critical override and docs exception. Required tests are committed before implementation, by the Test Engineer when TEST runs or by the DEV role otherwise. Rework starts at DEV and reruns the applicable downstream gates, never fresh independent test writing; disputes retain their dedicated adjudication procedure. Checkpoints audit, verify, document, report and merge the integration branch into the base branch.
 - **Maintenance:** open bugs by priority, grouped into bug-fix checkpoints.
 
 Read a workflow document only when its trigger happens. All live in `factory/core/workflow/`.

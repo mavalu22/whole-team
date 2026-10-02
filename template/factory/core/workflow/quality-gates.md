@@ -22,9 +22,9 @@ If a check fails, fix the item before starting it: criteria with the Product Own
 An item may merge only when all of these hold:
 
 - [ ] Every acceptance criterion is checked: with evidence in a QA report when `qa` is one of the item's enabled stages (a criterion QA marks `MANUAL` with exact steps is recorded in the item's `Notes` for the next checkpoint's validation checklist); otherwise from the Developer's `CRITERIA` mapping in DEV, confirmed by REVIEW's traceability check when `review` is enabled.
-- [ ] Tests at the required level (`testing.level`) exist and pass: written by the Test Engineer in TEST when that stage is enabled, or by the Developer in DEV otherwise; either way unmodified since their commit (verified by the Tech Lead when REVIEW runs).
+- [ ] Required tests exist and pass, using delivery section 4's decision (testing level, bugs, critical override, docs exception): committed by the Test Engineer before DEV when TEST runs, or by the DEV role before implementation otherwise. Independent tests are unchanged except for recorded Test Engineer dispute corrections (verified by the Tech Lead when REVIEW runs); developers cannot weaken, skip or delete tests to pass a gate.
 - [ ] Lint, type-check and build pass.
-- [ ] Every stage enabled for the item (`factory/core/workflow/delivery.md` section 4) is approved, with every required reviewer.
+- [ ] TEST (when applicable) and DEV are `DONE`; every applicable REVIEW, QA and SEC gate has current `APPROVED` verdicts from all required reviewers. Required item APPROVAL is recorded. Disabled or inapplicable stages need no verdict; MERGE follows these checks.
 - [ ] Docs are updated if public behavior changed (README usage, API docs).
 - [ ] No secrets are in the code or the history of the branch.
 - [ ] `.env.example` is updated for every new setting.
@@ -46,4 +46,4 @@ An item may merge only when all of these hold:
 - Each acceptance criterion maps to at least one evidence line: `AC2: curl -s -o /dev/null -w "%{http_code}" -X POST .../login (wrong password) -> 401`.
 - Screenshots are evidence only for criteria about appearance or layout; store them in `factory/output/evidence/<ID>/` (absolute path in the task message) and cite the path.
 - A claim without evidence counts as not verified. The Orchestrator never checks an acceptance criterion or records a test result without evidence.
-- Evidence must come from the item's current code: after any rework or rebase that changed code, earlier evidence is stale and the stage runs again.
+- Evidence must come from the item's current code: after rework or a rebase that changed code, rerun the applicable post-DEV gates and required item approval. Execute the existing tests again; never restart the independent test-writing stage. Preserve its commit and test paths, subject only to a recorded Test Engineer dispute correction.

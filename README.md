@@ -51,34 +51,36 @@ flowchart TD
   MAIN -->|last task done| MT["Maintenance<br/>bug-fix checkpoints"]
 ```
 
-\* Depends on your process preset and settings. DEV and MERGE always run; critical items and required security reviews always add their stages.
+\* Optional stages are bypassed when disabled or inapplicable. DEV and MERGE always run; APPROVAL applies to items only with `per_task`. A required security review adds SEC. Critical items enable all optional stages when `pipeline.critical_full_pipeline` is true; TEST still never applies to documentation tasks.
 
-The diagram shows the `complete` preset, every gate on every item. Your chosen process decides which gates actually run (section 3).
+The diagram shows the canonical order: applicable TEST, DEV, REVIEW, QA, SEC, required item APPROVAL, MERGE. Your process and testing level determine which optional stages actually run (section 3); even `complete` skips TEST when tests are not required. The canonical selection rules are in [delivery.md](template/factory/core/workflow/delivery.md#4-item-pipeline).
 
 - **Phases.** Kickoff (language, process preset, git checks), Discovery (vision, stack, architecture, stack profile, interface design, constraints, testing, backlog), Delivery, and Maintenance (bug fixes after the last task).
 - **Roles.** The Orchestrator (your main session) plus 13 role agents: Product Owner, UX/UI Designer, Architect, Tech Lead, Developer, Test Engineer, QA, Security, DBA, DevOps, Tech Writer, Support and Backlog Validator. Each runs on a `high`, `medium` or `low` model tier.
-- **Gates.** DEV and merging into `develop` always happen; which of TEST, REVIEW, QA and SEC also run depends on your chosen process (section 3). When they run: the Test Engineer writes tests before the Developer implements, the Tech Lead (plus the DBA and UX/UI Designer where relevant) reviews the diff, QA verifies every acceptance criterion by running the product, and Security reviews at the depth each task needs. Rejections go back to development, up to a limit, and then you decide.
+- **Gates.** DEV and merging into `develop` always happen; which of TEST, REVIEW, QA and SEC also run depends on your chosen process (section 3). When they run: the Test Engineer commits independent tests before the Developer implements, the Tech Lead (plus the DBA and UX/UI Designer where relevant) reviews the diff, QA verifies every acceptance criterion by running the product, and Security reviews at the depth each task needs. Developers cannot weaken the Test Engineer's tests; disputed tests are adjudicated against the criteria and contracts. Rejections go back to DEV and repeat the applicable downstream gates, up to a limit, and then you decide. Rework runs existing tests without starting fresh independent test writing.
 - **Checkpoints.** Milestones in the backlog. At each one the factory verifies the build and the test suite, audits when your process enables it, updates the product README, API docs and CHANGELOG, writes a report with a validation checklist, and merges `develop` into `main`, through a pull request when `gh` or `glab` is available.
 
 ## 3. Choosing how much process
 
 Not every product needs every gate. Kickoff asks which process to run, right after the language, and you can change it at any time, including on a project already running, with the `Process` command.
 
-| Preset | Stages besides DEV | UX check | Task size | Best for |
+| Preset | Optional stages enabled | UX check | Task size | Best for |
 |---|---|---|---|---|
 | `mvp` | REVIEW | none | feature | Prototypes, MVPs, personal tools |
 | `standard` | REVIEW, QA | QA applies it | feature | Marketing or portfolio sites, internal tools, small apps |
 | `complete` | TEST, REVIEW, QA, SEC | UX/UI Designer in REVIEW | session | Products with users' data, payments, compliance, or a team depending on them |
 | `custom` | you choose | you choose | you choose | Anything that doesn't fit a preset |
 
+Tests are required for non-documentation items at level `full`, for critical items and bugs at level `critical`, and for critical items with the full-pipeline override even at level `none`. TEST runs only when enabled and tests are required. When TEST is disabled, the DEV role commits required tests before implementation. By default, `mvp` uses level `none`; `standard` and `complete` use `critical` (confirmed during Discovery). Thus an ordinary standard feature runs DEV, REVIEW, QA, MERGE; a standard bug follows the same stages with a Developer-written regression test; a complete bug runs TEST first. Documentation tasks never require new automated tests.
+
 **Safety nets, kept in every preset including `custom`:**
 
 - At least one gate besides DEV: `custom` must keep `review` or `qa`.
 - A required security review always runs, whatever the preset says.
-- An item that is truly critical (a defect could allow unauthorized access, lose or corrupt data, move money wrongly, expose personal or secret data, or cause legal harm) always runs every gate.
+- An item that is truly critical (a defect could allow unauthorized access, lose or corrupt data, move money wrongly, expose personal or secret data, or cause legal harm) enables all optional stages when `pipeline.critical_full_pipeline` is true, as it is in every named preset. TEST remains inapplicable to documentation tasks.
 - Checkpoints always verify the build and the test suite, update the docs and write a report, whatever the preset.
 
-Changing the process with `Process` never disturbs work in progress: an item finishes its current stage under the old settings, then follows the new stage list for what's left; a checkpoint in progress finishes with the settings it started with. See `factory/core/modes.md` (sections 11-15) for every option's trade-offs.
+Changing the process with `Process` lets an item finish its current stage under the old settings, then applies the new settings to stages still ahead in canonical order. Enabling TEST after DEV has started never adds fresh independent test writing; any extra required coverage is added by the Developer without changing the Test Engineer's tests. A checkpoint in progress finishes with the settings it started with. See `factory/core/modes.md` (sections 11-15) for every option's trade-offs.
 
 ## 4. Requirements
 

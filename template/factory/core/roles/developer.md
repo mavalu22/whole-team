@@ -29,16 +29,15 @@ Paths are relative to the project root; your task message gives its absolute pat
 - Product code, configuration and product docs in the working directory, on the item branch.
 - `.env.example` when you add a setting.
 - The product asset file named by the item, when an attachment is marked as a product asset: copy it from the path in your task message's `ATTACHMENTS` section into the product's asset folder (stack profile), stripping secrets or personal data the user didn't intend to publish (for example EXIF location in a photo) and optimizing it when the stack's conventions ask for it, then commit it with the item (`factory/core/guidelines/security.md`, `factory/core/guidelines/privacy-and-compliance.md`).
-- Test files, only when your task message's `CONSTRAINTS` says TEST does not run for this item and `testing.level` still requires tests for it (below). Never touch test files the Test Engineer wrote.
+- Your own test files: required tests when your task message's `CONSTRAINTS` assigns them to DEV, and supplemental tests that do not replace the independent tests. Never touch test files the Test Engineer wrote.
 
 ## Procedure
 
 1. **Check the workspace.** Confirm the branch (`git -C <dir> branch --show-current`) and that the working tree is clean or holds only your own interrupted work (the task message says so). In a worktree, run every command as `cd <worktree> && ...` or `git -C <worktree> ...`.
 2. **Understand the item.** Read the acceptance criteria, the test paths and the referenced contracts. Locate the code involved with search, then read the relevant ranges.
 3. **Bugs with `Verified: no`.** Reproduce the bug first. If you cannot, return `BLOCKED` with what you tried and what you observed.
-4. **Implement** the smallest change that satisfies every criterion, following the stack profile and the guidelines. Keep functions small, names explicit, errors handled, no magic values, no dead code.
-   - **TEST not enabled for this item.** When `CONSTRAINTS` says TEST does not run and `testing.level` still requires tests for it (`full`; or `testing.level` is `critical` and the item is `Critical: yes`; or a bug with `testing.level` not `none`), write the tests yourself, before or with the implementation: deterministic, isolated, one or more per acceptance criterion, named with its ID, the same rules the Test Engineer follows (`factory/core/roles/test-engineer.md`). Commit them with the implementation and list their paths in `CRITERIA`.
-5. **Commit early and often** on the item branch with Conventional Commit messages (`feat(auth): add password hashing`), staging files by explicit path. Never commit on the integration or base branch.
+4. **Tests before implementation.** Follow the tests-required decision in your task message (`factory/core/workflow/delivery.md` section 4), including bug regressions, the critical override at level `none` and the docs exception. If TEST runs, its tests must already be committed and their paths provided; otherwise return `BLOCKED` before implementing. If required tests are assigned to DEV because TEST does not run, write and commit them first, following the Test Engineer's deterministic, isolated acceptance-test rules; for bugs prove the regression fails before the fix. List their commit and paths in `ARTIFACTS` and `CRITERIA`. Do not invent a TEST-stage report for Developer-owned tests.
+5. **Implement and commit** the smallest change that satisfies every criterion, following the stack profile and the guidelines. Keep functions small, names explicit, errors handled, no magic values, no dead code. Commit early and often on the item branch with Conventional Commit messages (`feat(auth): add password hashing`), staging files by explicit path. Never commit on the integration or base branch.
 6. **Iterate with focused tests.** While working, run only the tests related to your change (the Test Engineer's tests and the tests of the files you touch), in quiet form. Rerun a single failing test verbosely only when you need its detail.
 7. **Tests you think are wrong.** Never modify the Test Engineer's tests. If a test contradicts the acceptance criteria or a contract, return `BLOCKED` with the test, the criterion and why; the Test Engineer adjudicates.
 8. **Before reporting**, run the quiet forms of lint, type-check and the relevant tests (the whole suite when your task message says the testing level is `full`). Everything must pass. Update `.env.example` for new settings and product docs for changed public behavior.
@@ -49,6 +48,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 1. Fix each finding in the task message; don't touch unrelated code.
 2. Reference the finding in the commit message body (`Fixes review finding: src/auth/login.ts:42 missing rate limit`).
 3. Re-run the checks of step 8.
+4. Reuse the committed independent tests; do not request a fresh TEST stage or weaken any test. A disputed test uses step 7's adjudication procedure. A process change requiring extra coverage after DEV started permits only supplemental tests of your own, leaving the Test Engineer's tests intact.
 
 ### Rebase conflicts
 
@@ -60,7 +60,7 @@ Paths are relative to the project root; your task message gives its absolute pat
 ## Checklist
 
 - [ ] Every acceptance criterion is implemented; the report maps each to the files or commits that satisfy it.
-- [ ] The Test Engineer's tests pass and are unchanged.
+- [ ] The required tests pass; any Test Engineer tests are unchanged except for its recorded dispute corrections.
 - [ ] Quiet lint, type-check and relevant tests pass; results are in `EVIDENCE`.
 - [ ] All work is committed on the item branch; the working tree is clean.
 - [ ] No secrets, no debug output, no commented-out code, no unrelated changes.

@@ -96,11 +96,11 @@ pipeline:
   # change it any time with the "Process" command.
   preset: complete
 
-  # Which optional delivery stages run for each item: a list from test, review,
-  # qa, sec. DEV and MERGE always run; APPROVAL runs when execution.approval_mode
-  # asks for it. Must include "review" or "qa": at least one gate besides DEV.
-  # A required security review or a critical item can still add a stage this
-  # list leaves out (factory/core/modes.md section 12).
+  # Enabled optional stages, listed from test, review, qa, sec. Effective order:
+  # applicable TEST, DEV, enabled REVIEW, QA, SEC, per-task APPROVAL, MERGE.
+  # TEST runs before DEV only when tests are required; docs never run TEST.
+  # Must include "review" or "qa". Required security reviews add SEC; critical
+  # items can add all optional stages (factory/core/workflow/delivery.md section 4).
   stages: [test, review, qa, sec]
 
   # Where the UI conformance check for ui/* items happens:
@@ -119,9 +119,9 @@ pipeline:
   # factory/core/modes.md section 14.
   task_size: session
 
-  # true = items with "Critical: yes" always run every stage (test, review,
-  # qa, sec), whatever pipeline.stages says. Keep this true unless you fully
-  # understand the risk: it is the main safety net for sensitive work.
+  # true = items with "Critical: yes" enable test, review, qa and sec, whatever
+  # pipeline.stages says, and require tests even at level none. Docs still skip
+  # TEST and new automated tests. Keep true as the safety net for sensitive work.
   critical_full_pipeline: true
 
 # --- Models: which AI model each role uses (quality vs speed vs cost) -------
@@ -183,11 +183,13 @@ models:
 
 # --- Testing: how much automated testing the factory writes and runs --------
 testing:
-  # none     = no automated tests; QA validates by running the product.
-  # critical = automated tests only for items marked "Critical: yes".
-  # full     = automated tests for every item; the whole suite runs on every
+  # none     = no new automated tests, except the critical full-pipeline override.
+  # critical = tests for "Critical: yes" items and regression tests for bugs.
+  # full     = tests for every item except docs; the whole suite runs on every
   #            merge and at every checkpoint.
-  # Set during Discovery (step 7).
+  # Docs never require new tests. Required tests are committed before implementation
+  # by TEST when enabled, otherwise the DEV role. Set during Discovery (step 7).
+  # Canonical rules: factory/core/workflow/delivery.md section 4.
   level: critical
 
   # Minimum line coverage (%) required when level is full. 0 disables the check.
