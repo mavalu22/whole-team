@@ -20,7 +20,7 @@ Sections: 1. In-flight entries · 2. Other delivery entries · 3. Writing state 
 ```
 
 - `last_report` is one line: `<STAGE> <VERDICT>: <summary>`, for example `REVIEW APPROVED: no findings`. It is the record that a stage finished.
-- `stage` only takes values from the item's enabled stages (`factory/core/workflow/delivery.md` section 4, computed when the item starts and recorded in its `pipeline: dev, ...` history line); a stage the pipeline skips for this item is never set here.
+- `stage` only takes values from the item's enabled stages (`factory/core/workflow/delivery.md` section 4, computed when the item starts and recorded in execution order in its `pipeline: ...` history line, with TEST before DEV when it runs); a stage the pipeline skips for this item is never set here.
 - Test paths, merge commits and findings are recorded in the item's history in `factory/tasks.md` or `factory/bugs.md`, not here.
 
 ## 2. Other delivery entries

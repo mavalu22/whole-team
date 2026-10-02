@@ -210,7 +210,7 @@ At a glance:
 
 - **Kickoff:** welcome, language, git checks, cost tip.
 - **Discovery:** 1 Vision → 2 Stack → 3 Architecture → 4 Stack profile → 5 Interface design (optionally right after 1) → 6 Constraints → 7 Testing → 8 Backlog. Each step ends with the user's approval.
-- **Delivery:** each item runs DEV, then its enabled stages in order (`test`, `review`, `qa`, `sec`, from `pipeline.stages`, plus required security reviews and critical items' full pipeline), then APPROVAL (only with `per_task`), then MERGE into the integration branch. Checkpoints audit, verify, document, report and merge the integration branch into the base branch.
+- **Delivery:** each item runs TEST when it is enabled and `factory/core/workflow/delivery.md` section 4.1 says it runs, then DEV, followed by its other enabled stages in order (`review`, `qa`, `sec`, from `pipeline.stages`, plus required security reviews and critical items' full pipeline), then APPROVAL (only with `per_task`), then MERGE into the integration branch. DEV and MERGE always run. Checkpoints audit, verify, document, report and merge the integration branch into the base branch.
 - **Maintenance:** open bugs by priority, grouped into bug-fix checkpoints.
 
 Read a workflow document only when its trigger happens. All live in `factory/core/workflow/`.
