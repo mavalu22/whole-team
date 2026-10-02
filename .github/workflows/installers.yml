@@ -1,0 +1,43 @@
+name: Installer regression tests
+
+on:
+  push:
+    paths:
+      - 'install.sh'
+      - 'install.ps1'
+      - 'template/**'
+      - 'VERSION'
+      - 'tests/**'
+      - '.github/workflows/installers.yml'
+  pull_request:
+    paths:
+      - 'install.sh'
+      - 'install.ps1'
+      - 'template/**'
+      - 'VERSION'
+      - 'tests/**'
+      - '.github/workflows/installers.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  installers:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            shells: '--shell bash --shell pwsh'
+          - os: macos-latest
+            shells: '--shell /bin/bash'
+          - os: windows-latest
+            shells: '--shell powershell --shell pwsh'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Run installer regressions
+        run: python tests/test_installers.py ${{ matrix.shells }}
