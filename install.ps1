@@ -199,11 +199,11 @@ function Read-Manifest([string]$File) {
     $entries = @()
     if (Test-Path -LiteralPath $File -PathType Leaf) {
         foreach ($raw in ((Read-Text $File) -split "`n")) {
-            $line = (Get-LineText $raw).Trim()
-            if ($line -eq '') { continue }
-            $parts = $line -split ' ', 2
-            if ($parts.Count -eq 2) {
-                $entries += New-Object PSObject -Property @{ Action = $parts[0]; File = $parts[1] }
+            # Strip the line-ending CR; preserve every character of the path.
+            # The first space or tab separates the action from the complete path.
+            $line = $raw -replace "`r$", ''
+            if ($line -match '^[ \t]*([^ \t]+)[ \t](.+)$') {
+                $entries += New-Object PSObject -Property @{ Action = $Matches[1]; File = $Matches[2] }
             }
         }
     }

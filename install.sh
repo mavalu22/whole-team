@@ -301,15 +301,36 @@ EOF
   write_content "$tmp" "$file"
 }
 
-# manifest_status <file> -> "created", "block" or "" from the previous manifest
+# parse_manifest <manifest>: normalize action/path records without splitting paths.
+# Only the first space or tab separates the action from the complete path.
+parse_manifest() {
+  awk '
+    {
+      line = $0
+      sub(/\r$/, "", line)
+      sub(/^[ \t]+/, "", line)
+      if (!match(line, /^[^ \t]+[ \t]/)) next
+      action = substr(line, 1, RLENGTH - 1)
+      path = substr(line, RLENGTH + 1)
+      if (path != "") printf "%s %s\n", action, path
+    }' "$1"
+}
+
+# manifest_status <file> [manifest] -> "created", "block" or "" (old by default)
 manifest_status() {
-  if [ -n "$OLD_MANIFEST" ] && [ -f "$OLD_MANIFEST" ]; then
-    awk -v f="$1" 'substr($0, index($0, " ") + 1) == f { print $1; exit }' "$OLD_MANIFEST"
+  local manifest="${2:-$OLD_MANIFEST}"
+  if [ -n "$manifest" ] && [ -f "$manifest" ]; then
+    # ENVIRON keeps literal backslashes in paths; awk -v interprets escapes.
+    parse_manifest "$manifest" | WHOLETEAM_MANIFEST_PATH="$1" awk '
+      !found && substr($0, index($0, " ") + 1) == ENVIRON["WHOLETEAM_MANIFEST_PATH"] {
+        action = $1; found = 1
+      }
+      END { if (found) print action }'
   fi
 }
 
 manifest_has() {
-  [ -n "$OLD_MANIFEST" ] && [ -f "$OLD_MANIFEST" ] && awk -v f="$1" 'substr($0, index($0, " ") + 1) == f { found = 1 } END { exit !found }' "$OLD_MANIFEST"
+  [ -n "$(manifest_status "$1")" ]
 }
 
 # record <action> <file>: add a line to the new manifest, keeping "created" from the old one
@@ -360,7 +381,7 @@ write_ignore_block() {
     printf '%s\n' "/.claude/agents/factory-*.md"
     printf '%s\n' "/.codex/agents/factory-*.toml"
     for f in CLAUDE.md AGENTS.md CLAUDE.local.md AGENTS.override.md; do
-      if awk -v f="$f" '$1 == "created" && $2 == f { found = 1 } END { exit !found }' "$NEW_MANIFEST"; then
+      if [ "$(manifest_status "$f" "$NEW_MANIFEST")" = "created" ]; then
         printf '/%s\n' "$f"
       fi
     done
@@ -373,7 +394,12 @@ write_ignore_block() {
 ignore_target() {
   local line=""
   if [ -n "$OLD_MANIFEST" ] && [ -f "$OLD_MANIFEST" ]; then
-    line=$(awk '{ f = substr($0, index($0, " ") + 1) } f != "CLAUDE.md" && f != "AGENTS.md" && f != "CLAUDE.local.md" && f != "AGENTS.override.md" { print f; exit }' "$OLD_MANIFEST")
+    line=$(parse_manifest "$OLD_MANIFEST" | awk '
+      { f = substr($0, index($0, " ") + 1) }
+      !found && f != "CLAUDE.md" && f != "AGENTS.md" && f != "CLAUDE.local.md" && f != "AGENTS.override.md" {
+        target = f; found = 1
+      }
+      END { if (found) print target }')
   fi
   printf '%s' "${line:-.gitignore}"
 }
@@ -475,7 +501,7 @@ load_old_manifest() {
   if [ "$1" = "update" ]; then
     OLD_MANIFEST=$(make_temp)
     if [ -f "$PROJECT/factory/.install-manifest" ]; then
-      cat "$PROJECT/factory/.install-manifest" > "$OLD_MANIFEST"
+      parse_manifest "$PROJECT/factory/.install-manifest" > "$OLD_MANIFEST"
     else
       warn "factory/.install-manifest is missing; the root files are handled as in a new install."
       : > "$OLD_MANIFEST"
@@ -509,16 +535,17 @@ preflight_root_files() {
 }
 
 print_root_summary() {
-  local action file
+  local line action file
   info "Root files:"
-  while read -r action file; do
-    [ -n "$file" ] || continue
+  parse_manifest "$PROJECT/factory/.install-manifest" | while IFS= read -r line; do
+    action="${line%% *}"
+    file="${line#* }"
     if [ "$action" = "created" ]; then
       info "  created    $file"
     else
       info "  block in   $file"
     fi
-  done < "$PROJECT/factory/.install-manifest"
+  done
 }
 
 do_install() {
