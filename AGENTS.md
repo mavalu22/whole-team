@@ -6,3 +6,4 @@
 - Before every commit, run `python3 scripts/check.py` and fix every problem it reports. CI runs it on every pull request to main.
 - Make atomic Conventional Commits in English. Add a `CHANGELOG.md` line under `## [Unreleased]` for each change.
 - Never add AI attribution to commits or pull requests: no `Co-authored-by:` trailer, no "Generated with ..." line and no other tool attribution.
+- **Releases:** every release commit `chore(release): X.Y.Z` on `main` gets an annotated tag `vX.Y.Z` and a GitHub release whose notes are that version's `CHANGELOG.md` section. Keep tag messages and release notes free of attribution.
