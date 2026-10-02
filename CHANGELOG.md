@@ -8,6 +8,10 @@ All notable changes to WholeTeam are documented in this file. The format is base
 
 - Delivery documentation and pipeline history examples place TEST before DEV when it runs, followed by REVIEW, QA, SEC, APPROVAL and MERGE as enabled.
 
+### Changed
+
+- A read-only Python check verifies role and agent copies, common preambles, agent names, TOML literal safety and identical config files.
+
 ## [1.3.0] - 2026-09-28
 
 ### Added
