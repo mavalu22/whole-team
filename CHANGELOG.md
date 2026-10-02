@@ -13,6 +13,10 @@ All notable changes to WholeTeam are documented in this file. The format is base
 - Criteria check-off uses the evidence of enabled stages, and a recorded "Accept as-is" escalation decision counts as stage approval in the Definition of Done.
 - Both installed root guide blocks list the Process command.
 
+### Added
+
+- README license and version-tag installation notes, and a maintenance rule requiring an annotated tag and changelog-based GitHub release for every release commit.
+
 ## [1.3.1] - 2026-10-02
 
 ### Fixed

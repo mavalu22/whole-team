@@ -96,6 +96,8 @@ Clone WholeTeam once, anywhere on your machine:
 git clone https://github.com/mavalu22/whole-team.git
 ```
 
+To install a specific version, check out its tag (for example `git checkout v1.3.2`) before running the installer.
+
 Then run the installer and paste your project's path when asked.
 
 **Linux, macOS, Git Bash:**
@@ -272,3 +274,7 @@ Because `factory/` is ignored by git:
 When changing a role in `template/factory/core/roles/<slug>.md`, apply the same change to the embedded role text in `template/root/.claude/agents/factory-<slug>.md` and `template/root/.codex/agents/factory-<slug>.toml`.
 Keep `template/factory/config.yaml` and `template/factory/core/config.defaults.yaml` byte-identical, and run `python3 scripts/check.py` before every commit.
 See [AGENTS.md](AGENTS.md) for the repository maintenance rules.
+
+## 17. License
+
+WholeTeam is licensed under the [GNU Affero General Public License v3.0](LICENSE).
