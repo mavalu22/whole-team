@@ -8,6 +8,7 @@ All notable changes to WholeTeam are documented in this file. The format is base
 
 - Claude agents give the Tech Writer shell tools, Security and the Tech Lead write tools, and DevOps web search, as their roles require.
 - Task messages name the integration branch as DIFF BASE; item reviews and conflict rebases use it instead of the stable base branch.
+- Codex agent names replace every hyphen in a role slug with an underscore, as stated in the delegation rules and role map.
 
 ## [1.3.1] - 2026-10-02
 

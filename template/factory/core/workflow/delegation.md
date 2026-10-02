@@ -17,7 +17,7 @@ Every role except the Orchestrator has an agent file whose body embeds the role'
 
 ### Codex
 
-- Spawn the custom agent `factory_<slug>` (for example `factory_qa`) by name, with the task message as its input.
+- Spawn the custom agent by name, with the task message as its input. Its name is `factory_` plus the slug with every hyphen replaced by an underscore (for example `factory_tech_lead`).
 - **Tier override:** request the model and reasoning effort explicitly in the spawn request, from `models.codex.<tier>`.
 - Codex delegates to subagents when instructions request it: this workflow requests it for every stage of every item, every Discovery draft, and every audit.
 - **Parallel mode:** spawn the agents of different items concurrently and wait for each result before acting on it.
@@ -50,7 +50,7 @@ Use the fallback when subagents are unavailable, disabled, or a delegation fails
 1. Perform the role yourself: read `factory/core/roles/<slug>.md` and follow it strictly, one stage at a time. Apply the role's boundaries as if you were the agent: for example, as QA you only verify, you don't fix.
 2. For TEST, write and commit the tests before starting DEV, and never edit them during DEV.
 3. Write the same report the agent would write (section 4) before recording the result, so the evidence rules still apply.
-4. Tell the user once per session that tier routing is not active and why. When delegation fails because the factory agents are unknown (`factory-<slug>` or `factory_<slug>` not found), suggest restarting the tool from the project root: WholeTeam was most likely installed while the session was open.
+4. Tell the user once per session that tier routing is not active and why. When delegation fails because the factory agents are unknown (`factory-<slug>` or the Codex name from section 1 not found), suggest restarting the tool from the project root: WholeTeam was most likely installed while the session was open.
 5. Try delegation again at the next stage; return to normal delegation as soon as it works.
 
 ## 3. Task message

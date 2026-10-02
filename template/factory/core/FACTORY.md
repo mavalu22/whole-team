@@ -167,7 +167,7 @@ Any command or Discovery answer may cite a file in `factory/attachments/`, by na
 | `backlog-validator` | Checks the backlog mechanically against the rules | low | Discovery 8, change requests, audits |
 
 - Tiers come from `models.role_tiers` in `factory/config.yaml`; each tier maps to a model per tool under `models.claude_code` and `models.codex`.
-- Invoke roles as described in `factory/core/workflow/delegation.md`: Claude Code subagents `factory-<slug>`, Codex custom agents `factory_<slug>`, and the fallback when subagents are unavailable or fail twice. This manual requests delegation: always delegate a role's work to its agent unless the fallback applies.
+- Invoke roles as described in `factory/core/workflow/delegation.md`: Claude Code subagents `factory-<slug>`, Codex custom agents named `factory_` plus the slug with every hyphen replaced by an underscore (for example `factory_tech_lead`), and the fallback when subagents are unavailable or fail twice. This manual requests delegation: always delegate a role's work to its agent unless the fallback applies.
 - When you run a role yourself (Discovery conversations, or the fallback), read `factory/core/roles/<slug>.md` and follow it strictly.
 - **Cost rule.** The main session should run on a medium-tier model. Heavy reasoning goes to high-tier role agents (Architect, required security reviews, audits), never to the main session.
 
