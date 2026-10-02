@@ -95,3 +95,7 @@ The config merge (section 2) adds `pipeline.preset`, `pipeline.stages`, `pipelin
 ### 1.3.1
 
 No steps. The config and state formats are unchanged.
+
+### 1.3.2
+
+No steps. `in_flight[].findings_file` is optional; an entry without it is treated as `null`. The config format is unchanged.
