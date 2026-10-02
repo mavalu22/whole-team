@@ -17,11 +17,13 @@ Sections: 1. In-flight entries · 2. Other delivery entries · 3. Writing state 
   started_at: 2026-01-01T10:00:00Z
   stage_started_at: 2026-01-01T11:20:00Z
   last_report: null                    # short verdict of the last finished stage
+  findings_file: null                  # saved findings or questions; path from project root
 ```
 
 - `last_report` is one line: `<STAGE> <VERDICT>: <summary>`, for example `REVIEW APPROVED: no findings`. It is the record that a stage finished.
 - `stage` only takes values from the item's enabled stages (`factory/core/workflow/delivery.md` section 4, computed when the item starts and recorded in execution order in its `pipeline: ...` history line, with TEST before DEV when it runs); a stage the pipeline skips for this item is never set here.
-- Test paths, merge commits and findings are recorded in the item's history in `factory/tasks.md` or `factory/bugs.md`, not here.
+- `findings_file` points to `factory/output/reports/<ID>/<n>-<stage>.md`, written only by the Orchestrator (`factory/core/workflow/delivery.md` section 6). It defaults to `null`; an absent key is treated as `null`. Keep it through rework and earlier gates; clear it only when the item passes the stage named in the file. The file remains on disk.
+- Test paths, merge commits and findings file paths are recorded in the item's history in `factory/tasks.md` or `factory/bugs.md`.
 
 ## 2. Other delivery entries
 
@@ -60,12 +62,14 @@ On `Let's code` (startup step 5):
    - the branch exists (`git rev-parse --verify <branch>`);
    - in parallel mode, the worktree exists (`git worktree list`);
    - there are no stray uncommitted changes in its working directory (`git -C <dir> status --porcelain`).
-2. **Stage started, report not recorded** (`last_report` is from an earlier stage or `null`): re-run that stage from the beginning. Developers commit work in progress often, so little is lost. Uncommitted changes left by an interrupted DEV stage belong to the item: tell the Developer about them in the task message so it can keep or discard them. Re-running MERGE is safe because it starts with the resume check (`factory/core/workflow/delivery.md` section 5, step 1).
-3. **Never re-run a finished stage** whose verdict is recorded; continue with the next one.
-4. **Missing branch or worktree:** if the branch exists but the worktree is gone, recreate the worktree from the branch (`git worktree add <path> <branch>`) and reinstall dependencies. If the branch is gone, first run the already-merged check (`factory/core/workflow/delivery.md` section 5, step 1.2): if it finds the commit, finish the record step (step 6 there) with that hash instead. Otherwise reset the item to `TODO`, remove the entry, and add a history line.
-5. **Pending approvals and escalations** are re-presented before any new work. A checkpoint approval that the log already records, or whose checkpoint is already merged, is not asked again: finish it (`factory/core/workflow/checkpoints.md` section 4, "Resuming").
-6. **A checkpoint in progress** resumes at its first step without a log line: section 1 of `factory/core/workflow/checkpoints.md` for the procedure, and its section 4 ("Resuming") after approval.
-7. After an interruption, tell the user briefly where things stand and what resumes now.
+2. **Stage started, report not recorded** (`last_report` is from an earlier stage or `null`): re-run that stage from the beginning, subject to rules 4 and 5 for `REJECTED` and `BLOCKED`. Developers commit work in progress often, so little is lost. Uncommitted changes left by an interrupted DEV stage belong to the item: tell the Developer about them in the task message so it can keep or discard them. Re-running MERGE is safe because it starts with the resume check (`factory/core/workflow/delivery.md` section 5, step 1).
+3. **Never re-run a finished stage** whose verdict is recorded; continue with the next one, except for `REJECTED` and `BLOCKED` (rules 4 and 5).
+4. **`last_report` is `REJECTED`:** return the item to DEV with the open findings from `findings_file`, including when the session ended during rework DEV. Reuse the saved file; do not count the rejection again. Pending escalations still take priority (rule 7).
+5. **`last_report` is `BLOCKED`:** apply `factory/core/workflow/delivery.md` section 8 with the questions in `findings_file`, then re-run the stage named in `last_report`, with the answers. Reuse the saved file.
+6. **Missing branch or worktree:** if the branch exists but the worktree is gone, recreate the worktree from the branch (`git worktree add <path> <branch>`) and reinstall dependencies. If the branch is gone, first run the already-merged check (`factory/core/workflow/delivery.md` section 5, step 1.2): if it finds the commit, finish the record step (step 6 there) with that hash instead. Otherwise reset the item to `TODO`, remove the entry, and add a history line.
+7. **Pending approvals and escalations** are re-presented before any new work. A checkpoint approval that the log already records, or whose checkpoint is already merged, is not asked again: finish it (`factory/core/workflow/checkpoints.md` section 4, "Resuming").
+8. **A checkpoint in progress** resumes at its first step without a log line: section 1 of `factory/core/workflow/checkpoints.md` for the procedure, and its section 4 ("Resuming") after approval.
+9. After an interruption, tell the user briefly where things stand and what resumes now.
 
 ## 5. Usage limits
 

@@ -58,7 +58,7 @@ Before each stage, set the item's status and `in_flight[].stage`, `stage_started
 ### 4.2 DEV
 
 - **Status:** `IN_PROGRESS`. **Role:** `developer`; `devops` for items of type `infra`; `tech-writer` for items of type `docs`.
-- **Task message excerpts:** acceptance criteria, relevant contracts and design references, the Test Engineer's test paths (or, when `test` is not enabled and tests are required, a note asking the Developer to write them), and on rework the findings to fix (only the open ones).
+- **Task message excerpts:** acceptance criteria, relevant contracts and design references, the Test Engineer's test paths (or, when `test` is not enabled and tests are required, a note asking the Developer to write them), and on rework the findings to fix from `in_flight[].findings_file` (only the open ones).
 - **Result:** commits on the item branch; lint, type-check and the relevant tests pass. A `BLOCKED` verdict with "test looks wrong" goes to the Test Engineer for adjudication against the acceptance criteria (`test-engineer` with stage `TEST`); the Test Engineer either fixes the test (history line) or confirms it, and DEV resumes. When `test` is not enabled and the Developer wrote tests, record their paths from `ARTIFACTS`/`CRITERIA` the same way as a TEST stage would.
 - **Bugs with `Verified: no`:** the Developer first confirms the bug. If it cannot be reproduced, it returns `BLOCKED`; ask the user whether to close it as `NOT_A_BUG` or give more details.
 
@@ -126,7 +126,8 @@ The Orchestrator merges; never delegate it. Merge one item at a time.
 
 ## 6. Rejections
 
-- A rejection at REVIEW, QA or SEC sets `REVIEW_REJECTED`, `QA_REJECTED` or `SEC_REJECTED`, increments `**Rejections:**`, appends a history line naming the gate and the main finding, and sends the findings back to DEV. `max_rejections` counts rejections from whatever gates are enabled for the item. After DEV, the item runs its enabled gates again, starting from the first enabled gate after DEV (`review`, or `qa` when `review` is not enabled).
+- **Findings file.** When a gate round ends `REJECTED`, or an item's stage returns `BLOCKED`, the Orchestrator writes `factory/output/reports/<ID>/<n>-<stage>.md` before recording the verdict or starting rework. `<n>` starts at 1 and is one greater than the largest existing round number for that item; `<stage>` is lower case (for example `factory/output/reports/T-012/1-review.md`). Write one header line `# <ID> · <STAGE> · <VERDICT> · <YYYY-MM-DD>`, followed by the merged `FINDINGS` list of all reviewers in the round, or the `QUESTIONS` of a blocked stage, in English. No logs, diffs or secrets. Set `in_flight[].findings_file` to the path and include it in the item's history. Keep the files across sessions; do not save reports of approved stages. Set the key back to `null` when the item passes the stage named in that file, not when rework DEV or an earlier gate finishes.
+- A rejection at REVIEW, QA or SEC sets `REVIEW_REJECTED`, `QA_REJECTED` or `SEC_REJECTED`, increments `**Rejections:**` once for the round, appends a history line naming the gate, the main finding and the findings file, and sends the open findings from that file back to DEV. `max_rejections` counts rejections from whatever gates are enabled for the item. After DEV, the item runs its enabled gates again, starting from the first enabled gate after DEV (`review`, or `qa` when `review` is not enabled). Resuming a recorded rejection reuses the file and does not count it again.
 - User feedback at APPROVAL, rebase conflicts and post-rebase test failures send the item back to DEV without counting as rejections.
 - When `Rejections` reaches `execution.max_rejections`, set `BLOCKED` and create an escalation (section 7).
 
@@ -145,9 +146,9 @@ The Orchestrator merges; never delegate it. Merge one item at a time.
 
 When a role returns `BLOCKED` with a question:
 
-1. Answer it from the inputs (read the referenced sections only), consulting the Product Owner role (`product-owner` agent, stage `DISCOVERY`) if the answer needs product judgment.
+1. For an in-flight item, persist the questions and set `findings_file` as in section 6 before recording `last_report` or asking for an answer. On resume, reuse the file; read the questions from `findings_file`. Answer them from the inputs (read the referenced sections only), consulting the Product Owner role (`product-owner` agent, stage `DISCOVERY`) if the answer needs product judgment.
 2. Ask the user only when a real decision is needed; add an entry to `delivery.escalations` with `reason: question` while waiting.
-3. Re-run the same stage with the answer added to the task message. Record the answer in the item's `**Notes:**` if it affects later stages.
+3. Re-run the same stage with the answer added to the task message. Record the answer in the item's `**Notes:**` if it affects later stages. Keep `findings_file` until that stage passes.
 4. In parallel mode, other items continue meanwhile.
 
 ## 9. Sequential mode
