@@ -2,7 +2,7 @@
 
 All notable changes to WholeTeam are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.3.2] - 2026-10-02
 
 ### Fixed
 
@@ -16,6 +16,10 @@ All notable changes to WholeTeam are documented in this file. The format is base
 ### Added
 
 - README license and version-tag installation notes, and a maintenance rule requiring an annotated tag and changelog-based GitHub release for every release commit.
+
+### Changed
+
+- Release 1.3.2 keeps the config format unchanged; an in-flight entry without the optional findings_file key is treated as having null.
 
 ## [1.3.1] - 2026-10-02
 
