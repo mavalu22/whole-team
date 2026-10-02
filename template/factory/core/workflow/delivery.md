@@ -138,7 +138,7 @@ The Orchestrator merges; never delegate it. Merge one item at a time.
 3. Show the item, the gate, the recurring finding in one or two lines, and the options:
    1. **Give guidance:** send the item back to DEV with the user's guidance; reset `Rejections` to 0 and add a history line.
    2. **Simplify or split:** cancel the item and create smaller tasks following `factory/core/workflow/backlog.md` section 6, with the Architect; or reduce the acceptance criteria with the user and continue.
-   3. **Accept as-is:** continue to the next stage or merge; record the accepted finding in `**Notes:**` so it appears under "Known issues" in the next checkpoint report. If the user wants it fixed later, create a bug for it (source `support`) with a priority they confirm.
+   3. **Accept as-is:** count the rejected stage as approved, record the decision in the item's history and `last_report` (`<STAGE> APPROVED: accepted as-is`), clear `findings_file`, and continue to the next stage or merge; record the accepted finding in `**Notes:**` so it appears under "Known issues" in the next checkpoint report. If the user wants it fixed later, create a bug for it (source `support`) with a priority they confirm.
    4. **Cancel:** set `CANCELLED`, remove the worktree, keep the branch unless the user wants it deleted, and handle dependents (`factory/core/workflow/backlog.md` section 6).
 4. Remove the escalation entry once the user decides, and log the decision.
 
