@@ -2,6 +2,12 @@
 
 All notable changes to WholeTeam are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- Delivery documentation and pipeline history examples place TEST before DEV when it runs, followed by REVIEW, QA, SEC, APPROVAL and MERGE as enabled.
+
 ## [1.3.0] - 2026-09-28
 
 ### Added
