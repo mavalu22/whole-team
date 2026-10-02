@@ -137,6 +137,8 @@ git pull
 
 (or `.\install.ps1 -Path C:\code\my-app -Mode update`). The update replaces `factory/core/` and the `factory-*` agent files, refreshes the WholeTeam blocks, and adds any new starting files. It never touches your `config.yaml`, `state.yaml`, `tasks.md`, `tasks-graph.md`, `bugs.md`, `input/` or `output/`. On your next `Let's code`, the Orchestrator migrates your config and state to the new version if needed. The update resets the agent files to the default models; the next `Let's code` re-applies the models from your `factory/config.yaml`. Claude Code picks up the new agent files by itself; restart Codex after updating so it loads them.
 
+The installer stages and validates every replacement before changing installed files, and keeps the originals until the whole update succeeds. A failed update restores the previous core, agents, and installer-managed files together. If the installer is interrupted, run the same installer again with the same project path: it recovers the previous version before detecting the installation or asking about another update. If recovery fails, keep `factory/.wholeteam-update/` and retry after fixing the reported filesystem error; that folder contains the recovery journal and remaining originals. A completed update removes it. Another invocation refuses to recover an update that is still running.
+
 ## 7. Using it
 
 | Command | What it does | Example |

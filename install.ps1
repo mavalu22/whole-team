@@ -27,6 +27,8 @@ $script:Project = ""
 $script:OldManifest = @()
 $script:RootMode = 'install'
 $script:NewManifest = New-Object System.Collections.ArrayList
+$script:UpdateDir = ''
+$script:UpdateCount = 0
 
 function Show-Usage {
     $text = @'
@@ -50,8 +52,7 @@ Any missing value is asked interactively.
 function Write-Info([string]$Message) { Write-Host $Message }
 function Write-Warn([string]$Message) { [Console]::Error.WriteLine("Warning: $Message") }
 function Fail([string]$Message) {
-    [Console]::Error.WriteLine("Error: $Message")
-    exit 1
+    throw $Message
 }
 
 function Read-Answer([string]$Prompt, [string]$Default) {
@@ -152,6 +153,7 @@ function Assert-Block([string]$File, [string]$Begin, [string]$End) {
 
 # Replace the text between the markers, or append the block after a blank line.
 function Update-Block([string]$File, [string]$BlockText, [string]$Begin, [string]$End) {
+    if ($script:UpdateDir -ne '') { $File = New-StagedFile $File }
     if (-not (Test-Path -LiteralPath $File -PathType Leaf)) {
         Write-Text $File $BlockText
         return
@@ -206,6 +208,102 @@ function Read-Manifest([string]$File) {
         }
     }
     return ,$entries
+}
+
+# A journal entry holds a target, a staged replacement and, after promotion,
+# the original in "old". All copies finish before "ready" allows any changes.
+function New-UpdateTarget([string]$Target) {
+    $script:UpdateCount++
+    $entry = [System.IO.Path]::Combine($script:UpdateDir, 'entries', ('{0:D6}' -f $script:UpdateCount))
+    New-Item -ItemType Directory -Path $entry -Force | Out-Null
+    $relative = $Target
+    $prefix = $script:Project + [System.IO.Path]::DirectorySeparatorChar
+    if ($Target.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+        $relative = $Target.Substring($prefix.Length) -replace '\\', '/'
+    }
+    Write-Text (Join-Path $entry 'target') ($relative + "`n")
+    if (-not (Test-Path -LiteralPath $Target)) { Write-Text (Join-Path $entry 'absent') '' }
+    return Join-Path $entry 'new'
+}
+
+function Assert-StagedCopy([string]$Source, [string]$Destination) {
+    $result = Invoke-Git @('diff', '--no-index', '--quiet', '--no-ext-diff', '--no-textconv', '--', $Source, $Destination)
+    if ($result.Code -ne 0) { Fail "Staged copy validation failed for $Source. The installed version has not changed." }
+}
+
+function New-StagedFile([string]$Target) {
+    $staged = New-UpdateTarget $Target
+    if (Test-Path -LiteralPath $Target) {
+        if (-not (Test-Path -LiteralPath $Target -PathType Leaf)) { Fail "Expected a file at $Target." }
+        Copy-Item -LiteralPath $Target -Destination $staged -Force
+        Assert-StagedCopy $Target $staged
+    }
+    return $staged
+}
+
+# An original already moved back during recovery is left alone on retry.
+# Keep the journal on any restoration failure so the next run can retry safely.
+function Restore-Update {
+    $dir = Join-ProjectPath 'factory/.wholeteam-update'
+    if (-not (Test-Path -LiteralPath $dir)) { return }
+    $format = Join-Path $dir 'format'
+    if (-not (Test-Path -LiteralPath $format -PathType Leaf) -or (Read-Text $format).Trim() -ne 'wholeteam-update-v1') {
+        Fail "Unrecognized update directory: $dir. Keep its contents and move it aside before retrying."
+    }
+    if ($script:UpdateDir -eq '') {
+        $ownerFile = Join-Path $dir 'owner'
+        if (-not (Test-Path -LiteralPath $ownerFile -PathType Leaf)) { Fail "Update owner is missing in $dir; keep the journal for recovery." }
+        $owner = (Read-Text $ownerFile).Trim() -split ' '
+        $ownerPid = 0
+        if ($owner.Count -ne 2 -or -not [int]::TryParse($owner[1], [ref]$ownerPid) -or $ownerPid -le 0) {
+            Fail "Invalid update owner in $dir."
+        }
+        $runtime = 'unix'
+        if ($env:OS -eq 'Windows_NT') { $runtime = 'powershell' }
+        if ($owner[0] -ne $runtime) { Fail "Use the $($owner[0]) installer to recover $dir safely." }
+        if (Get-Process -Id $ownerPid -ErrorAction SilentlyContinue) { Fail "Another WholeTeam update is still running (process $ownerPid)." }
+    }
+    $ready = Join-Path $dir 'ready'
+    if ((Test-Path -LiteralPath $ready) -and -not (Test-Path -LiteralPath (Join-Path $dir 'committed'))) {
+        Write-Info 'Recovering an unfinished WholeTeam update ...'
+        foreach ($entry in (Get-ChildItem -LiteralPath (Join-Path $dir 'entries') -Directory | Sort-Object Name)) {
+            $target = Get-IgnorePath ((Read-Text (Join-Path $entry.FullName 'target')).TrimEnd("`r", "`n"))
+            $old = Join-Path $entry.FullName 'old'
+            if (Test-Path -LiteralPath $old) {
+                if (Test-Path -LiteralPath $target) { Remove-Item -LiteralPath $target -Recurse -Force }
+                Move-Item -LiteralPath $old -Destination $target
+            } elseif ((Test-Path -LiteralPath (Join-Path $entry.FullName 'absent')) -and -not (Test-Path -LiteralPath (Join-Path $entry.FullName 'new'))) {
+                if (Test-Path -LiteralPath $target) { Remove-Item -LiteralPath $target -Recurse -Force }
+            }
+        }
+        Write-Info 'The previous WholeTeam version was restored.'
+    }
+    # "ready" must disappear before backups do, including interrupted cleanup.
+    if (Test-Path -LiteralPath $ready) { Remove-Item -LiteralPath $ready -Force }
+    Remove-Item -LiteralPath $dir -Recurse -Force
+    $script:UpdateDir = ''
+}
+
+function Complete-Update {
+    $dir = $script:UpdateDir
+    Write-Text (Join-Path $dir 'ready.tmp') ''
+    Move-Item -LiteralPath (Join-Path $dir 'ready.tmp') -Destination (Join-Path $dir 'ready')
+    foreach ($entry in (Get-ChildItem -LiteralPath (Join-Path $dir 'entries') -Directory | Sort-Object Name)) {
+        $target = Get-IgnorePath ((Read-Text (Join-Path $entry.FullName 'target')).TrimEnd("`r", "`n"))
+        $parent = Split-Path -Parent $target
+        if (-not (Test-Path -LiteralPath $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
+        if (Test-Path -LiteralPath (Join-Path $entry.FullName 'absent')) {
+            if (Test-Path -LiteralPath $target) { Fail "Update target appeared during staging: $target." }
+        } else {
+            if (-not (Test-Path -LiteralPath $target)) { Fail "Update target disappeared during staging: $target." }
+            Move-Item -LiteralPath $target -Destination (Join-Path $entry.FullName 'old')
+        }
+        $staged = Join-Path $entry.FullName 'new'
+        if (Test-Path -LiteralPath $staged) { Move-Item -LiteralPath $staged -Destination $target }
+    }
+    Write-Text (Join-Path $dir 'committed.tmp') ''
+    Move-Item -LiteralPath (Join-Path $dir 'committed.tmp') -Destination (Join-Path $dir 'committed')
+    Restore-Update
 }
 
 # Section 4.3 rules for one tool's guide file and its local-only fallback.
@@ -269,7 +367,7 @@ function Set-IgnoreBlock {
     $block = Get-IgnoreBlock
     if (-not (Test-Path -LiteralPath $absolute)) {
         $parent = Split-Path -Parent $absolute
-        if (-not (Test-Path -LiteralPath $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
+        if ($script:UpdateDir -eq '' -and -not (Test-Path -LiteralPath $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
         Update-Block $absolute $block $BlockBeginIgnore $BlockEndIgnore
         Add-Record 'created' $target
     } else {
@@ -290,7 +388,9 @@ function Set-RootFiles([string]$RunMode) {
     Set-IgnoreBlock
     $text = ''
     foreach ($entry in $script:NewManifest) { $text += "$($entry.Action) $($entry.File)`n" }
-    Write-Text (Join-ProjectPath 'factory/.install-manifest') $text
+    $manifest = Join-ProjectPath 'factory/.install-manifest'
+    if ($script:UpdateDir -ne '') { $manifest = New-StagedFile $manifest }
+    Write-Text $manifest $text
 }
 
 # Set OldManifest and RootMode for the root files.
@@ -380,9 +480,13 @@ function Copy-Agents {
             Copy-Item -LiteralPath $_.FullName -Destination ([System.IO.Path]::Combine($targetDir, $_.Name)) -Force
         }
     }
+    Write-ModelsMarker (Join-ProjectPath 'factory/.models-sync-needed')
+}
+
+function Write-ModelsMarker([string]$File) {
     $marker = 'The WholeTeam installer rewrote the agent files with default models.' + "`n" +
         'On the next `Let''s code`, the Orchestrator re-applies the models block of factory/config.yaml and deletes this file.' + "`n"
-    Write-Text (Join-ProjectPath 'factory/.models-sync-needed') $marker
+    Write-Text $File $marker
 }
 
 function Write-CoreVersion {
@@ -442,17 +546,50 @@ function Invoke-Update {
     Write-Info ''
     Write-Info "Updating WholeTeam $installed -> $script:Version in $script:Project ..."
 
-    Remove-Item -LiteralPath (Join-ProjectPath 'factory/core') -Recurse -Force
-    Copy-Item -LiteralPath ([System.IO.Path]::Combine($script:Template, 'factory', 'core')) -Destination (Join-ProjectPath 'factory/core') -Recurse
-    Write-CoreVersion
-    Copy-Agents
+    # Reserve a fresh journal; never reuse unrelated contents at this path.
+    $dir = Join-ProjectPath 'factory/.wholeteam-update'
+    New-Item -ItemType Directory -Path $dir | Out-Null
+    $script:UpdateDir = $dir
+    $runtime = 'unix'
+    if ($env:OS -eq 'Windows_NT') { $runtime = 'powershell' }
+    Write-Text (Join-Path $dir 'owner') ("$runtime $PID" + "`n")
+    Write-Text (Join-Path $dir 'format') "wholeteam-update-v1`n"
+    $script:UpdateCount = 0
+    $sourceCore = [System.IO.Path]::Combine($script:Template, 'factory', 'core')
+    foreach ($name in @('FACTORY.md', 'MIGRATIONS.md', 'config.defaults.yaml')) {
+        $required = Join-Path $sourceCore $name
+        if (-not (Test-Path -LiteralPath $required -PathType Leaf) -or (Get-Item -LiteralPath $required).Length -eq 0) {
+            Fail "The replacement core is missing $name."
+        }
+    }
+    $staged = New-UpdateTarget (Join-ProjectPath 'factory/core')
+    Copy-Item -LiteralPath $sourceCore -Destination $staged -Recurse
+    Assert-StagedCopy $sourceCore $staged
+    Write-Text (Join-Path $staged 'VERSION') ("$script:Version" + "`n")
+
+    foreach ($pair in @(@('.claude', 'factory-*.md'), @('.codex', 'factory-*.toml'))) {
+        $sourceDir = [System.IO.Path]::Combine($script:Template, 'root', $pair[0], 'agents')
+        $targetDir = Join-ProjectPath ([System.IO.Path]::Combine($pair[0], 'agents'))
+        $agents = @(Get-ChildItem -LiteralPath $sourceDir -Filter $pair[1] -File)
+        if ($agents.Count -eq 0) { Fail "The replacement $($pair[0]) agents are missing." }
+        foreach ($agent in $agents) {
+            $staged = New-UpdateTarget (Join-Path $targetDir $agent.Name)
+            Copy-Item -LiteralPath $agent.FullName -Destination $staged -Force
+            Assert-StagedCopy $agent.FullName $staged
+        }
+        if (Test-Path -LiteralPath $targetDir) {
+            foreach ($agent in (Get-ChildItem -LiteralPath $targetDir -Filter $pair[1] -File)) {
+                if (-not (Test-Path -LiteralPath (Join-Path $sourceDir $agent.Name) -PathType Leaf)) {
+                    $null = New-UpdateTarget $agent.FullName
+                }
+            }
+        }
+    }
+    $staged = New-StagedFile (Join-ProjectPath 'factory/.models-sync-needed')
+    Write-ModelsMarker $staged
 
     $before = Get-GitignoreState
     Set-RootFiles $script:RootMode
-    if ($before -eq 'clean' -and (Get-GitignoreState) -eq 'dirty') {
-        Write-Info '  The WholeTeam block in .gitignore changed. Commit it:'
-        Write-Info '    git add .gitignore && git commit -m "chore: update WholeTeam ignore rules"'
-    }
 
     $copied = 0
     $sourceRoot = [System.IO.Path]::Combine($script:Template, 'factory')
@@ -466,15 +603,22 @@ function Invoke-Update {
     foreach ($relative in ($relatives | Sort-Object)) {
         $destination = Join-ProjectPath ('factory/' + $relative)
         if (-not (Test-Path -LiteralPath $destination)) {
-            $parent = Split-Path -Parent $destination
-            if (-not (Test-Path -LiteralPath $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
-            Copy-Item -LiteralPath ([System.IO.Path]::Combine($sourceRoot, $relative)) -Destination $destination
+            $staged = New-UpdateTarget $destination
+            $source = [System.IO.Path]::Combine($sourceRoot, $relative)
+            Copy-Item -LiteralPath $source -Destination $staged
+            Assert-StagedCopy $source $staged
             $copied++
             Write-Info "  added missing starting file factory/$relative"
         }
     }
 
     Write-Info ''
+    Complete-Update
+    if ($before -eq 'clean' -and (Get-GitignoreState) -eq 'dirty') {
+        Write-Info '  The WholeTeam block in .gitignore changed. Commit it:'
+        Write-Info '    git add .gitignore && git commit -m "chore: update WholeTeam ignore rules"'
+    }
+
     Write-Info "WholeTeam is updated to $script:Version."
     Show-RootSummary
     if ($copied -eq 0) {
@@ -487,89 +631,103 @@ function Invoke-Update {
 
 # --- Main ---------------------------------------------------------------------
 
-if ($Help) { Show-Usage; exit 0 }
-if (@('', 'new', 'ongoing') -notcontains $Type) { Fail '-Type must be new or ongoing.' }
-if (@('', 'install', 'update') -notcontains $Mode) { Fail '-Mode must be install or update.' }
-$Type = $Type.ToLowerInvariant()
-$Mode = $Mode.ToLowerInvariant()
+try {
+    if ($Help) { Show-Usage; exit 0 }
+    if (@('', 'new', 'ongoing') -notcontains $Type) { Fail '-Type must be new or ongoing.' }
+    if (@('', 'install', 'update') -notcontains $Mode) { Fail '-Mode must be install or update.' }
+    $Type = $Type.ToLowerInvariant()
+    $Mode = $Mode.ToLowerInvariant()
 
-if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-    Fail 'git was not found on PATH. Install git, then run the installer again.'
-}
-$script:ScriptDir = Get-FullPath $PSScriptRoot
-$script:Template = [System.IO.Path]::Combine($script:ScriptDir, 'template')
-$versionFile = [System.IO.Path]::Combine($script:ScriptDir, 'VERSION')
-if (-not (Test-Path -LiteralPath $versionFile -PathType Leaf) -or -not (Test-Path -LiteralPath ([System.IO.Path]::Combine($script:Template, 'factory', 'core')) -PathType Container)) {
-    Fail 'Run this script from a complete WholeTeam folder (VERSION or template/ is missing next to it).'
-}
-$script:Version = (Read-Text $versionFile).Trim()
+    if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+        Fail 'git was not found on PATH. Install git, then run the installer again.'
+    }
+    $script:ScriptDir = Get-FullPath $PSScriptRoot
+    $script:Template = [System.IO.Path]::Combine($script:ScriptDir, 'template')
+    $versionFile = [System.IO.Path]::Combine($script:ScriptDir, 'VERSION')
+    if (-not (Test-Path -LiteralPath $versionFile -PathType Leaf) -or -not (Test-Path -LiteralPath ([System.IO.Path]::Combine($script:Template, 'factory', 'core')) -PathType Container)) {
+        Fail 'Run this script from a complete WholeTeam folder (VERSION or template/ is missing next to it).'
+    }
+    $script:Version = (Read-Text $versionFile).Trim()
+    if ($script:Version -eq '') { Fail 'The replacement VERSION is empty.' }
 
-Write-Info "WholeTeam installer $script:Version"
+    Write-Info "WholeTeam installer $script:Version"
 
-$raw = $Path
-if ($raw -eq '') {
-    if ($Yes) { Fail '-Yes needs -Path <project>.' }
-    $raw = Read-Answer 'Path to your project folder (paste it here)' ''
-    if ($raw -eq '') { Fail 'No path given.' }
-}
-$script:Project = Get-NormalizedPath $raw
-if ($script:Project -eq '' -or -not (Test-Path -LiteralPath $script:Project -PathType Container)) {
-    Fail "Folder not found: $($script:Project). The factory never creates project folders: create or clone your project first, then run the installer again."
-}
+    $raw = $Path
+    if ($raw -eq '') {
+        if ($Yes) { Fail '-Yes needs -Path <project>.' }
+        $raw = Read-Answer 'Path to your project folder (paste it here)' ''
+        if ($raw -eq '') { Fail 'No path given.' }
+    }
+    $script:Project = Get-NormalizedPath $raw
+    if ($script:Project -eq '' -or -not (Test-Path -LiteralPath $script:Project -PathType Container)) {
+        Fail "Folder not found: $($script:Project). The factory never creates project folders: create or clone your project first, then run the installer again."
+    }
 
-$inside = Invoke-Git @('-C', $script:Project, 'rev-parse', '--is-inside-work-tree')
-if ($inside.Code -ne 0) {
-    Fail 'This folder is not a git repository. Create or clone your project first, then run the installer again.'
-}
-$prefix = Invoke-Git @('-C', $script:Project, 'rev-parse', '--show-prefix')
-$prefixText = [string]($prefix.Out | Select-Object -First 1)
-if ($prefixText -ne '') {
-    $topResult = Invoke-Git @('-C', $script:Project, 'rev-parse', '--show-toplevel')
-    $top = Get-NormalizedPath ([string]($topResult.Out | Select-Object -First 1))
-    Write-Info "This folder is inside the git repository at: $top"
-    if (Confirm-Choice "WholeTeam installs at the repository top level. Use $($top)?") {
-        $script:Project = $top
+    $inside = Invoke-Git @('-C', $script:Project, 'rev-parse', '--is-inside-work-tree')
+    if ($inside.Code -ne 0) {
+        Fail 'This folder is not a git repository. Create or clone your project first, then run the installer again.'
+    }
+    $prefix = Invoke-Git @('-C', $script:Project, 'rev-parse', '--show-prefix')
+    $prefixText = [string]($prefix.Out | Select-Object -First 1)
+    if ($prefixText -ne '') {
+        $topResult = Invoke-Git @('-C', $script:Project, 'rev-parse', '--show-toplevel')
+        $top = Get-NormalizedPath ([string]($topResult.Out | Select-Object -First 1))
+        Write-Info "This folder is inside the git repository at: $top"
+        if (Confirm-Choice "WholeTeam installs at the repository top level. Use $($top)?") {
+            $script:Project = $top
+        } else {
+            Fail "Installation cancelled. Run the installer with the repository's top-level folder."
+        }
+    }
+    $isSelf = ($script:Project -eq $script:ScriptDir)
+    if ((Test-Path -LiteralPath (Join-ProjectPath 'install.sh')) -and (Test-Path -LiteralPath (Join-ProjectPath 'template/factory/core/FACTORY.md'))) { $isSelf = $true }
+    if ($isSelf) { Fail 'This is the WholeTeam folder itself. Give the path of your project instead.' }
+
+    Restore-Update
+
+    $installed = ''
+    $coreVersion = Join-ProjectPath 'factory/core/VERSION'
+    if (Test-Path -LiteralPath $coreVersion -PathType Leaf) {
+        $installed = (Read-Text $coreVersion).Trim()
+        $proposed = 'update'
+        Write-Info "WholeTeam $installed is installed in this project; the new version is $script:Version."
+    } elseif (Test-Path -LiteralPath (Join-ProjectPath 'factory')) {
+        Fail "$(Join-ProjectPath 'factory') exists but is not a WholeTeam installation (factory/core/VERSION is missing). Rename or move that folder, then run the installer again."
     } else {
-        Fail "Installation cancelled. Run the installer with the repository's top-level folder."
+        $proposed = 'install'
+    }
+
+    $runMode = $Mode
+    if ($runMode -eq '') {
+        if ($proposed -eq 'update') {
+            if (-not (Confirm-Choice "Update WholeTeam $installed -> $($script:Version)?")) { Write-Info 'Nothing changed.'; exit 0 }
+        } else {
+            if (-not (Confirm-Choice "Install WholeTeam $($script:Version) into $($script:Project)?")) { Write-Info 'Nothing changed.'; exit 0 }
+        }
+        $runMode = $proposed
+    } elseif ($runMode -eq 'install' -and $proposed -eq 'update') {
+        Write-Info 'WholeTeam is already installed here: running update instead, so your factory files are kept.'
+        $runMode = 'update'
+    } elseif ($runMode -eq 'update' -and $proposed -eq 'install') {
+        Fail "WholeTeam is not installed in $($script:Project). Run the installer with -Mode install."
+    }
+
+    Initialize-OldManifest $runMode
+    Test-RootFiles
+
+    if ($runMode -eq 'install') {
+        Invoke-Install
+    } else {
+        Invoke-Update
+    }
+    exit 0
+} catch {
+    [Console]::Error.WriteLine("Error: $($_.Exception.Message)")
+    exit 1
+} finally {
+    if ($script:UpdateDir -ne '') {
+        try { Restore-Update } catch {
+            [Console]::Error.WriteLine("Error: Recovery is incomplete. Keep $script:UpdateDir and run the installer again to retry it. $($_.Exception.Message)")
+        }
     }
 }
-$isSelf = ($script:Project -eq $script:ScriptDir)
-if ((Test-Path -LiteralPath (Join-ProjectPath 'install.sh')) -and (Test-Path -LiteralPath (Join-ProjectPath 'template/factory/core/FACTORY.md'))) { $isSelf = $true }
-if ($isSelf) { Fail 'This is the WholeTeam folder itself. Give the path of your project instead.' }
-
-$installed = ''
-$coreVersion = Join-ProjectPath 'factory/core/VERSION'
-if (Test-Path -LiteralPath $coreVersion -PathType Leaf) {
-    $installed = (Read-Text $coreVersion).Trim()
-    $proposed = 'update'
-    Write-Info "WholeTeam $installed is installed in this project; the new version is $script:Version."
-} elseif (Test-Path -LiteralPath (Join-ProjectPath 'factory')) {
-    Fail "$(Join-ProjectPath 'factory') exists but is not a WholeTeam installation (factory/core/VERSION is missing). Rename or move that folder, then run the installer again."
-} else {
-    $proposed = 'install'
-}
-
-$runMode = $Mode
-if ($runMode -eq '') {
-    if ($proposed -eq 'update') {
-        if (-not (Confirm-Choice "Update WholeTeam $installed -> $($script:Version)?")) { Write-Info 'Nothing changed.'; exit 0 }
-    } else {
-        if (-not (Confirm-Choice "Install WholeTeam $($script:Version) into $($script:Project)?")) { Write-Info 'Nothing changed.'; exit 0 }
-    }
-    $runMode = $proposed
-} elseif ($runMode -eq 'install' -and $proposed -eq 'update') {
-    Write-Info 'WholeTeam is already installed here: running update instead, so your factory files are kept.'
-    $runMode = 'update'
-} elseif ($runMode -eq 'update' -and $proposed -eq 'install') {
-    Fail "WholeTeam is not installed in $($script:Project). Run the installer with -Mode install."
-}
-
-Initialize-OldManifest $runMode
-Test-RootFiles
-
-if ($runMode -eq 'install') {
-    Invoke-Install
-} else {
-    Invoke-Update
-}
-exit 0

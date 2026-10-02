@@ -2,6 +2,17 @@
 
 All notable changes to WholeTeam are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- Both installers stage and validate updates before replacing the installed core or agents, retain originals until all changes succeed, and roll back failed updates together with root blocks, the manifest, model-sync marker, and newly added starting files. Interrupted updates recover on the next invocation before checking `factory/core/VERSION`.
+- The Bash installer preserves spaces in ignore-file paths read from the install manifest and leaves existing dangling links to starting files untouched.
+
+### Added
+
+- Installer regression tests for successful and repeated updates, copy and promotion failures, data preservation, interrupted updates and recovery, with CI coverage for Bash, macOS Bash 3.2, Windows PowerShell 5.1, and PowerShell 7.
+
 ## [1.3.0] - 2026-09-28
 
 ### Added

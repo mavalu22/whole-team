@@ -18,6 +18,9 @@ ASSUME_YES=0
 TMP_FILES=""
 OLD_MANIFEST=""
 ROOT_MODE="install"
+UPDATE_DIR=""
+UPDATE_COUNT=0
+STAGED_TARGET=""
 
 usage() {
   cat <<'EOF'
@@ -42,12 +45,23 @@ warn() { printf 'Warning: %s\n' "$*" >&2; }
 die() { printf 'Error: %s\n' "$*" >&2; exit 1; }
 
 cleanup() {
+  local status=$?
+  trap - EXIT
+  if [ -n "$UPDATE_DIR" ]; then
+    if ! recover_update; then
+      warn "Recovery is incomplete. Keep $UPDATE_DIR and run the installer again to retry it."
+      status=1
+    fi
+  fi
   if [ -n "$TMP_FILES" ]; then
     # shellcheck disable=SC2086
     rm -f $TMP_FILES
   fi
+  exit "$status"
 }
 trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 make_temp() {
   local t
@@ -123,6 +137,107 @@ write_content() {
   cat "$1" > "$2"
 }
 
+# Each journal entry contains a target, a staged replacement (when needed), and
+# the original moved to "old" during promotion. No installed file changes until
+# every replacement is staged and validated and the "ready" marker is written.
+stage_target() {
+  local target="$1" entry relative
+  UPDATE_COUNT=$((UPDATE_COUNT + 1))
+  entry="$UPDATE_DIR/entries/$(printf '%06d' "$UPDATE_COUNT")"
+  mkdir -p "$entry"
+  relative="$target"
+  case "$target" in "$PROJECT"/*) relative="${target#"$PROJECT"/}" ;; esac
+  printf '%s\n' "$relative" > "$entry/target"
+  if [ ! -e "$target" ] && [ ! -L "$target" ]; then
+    : > "$entry/absent"
+  fi
+  STAGED_TARGET="$entry/new"
+}
+
+validate_copy() {
+  git diff --no-index --quiet --no-ext-diff --no-textconv -- "$1" "$2" ||
+    die "Staged copy validation failed for $1. The installed version has not changed."
+}
+
+stage_file() {
+  stage_target "$1"
+  if [ -e "$1" ] || [ -L "$1" ]; then
+    [ -f "$1" ] || die "Expected a file at $1."
+    cp -p "$1" "$STAGED_TARGET"
+    validate_copy "$1" "$STAGED_TARGET"
+  fi
+}
+
+# Recovery is retryable even if interrupted while restoring an original: an
+# entry whose "old" has already been moved back must be left alone on retry.
+recover_update() {
+  local dir="$PROJECT/factory/.wholeteam-update" entry target owner_runtime owner_pid runtime
+  [ -e "$dir" ] || return 0
+  if [ ! -f "$dir/format" ] || [ "$(cat "$dir/format")" != 'wholeteam-update-v1' ]; then
+    warn "Unrecognized update directory: $dir. Keep its contents and move it aside before retrying."
+    return 1
+  fi
+  if [ -z "$UPDATE_DIR" ]; then
+    [ -f "$dir/owner" ] || { warn "Update owner is missing in $dir; keep the journal for recovery."; return 1; }
+    read -r owner_runtime owner_pid < "$dir/owner" || return 1
+    case "$owner_pid" in ''|*[!0-9]*) warn "Invalid update owner in $dir."; return 1 ;; esac
+    runtime=unix
+    case "$OSTYPE" in msys*|cygwin*) runtime=bash ;; esac
+    if [ "$owner_runtime" != "$runtime" ]; then
+      warn "Use the $owner_runtime installer to recover $dir safely."
+      return 1
+    fi
+    if kill -0 "$owner_pid" 2>/dev/null; then
+      warn "Another WholeTeam update is still running (process $owner_pid)."
+      return 1
+    fi
+  fi
+  if [ -f "$dir/ready" ] && [ ! -f "$dir/committed" ]; then
+    info "Recovering an unfinished WholeTeam update ..."
+    for entry in "$dir"/entries/*; do
+      [ -d "$entry" ] || continue
+      [ -f "$entry/target" ] || return 1
+      IFS= read -r target < "$entry/target" || return 1
+      target=$(ignore_path "$target") || return 1
+      if [ -e "$entry/old" ] || [ -L "$entry/old" ]; then
+        rm -rf "$target" || return 1
+        mv "$entry/old" "$target" || return 1
+      elif [ -f "$entry/absent" ] && [ ! -e "$entry/new" ]; then
+        rm -rf "$target" || return 1
+      fi
+    done
+    info "The previous WholeTeam version was restored."
+  fi
+  # Remove "ready" before deleting backups, so interrupted cleanup can never
+  # be mistaken for an unfinished promotion.
+  rm -f "$dir/ready" || return 1
+  rm -rf "$dir" || return 1
+  UPDATE_DIR=""
+}
+
+promote_update() {
+  local entry target
+  : > "$UPDATE_DIR/ready.tmp"
+  mv "$UPDATE_DIR/ready.tmp" "$UPDATE_DIR/ready"
+  for entry in "$UPDATE_DIR"/entries/*; do
+    IFS= read -r target < "$entry/target"
+    target=$(ignore_path "$target")
+    mkdir -p "$(dirname "$target")"
+    if [ -f "$entry/absent" ]; then
+      [ ! -e "$target" ] && [ ! -L "$target" ] || die "Update target appeared during staging: $target."
+    else
+      [ -e "$target" ] || [ -L "$target" ] || die "Update target disappeared during staging: $target."
+      mv "$target" "$entry/old"
+    fi
+    if [ -e "$entry/new" ]; then
+      mv "$entry/new" "$target"
+    fi
+  done
+  : > "$UPDATE_DIR/committed.tmp"
+  mv "$UPDATE_DIR/committed.tmp" "$UPDATE_DIR/committed"
+  recover_update
+}
+
 # block_lines <file> <begin marker> <end marker> -> "<begin line> <end line> <any end>"
 # Lines are 0 when absent; the end line is the first end marker after the begin marker.
 # Marker lines are compared with a trailing carriage return removed.
@@ -154,6 +269,10 @@ EOF
 # Replaces the text between the markers, or appends the block after a blank line.
 update_block() {
   local file="$1" block="$2" begin="$3" end="$4" tmp begin_line end_line any_end
+  if [ -n "$UPDATE_DIR" ]; then
+    stage_file "$file"
+    file="$STAGED_TARGET"
+  fi
   if [ ! -f "$file" ]; then
     cat "$block" > "$file"
     return 0
@@ -185,12 +304,12 @@ EOF
 # manifest_status <file> -> "created", "block" or "" from the previous manifest
 manifest_status() {
   if [ -n "$OLD_MANIFEST" ] && [ -f "$OLD_MANIFEST" ]; then
-    awk -v f="$1" '$2 == f { print $1; exit }' "$OLD_MANIFEST"
+    awk -v f="$1" 'substr($0, index($0, " ") + 1) == f { print $1; exit }' "$OLD_MANIFEST"
   fi
 }
 
 manifest_has() {
-  [ -n "$OLD_MANIFEST" ] && [ -f "$OLD_MANIFEST" ] && awk -v f="$1" '$2 == f { found = 1 } END { exit !found }' "$OLD_MANIFEST"
+  [ -n "$OLD_MANIFEST" ] && [ -f "$OLD_MANIFEST" ] && awk -v f="$1" 'substr($0, index($0, " ") + 1) == f { found = 1 } END { exit !found }' "$OLD_MANIFEST"
 }
 
 # record <action> <file>: add a line to the new manifest, keeping "created" from the old one
@@ -254,7 +373,7 @@ write_ignore_block() {
 ignore_target() {
   local line=""
   if [ -n "$OLD_MANIFEST" ] && [ -f "$OLD_MANIFEST" ]; then
-    line=$(awk '$2 != "CLAUDE.md" && $2 != "AGENTS.md" && $2 != "CLAUDE.local.md" && $2 != "AGENTS.override.md" { print $2; exit }' "$OLD_MANIFEST")
+    line=$(awk '{ f = substr($0, index($0, " ") + 1) } f != "CLAUDE.md" && f != "AGENTS.md" && f != "CLAUDE.local.md" && f != "AGENTS.override.md" { print f; exit }' "$OLD_MANIFEST")
   fi
   printf '%s' "${line:-.gitignore}"
 }
@@ -274,7 +393,9 @@ apply_ignore() {
   target=$(ignore_target)
   abs=$(ignore_path "$target")
   if [ ! -e "$abs" ]; then
-    mkdir -p "$(dirname "$abs")"
+    if [ -z "$UPDATE_DIR" ]; then
+      mkdir -p "$(dirname "$abs")"
+    fi
     write_ignore_block "$abs"
     record created "$target"
   else
@@ -314,10 +435,14 @@ copy_agents() {
   done
   cp "$TEMPLATE"/root/.claude/agents/factory-*.md "$PROJECT/.claude/agents/"
   cp "$TEMPLATE"/root/.codex/agents/factory-*.toml "$PROJECT/.codex/agents/"
+  write_models_marker "$PROJECT/factory/.models-sync-needed"
+}
+
+write_models_marker() {
   printf '%s\n%s\n' \
     'The WholeTeam installer rewrote the agent files with default models.' \
     'On the next `Let'"'"'s code`, the Orchestrator re-applies the models block of factory/config.yaml and deletes this file.' \
-    > "$PROJECT/factory/.models-sync-needed"
+    > "$1"
 }
 
 write_core_version() {
@@ -334,7 +459,12 @@ apply_root_files() {
     apply_guide "AGENTS.md" "AGENTS.override.md" "$TEMPLATE/root/AGENTS.md"
   fi
   apply_ignore
-  cat "$NEW_MANIFEST" > "$PROJECT/factory/.install-manifest"
+  if [ -n "$UPDATE_DIR" ]; then
+    stage_file "$PROJECT/factory/.install-manifest"
+    write_content "$NEW_MANIFEST" "$STAGED_TARGET"
+  else
+    write_content "$NEW_MANIFEST" "$PROJECT/factory/.install-manifest"
+  fi
 }
 
 # load_old_manifest <mode>: sets OLD_MANIFEST and ROOT_MODE for the root files.
@@ -435,21 +565,67 @@ do_install() {
 }
 
 do_update() {
-  local installed rel src dest copied=0 before after
+  local installed rel src dest copied=0 before after tool pattern f runtime
   installed=$(tr -d ' \r\n' < "$PROJECT/factory/core/VERSION")
   info ""
   info "Updating WholeTeam $installed -> $VERSION in $PROJECT ..."
 
-  rm -rf "$PROJECT/factory/core"
-  cp -R "$TEMPLATE/factory/core" "$PROJECT/factory/core"
-  write_core_version
-  copy_agents
+  # mkdir reserves the journal name; never reuse or delete unrelated contents.
+  mkdir "$PROJECT/factory/.wholeteam-update"
+  UPDATE_DIR="$PROJECT/factory/.wholeteam-update"
+  runtime=unix
+  case "$OSTYPE" in msys*|cygwin*) runtime=bash ;; esac
+  printf '%s %s\n' "$runtime" "$$" > "$UPDATE_DIR/owner"
+  printf '%s\n' 'wholeteam-update-v1' > "$UPDATE_DIR/format"
+  UPDATE_COUNT=0
+  stage_target "$PROJECT/factory/core"
+  for f in FACTORY.md MIGRATIONS.md config.defaults.yaml; do
+    [ -s "$TEMPLATE/factory/core/$f" ] || die "The replacement core is missing $f."
+  done
+  cp -pR "$TEMPLATE/factory/core" "$STAGED_TARGET"
+  validate_copy "$TEMPLATE/factory/core" "$STAGED_TARGET"
+  printf '%s\n' "$VERSION" > "$STAGED_TARGET/VERSION"
+
+  for tool in .claude .codex; do
+    case "$tool" in .claude) pattern='factory-*.md' ;; .codex) pattern='factory-*.toml' ;; esac
+    for src in "$TEMPLATE/root/$tool/agents/"$pattern; do
+      [ -f "$src" ] || die "The replacement $tool agents are missing."
+      stage_target "$PROJECT/$tool/agents/${src##*/}"
+      cp -p "$src" "$STAGED_TARGET"
+      validate_copy "$src" "$STAGED_TARGET"
+    done
+    for f in "$PROJECT/$tool/agents/"$pattern; do
+      [ -f "$f" ] || continue
+      if [ ! -f "$TEMPLATE/root/$tool/agents/${f##*/}" ]; then
+        stage_target "$f"
+      fi
+    done
+  done
+  stage_file "$PROJECT/factory/.models-sync-needed"
+  write_models_marker "$STAGED_TARGET"
 
   before=""
   if is_tracked ".gitignore"; then
     before=$(git -C "$PROJECT" diff --quiet -- .gitignore && printf 'clean' || printf 'dirty')
   fi
   apply_root_files "$ROOT_MODE"
+
+  while IFS= read -r rel; do
+    rel="${rel#./}"
+    src="$TEMPLATE/factory/$rel"
+    dest="$PROJECT/factory/$rel"
+    if [ ! -e "$dest" ] && [ ! -L "$dest" ]; then
+      stage_target "$dest"
+      cp -p "$src" "$STAGED_TARGET"
+      validate_copy "$src" "$STAGED_TARGET"
+      copied=$((copied + 1))
+      info "  added missing starting file factory/$rel"
+    fi
+  done <<EOF
+$(cd "$TEMPLATE/factory" && find . -type f ! -path './core/*' | sort)
+EOF
+
+  promote_update
   if [ "$before" = "clean" ]; then
     after=$(git -C "$PROJECT" diff --quiet -- .gitignore && printf 'clean' || printf 'dirty')
     if [ "$after" = "dirty" ]; then
@@ -457,20 +633,6 @@ do_update() {
       info "    git add .gitignore && git commit -m \"chore: update WholeTeam ignore rules\""
     fi
   fi
-
-  while IFS= read -r rel; do
-    rel="${rel#./}"
-    src="$TEMPLATE/factory/$rel"
-    dest="$PROJECT/factory/$rel"
-    if [ ! -e "$dest" ]; then
-      mkdir -p "$(dirname "$dest")"
-      cp "$src" "$dest"
-      copied=$((copied + 1))
-      info "  added missing starting file factory/$rel"
-    fi
-  done <<EOF
-$(cd "$TEMPLATE/factory" && find . -type f ! -path './core/*' | sort)
-EOF
 
   info ""
   info "WholeTeam is updated to $VERSION."
@@ -509,6 +671,7 @@ main() {
     die "Run this script from a complete WholeTeam folder (VERSION or template/ is missing next to it)."
   fi
   VERSION=$(tr -d ' \r\n' < "$SCRIPT_DIR/VERSION")
+  [ -n "$VERSION" ] || die "The replacement VERSION is empty."
 
   info "WholeTeam installer $VERSION"
 
@@ -537,6 +700,8 @@ main() {
   if [ "$PROJECT" = "$SCRIPT_DIR" ] || { [ -f "$PROJECT/install.sh" ] && [ -f "$PROJECT/template/factory/core/FACTORY.md" ]; }; then
     die "This is the WholeTeam folder itself. Give the path of your project instead."
   fi
+
+  recover_update || die "Cannot recover the previous update. Its backup has been kept."
 
   if [ -f "$PROJECT/factory/core/VERSION" ]; then
     installed=$(tr -d ' \r\n' < "$PROJECT/factory/core/VERSION")
