@@ -11,6 +11,7 @@ All notable changes to WholeTeam are documented in this file. The format is base
 - Codex agent names replace every hyphen in a role slug with an underscore, as stated in the delegation rules and role map.
 - Rejected rounds' full findings and blocked stages' questions persist in reports linked from in-flight state, so rework and clarification resume without losing details or counting a rejection twice.
 - Criteria check-off uses the evidence of enabled stages, and a recorded "Accept as-is" escalation decision counts as stage approval in the Definition of Done.
+- Both installed root guide blocks list the Process command.
 
 ## [1.3.1] - 2026-10-02
 
