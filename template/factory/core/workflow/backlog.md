@@ -55,7 +55,7 @@ Field labels are exact and always English. Free text is in `state.input_language
 - **Critical:** `yes` or `no`. **Security review:** `light` or `required`.
 - **Depends on:** comma-separated task IDs, or `—`.
 - **Branch:** `—` until the item starts; then the branch name.
-- **Acceptance criteria:** 1-7 items, `  - [ ] AC<n>: <testable statement>`. The Orchestrator checks a box (`[x]`) only when a QA report gives evidence for it.
+- **Acceptance criteria:** 1-7 items, `  - [ ] AC<n>: <testable statement>`. The Orchestrator checks a box (`[x]`) from evidence in the QA report when `qa` is enabled for the item; otherwise from the Developer's `CRITERIA` mapping in DEV, confirmed by REVIEW's traceability check when `review` is enabled.
 - **History:** one line per event, `  - YYYY-MM-DD · <event>`, newest last.
 
 ### 1.4 Values

@@ -24,7 +24,7 @@ An item may merge only when all of these hold:
 - [ ] Every acceptance criterion is checked: with evidence in a QA report when `qa` is one of the item's enabled stages (a criterion QA marks `MANUAL` with exact steps is recorded in the item's `Notes` for the next checkpoint's validation checklist); otherwise from the Developer's `CRITERIA` mapping in DEV, confirmed by REVIEW's traceability check when `review` is enabled.
 - [ ] Tests at the required level (`testing.level`) exist and pass: written by the Test Engineer in TEST when that stage is enabled, or by the Developer in DEV otherwise; either way unmodified since their commit (verified by the Tech Lead when REVIEW runs).
 - [ ] Lint, type-check and build pass.
-- [ ] Every stage enabled for the item (`factory/core/workflow/delivery.md` section 4) is approved, with every required reviewer.
+- [ ] Every stage enabled for the item (`factory/core/workflow/delivery.md` section 4) is approved, with every required reviewer. A stage the user resolved with "Accept as-is" in an escalation (`factory/core/workflow/delivery.md` section 7) counts as approved, with the decision recorded in the item's history.
 - [ ] Docs are updated if public behavior changed (README usage, API docs).
 - [ ] No secrets are in the code or the history of the branch.
 - [ ] `.env.example` is updated for every new setting.
