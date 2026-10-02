@@ -59,7 +59,7 @@ All paths are relative to the project root.
 | `factory/.models-sync-needed` | Marker: the installer rewrote the agent files with default models, so the next model sync must re-apply the `models` block | Installer; deleted by the Orchestrator after the model sync |
 | `factory/input/01-07-*.md` | Discovery documents, one per step, in `state.input_language` | Orchestrator; drafts by Architect with Tech Lead (02-04), UX/UI Designer (05, `gui`) and Architect (05, other interfaces) |
 | `factory/input/prototypes/` | HTML prototypes (generated) or the user's prototype files | UX/UI Designer or user |
-| `factory/output/` | ADRs, architecture, threat model, audits, checkpoint reports, drafts, support reproductions, hosting guide, baseline (see `factory/output/README.md`) | Role named in that README |
+| `factory/output/` | ADRs, architecture, threat model, audits, checkpoint reports, saved findings and questions in `reports/`, drafts, support reproductions, hosting guide, baseline (see `factory/output/README.md`) | Role named in that README; Orchestrator for `reports/` |
 | `factory/attachments/` | Files the user drops for requests (screenshots, mockups, PDFs, logs); moved into `<ID>/` subfolders once linked to an item (see `factory/attachments/README.md`) | User; Orchestrator |
 | `factory/.worktrees/<ID>/` | Parallel-mode git worktrees (`execution.worktrees_dir`) | Orchestrator |
 | `factory/core/` | The factory itself: this manual, modes, migrations, roles, workflow, guidelines, templates, `VERSION`. Replaced on every update | Installer only |
@@ -185,7 +185,7 @@ Every role ends with the report format of `factory/core/templates/role-report.md
 - Check cheap facts before recording them: cited commits exist (`git log --oneline -1 <hash>`), cited test files exist, the branch is the one you assigned.
 - A missing or malformed report counts as a failed delegation: re-request once, then use the fallback.
 - A QA finding marked `UNRELATED_DEFECT` is not a rejection: route it to `factory/core/workflow/bugs-and-support.md` with source `qa-unrelated`.
-- Store only the verdict and a one-line summary in `in_flight[].last_report`; keep full findings only as long as the next stage needs them.
+- Store only the verdict and a one-line summary in `in_flight[].last_report`. For an in-flight item, the Orchestrator saves rejected rounds' full findings and blocked stages' questions in `factory/output/reports/<ID>/<n>-<stage>.md` and sets `in_flight[].findings_file` (`factory/core/workflow/delivery.md` sections 6 and 8). Rework and resume read that file; clear the key when that stage passes, but keep the file.
 
 ## 7. Language rules
 
