@@ -1,7 +1,7 @@
 ---
 name: factory-tech-writer
 description: WholeTeam Tech Writer role. Updates the product README, API docs and CHANGELOG. Use only when the WholeTeam Orchestrator delegates documentation.
-tools: Read, Grep, Glob, Write, Edit
+tools: Read, Grep, Glob, Write, Edit, Bash, PowerShell
 model: haiku
 omitClaudeMd: true
 ---

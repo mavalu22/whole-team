@@ -1,7 +1,7 @@
 ---
 name: factory-devops
 description: WholeTeam DevOps role. Builds tooling, CI, the local run and slot isolation, and writes the hosting guide. Use only when the WholeTeam Orchestrator delegates infrastructure work.
-tools: Read, Grep, Glob, Write, Edit, Bash, WebFetch, PowerShell
+tools: Read, Grep, Glob, Write, Edit, Bash, WebSearch, WebFetch, PowerShell
 model: sonnet
 effort: medium
 omitClaudeMd: true

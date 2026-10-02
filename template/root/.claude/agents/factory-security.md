@@ -1,7 +1,7 @@
 ---
 name: factory-security
 description: WholeTeam Security role. Reviews one item's changes for vulnerabilities, writes the threat model and runs security audits. Use only when the WholeTeam Orchestrator delegates a security review or audit.
-tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, PowerShell
+tools: Read, Grep, Glob, Write, Edit, Bash, WebSearch, WebFetch, PowerShell
 model: sonnet
 effort: medium
 omitClaudeMd: true
